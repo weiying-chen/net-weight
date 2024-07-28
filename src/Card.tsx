@@ -13,7 +13,7 @@ type CardProps = {
 
 const Card: React.FC<CardProps> = ({ message, isLastMessage }) => {
   return (
-    <div className={`space-y-2 ${isLastMessage ? "text-lg" : "text-sm"}`}>
+    <div className={`px-4 space-y-2 ${isLastMessage ? "text-lg" : "text-sm"}`}>
       <h3
         className={
           isLastMessage ? "text-lg font-semibold" : "text-sm font-semibold"
