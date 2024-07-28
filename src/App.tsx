@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import supabase from "./supabaseClient";
+import Card from "./Card"; // Import the MessageCard component
 
 // Define the type for the data structure
 type Message = {
@@ -17,7 +18,8 @@ function App() {
       try {
         const { data, error } = await supabase
           .from("messages") // Use the type for the table
-          .select("*");
+          .select("*")
+          .order("createdAt", { ascending: false }); // Order by createdAt in descending order
 
         if (error) {
           throw error;
@@ -34,34 +36,22 @@ function App() {
 
   return (
     <div className="p-4 flex justify-center">
-      <div className="bg-white border border-gray-400 rounded-2xl p-6 [box-shadow:4px_4px_0px_rgba(0,0,0,0.1)] w-full max-w-2xl space-y-6">
+      <div className="bg-white border border-gray-400 rounded-2xl p-4 [box-shadow:4px_4px_0px_rgba(0,0,0,0.1)] w-full max-w-2xl space-y-4">
+        <img
+          src="https://via.placeholder.com/600x300"
+          alt="Placeholder Image"
+          className="w-full h-auto mb-4 rounded-2xl"
+        />
+        <h2 className="font-semibold text-2xl text-center">Toast</h2>
         {data.length > 0 && (
           <>
-            <div>
-              <h2 className="text-2xl font-semibold">
-                Message ID: {data[data.length - 1].id}
-              </h2>
-              <p className="text-lg text-gray-800">
-                {data[data.length - 1].content}
-              </p>
-              <p className="text-gray-500 text-sm">
-                Created at:{" "}
-                {new Date(data[data.length - 1].createdAt).toLocaleString()}
-              </p>
-            </div>
-            <div className="border-t border-gray-300 pt-4 space-y-4">
-              {data.slice(0, -1).map((message) => (
-                <div key={message.id} className="space-y-1">
-                  <p className="text-sm text-gray-500">
-                    Message ID: {message.id}
-                  </p>
-                  <p className="text-sm text-gray-500">{message.content}</p>
-                  <p className="text-xs text-gray-400">
-                    Created at: {new Date(message.createdAt).toLocaleString()}
-                  </p>
-                </div>
-              ))}
-            </div>
+            <Card message={data[0]} isLastMessage />
+            {data.slice(1).map((message) => (
+              <div key={message.id}>
+                <hr className="my-4 border-gray-300" />
+                <Card message={message} />
+              </div>
+            ))}
           </>
         )}
       </div>
