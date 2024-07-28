@@ -13,15 +13,15 @@ type CardProps = {
 
 const Card: React.FC<CardProps> = ({ message, isLastMessage }) => {
   return (
-    <div className={`px-4 space-y-2 ${isLastMessage ? "text-lg" : "text-sm"}`}>
+    <div className="px-4 space-y-2">
       <h3
         className={
-          isLastMessage ? "text-lg font-semibold" : "text-sm font-semibold"
+          isLastMessage ? "text-2xl font-semibold" : "text-sm font-semibold"
         }
       >
         {message.content}
       </h3>
-      <p className="text-gray-400 text-sm">
+      <p className={`text-gray-400 ${isLastMessage ? "text-md" : "text-xs"}`}>
         {new Date(message.createdAt).toLocaleString()}
       </p>
     </div>

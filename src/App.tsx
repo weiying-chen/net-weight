@@ -32,18 +32,39 @@ function App() {
     };
 
     fetchData();
+
+    // Subscribe to changes in the 'messages' table
+    const subscription = supabase
+      .channel("realtime:public:messages")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "messages" },
+        (payload) => {
+          console.log("New message received!", payload);
+          const newMessage = payload.new as Message; // Type assertion
+          setData((prevData) => [newMessage, ...prevData]);
+        },
+      )
+      .subscribe();
+
+    // Cleanup subscription on unmount
+    return () => {
+      supabase.removeChannel(subscription);
+    };
   }, []);
 
   return (
     <div className="p-4 flex justify-center">
-      <div className="bg-white border border-gray-600 rounded-3xl [box-shadow:4px_4px_0px_rgba(0,0,0,0.1)] w-full max-w-2xl">
+      <div className="bg-white border-[#083355] border-[1.5px] rounded-3xl [box-shadow:4px_4px_0px_rgba(0,0,0,0.1)] w-full max-w-2xl">
         <img
           src="https://via.placeholder.com/600x300"
           alt="Placeholder Image"
           className="w-full h-auto rounded-t-3xl"
         />
         <div className="py-6">
-          <h2 className="font-semibold text-2xl text-center">Toast</h2>
+          <h2 className="font-semibold tracking-tight text-4xl text-center">
+            Toast
+          </h2>
           {data.length > 0 && (
             <>
               <Card message={data[0]} isLastMessage />
