@@ -2,7 +2,8 @@ import React from "react";
 
 type Message = {
   id: number;
-  content: string;
+  item: string;
+  weight: number;
   createdAt: string;
 };
 
@@ -19,7 +20,7 @@ const Card: React.FC<CardProps> = ({ message, isLastMessage }) => {
           isLastMessage ? "text-2xl font-semibold" : "text-sm font-semibold"
         }
       >
-        {message.content}
+        Weight: {message.weight.toFixed(2)} g
       </h3>
       <p className={`text-gray-400 ${isLastMessage ? "text-md" : "text-xs"}`}>
         {new Date(message.createdAt).toLocaleString()}

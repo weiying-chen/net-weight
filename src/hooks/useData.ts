@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import supabase from "../supabaseClient";
 
-// Define the type for the data structure
 type Message = {
   id: number;
-  content: string;
+  item: string;
+  weight: number;
   createdAt: string;
 };
 
-const useMessages = () => {
+const useData = () => {
   const [data, setData] = useState<Message[]>([]);
 
   useEffect(() => {
@@ -54,4 +54,4 @@ const useMessages = () => {
   return data;
 };
 
-export default useMessages;
+export default useData;
