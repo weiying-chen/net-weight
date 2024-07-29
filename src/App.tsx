@@ -1,7 +1,7 @@
-import useMessages from "./hooks/useData";
+import useData from "./hooks/useData";
 import Card from "./components/Card";
 
-type Message = {
+type Reading = {
   id: number;
   item: string;
   weight: number;
@@ -9,15 +9,15 @@ type Message = {
 };
 
 function App() {
-  const data = useMessages();
+  const data = useData();
 
   // Group data by item
   const groupedData = data.reduce(
-    (acc: Record<string, Message[]>, message: Message) => {
-      if (!acc[message.item]) {
-        acc[message.item] = [];
+    (acc: Record<string, Reading[]>, reading: Reading) => {
+      if (!acc[reading.item]) {
+        acc[reading.item] = [];
       }
-      acc[message.item].push(message);
+      acc[reading.item].push(reading);
       return acc;
     },
     {},
@@ -41,11 +41,11 @@ function App() {
             </h2>
             {groupedData[item].length > 0 && (
               <>
-                <Card message={groupedData[item][0]} isLastMessage />
-                {groupedData[item].slice(1).map((message) => (
-                  <div key={message.id}>
+                <Card reading={groupedData[item][0]} isLastReading />
+                {groupedData[item].slice(1).map((reading) => (
+                  <div key={reading.id}>
                     <hr className="my-4 border-gray-300" />
-                    <Card message={message} />
+                    <Card reading={reading} />
                   </div>
                 ))}
               </>
