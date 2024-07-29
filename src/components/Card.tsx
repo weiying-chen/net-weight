@@ -1,14 +1,8 @@
 import React from "react";
-
-type Message = {
-  id: number;
-  item: string;
-  weight: number;
-  createdAt: string;
-};
+import { Reading } from "../types";
 
 type CardProps = {
-  reading: Message;
+  reading: Reading;
   isLastReading?: boolean;
 };
 

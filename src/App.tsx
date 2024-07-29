@@ -1,27 +1,10 @@
 import useData from "./hooks/useData";
 import Card from "./components/Card";
-
-type Reading = {
-  id: number;
-  item: string;
-  weight: number;
-  createdAt: string;
-};
+import { groupBy } from "./utils";
 
 function App() {
   const data = useData();
-
-  // Group data by item
-  const groupedData = data.reduce(
-    (acc: Record<string, Reading[]>, reading: Reading) => {
-      if (!acc[reading.item]) {
-        acc[reading.item] = [];
-      }
-      acc[reading.item].push(reading);
-      return acc;
-    },
-    {},
-  );
+  const groupedData = groupBy(data, "item");
 
   return (
     <div className="p-4 flex justify-center">
