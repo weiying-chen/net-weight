@@ -1,6 +1,13 @@
 import { useState, useEffect } from "react";
 import supabase from "../supabaseClient";
 
+export type Device = {
+  id: number;
+  created_at: string;
+  device_id: string;
+  name: string;
+};
+
 export function useDevices() {
   const [devices, setDevices] = useState<Device[]>([]);
 

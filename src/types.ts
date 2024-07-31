@@ -8,7 +8,7 @@ export type Reading = {
 
 export type Device = {
   id: number;
-  created_at: string;
-  device_id: string;
+  createdAt: string;
+  deviceId: string;
   name: string;
 };
