@@ -8,7 +8,7 @@ type Reading = {
   device_id: string;
 };
 
-export function useDb() {
+export function useReadings() {
   const [data, setData] = useState<Reading[]>([]);
 
   useEffect(() => {

@@ -1,17 +1,28 @@
 import { Reading } from "./types";
-import { useDb } from "./hooks/useDb";
+import { useReadings } from "./hooks/useReadings";
+import { useDevices } from "./hooks/useDevices"; // Import the new hook
 import Card from "./components/Card";
 import { groupBy, toCamelCase } from "./utils";
 
 function App() {
-  const data = useDb();
-  const camelCaseData = toCamelCase(data) as Reading[];
-  const groupedData = groupBy(camelCaseData, "deviceId");
+  const readings = useReadings();
+  const devices = useDevices();
+  const camelCaseData = toCamelCase(readings) as Reading[];
+  const groupedReadings = groupBy(camelCaseData, "deviceId");
+
+  const getDeviceName = (deviceId: string) => {
+    const device = devices.find((d) => d.device_id === deviceId);
+    return device ? device.name : deviceId;
+  };
 
   return (
     <div className="p-4 flex justify-center">
-      {Object.keys(groupedData).map((item) => (
-        <Card key={item} item={item} readings={groupedData[item]} />
+      {Object.keys(groupedReadings).map((deviceId) => (
+        <Card
+          key={deviceId}
+          item={getDeviceName(deviceId)}
+          readings={groupedReadings[deviceId]}
+        />
       ))}
     </div>
   );
