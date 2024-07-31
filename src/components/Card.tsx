@@ -1,6 +1,6 @@
 import { Reading } from "../types";
 
-const CardHeader: React.FC<{ item: string }> = ({ item }) => {
+const CardHeader: React.FC<{ itemName: string }> = ({ itemName: item }) => {
   return (
     <>
       <img
@@ -36,14 +36,14 @@ const CardContent: React.FC<{ reading: Reading; isFirstReading?: boolean }> = ({
 };
 
 type CardProps = {
-  item: string;
+  itemName: string;
   readings: Reading[];
 };
 
-const Card: React.FC<CardProps> = ({ item, readings }) => {
+const Card: React.FC<CardProps> = ({ itemName, readings }) => {
   return (
     <div className="bg-white border-[#083355] border-[1.5px] rounded-3xl [box-shadow:4px_4px_0px_rgba(0,0,0,0.1)] w-full max-w-2xl mb-6">
-      <CardHeader item={item} />
+      <CardHeader itemName={itemName} />
       <div className="py-4">
         {readings.length > 0 && (
           <>

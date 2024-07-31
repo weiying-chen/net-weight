@@ -5,3 +5,10 @@ export type Reading = {
   createdAt: string;
   deviceId: string;
 };
+
+export type Device = {
+  id: number;
+  created_at: string;
+  device_id: string;
+  name: string;
+};

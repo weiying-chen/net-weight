@@ -3,6 +3,7 @@ import { useReadings } from "./hooks/useReadings";
 import { useDevices } from "./hooks/useDevices"; // Import the new hook
 import Card from "./components/Card";
 import { groupBy, toCamelCase } from "./utils";
+import { getDeviceName } from "./helpers";
 
 function App() {
   const readings = useReadings();
@@ -10,17 +11,12 @@ function App() {
   const camelCaseData = toCamelCase(readings) as Reading[];
   const groupedReadings = groupBy(camelCaseData, "deviceId");
 
-  const getDeviceName = (deviceId: string) => {
-    const device = devices.find((d) => d.device_id === deviceId);
-    return device ? device.name : deviceId;
-  };
-
   return (
     <div className="p-4 flex justify-center">
       {Object.keys(groupedReadings).map((deviceId) => (
         <Card
           key={deviceId}
-          item={getDeviceName(deviceId)}
+          itemName={getDeviceName(devices, deviceId)}
           readings={groupedReadings[deviceId]}
         />
       ))}
