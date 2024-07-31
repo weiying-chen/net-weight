@@ -8,7 +8,7 @@ type Reading = {
   device_id: string;
 };
 
-const useData = () => {
+export function useDb() {
   const [data, setData] = useState<Reading[]>([]);
 
   useEffect(() => {
@@ -52,6 +52,4 @@ const useData = () => {
   }, []);
 
   return data;
-};
-
-export default useData;
+}

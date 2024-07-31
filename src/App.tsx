@@ -1,10 +1,10 @@
 import { Reading } from "./types";
-import useData from "./hooks/useData";
+import { useDb } from "./hooks/useDb";
 import Card from "./components/Card";
 import { groupBy, toCamelCase } from "./utils";
 
 function App() {
-  const data = useData();
+  const data = useDb();
   const camelCaseData = toCamelCase(data) as Reading[];
   const groupedData = groupBy(camelCaseData, "deviceId");
 
