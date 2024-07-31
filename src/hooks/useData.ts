@@ -1,23 +1,23 @@
 import { useState, useEffect } from "react";
 import supabase from "../supabaseClient";
 
-type Message = {
+type Reading = {
   id: number;
-  item: string;
   weight: number;
-  createdAt: string;
+  created_at: string;
+  device_id: string;
 };
 
 const useData = () => {
-  const [data, setData] = useState<Message[]>([]);
+  const [data, setData] = useState<Reading[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const { data, error } = await supabase
-          .from("messages") // Use the type for the table
+          .from("readings") // Use the type for the table
           .select("*")
-          .order("createdAt", { ascending: false }); // Order by createdAt in descending order
+          .order("created_at", { ascending: false }); // Order by createdAt in descending order
 
         if (error) {
           throw error;
@@ -33,14 +33,14 @@ const useData = () => {
 
     // Subscribe to changes in the 'messages' table
     const subscription = supabase
-      .channel("realtime:public:messages")
+      .channel("realtime:public:readings")
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "messages" },
+        { event: "INSERT", schema: "public", table: "readings" },
         (payload) => {
           console.log("New message received!", payload);
-          const newMessage = payload.new as Message; // Type assertion
-          setData((prevData) => [newMessage, ...prevData]);
+          const newReading = payload.new as Reading; // Type assertion
+          setData((prevData) => [newReading, ...prevData]);
         },
       )
       .subscribe();

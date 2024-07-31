@@ -3,4 +3,5 @@ export type Reading = {
   item: string;
   weight: number;
   createdAt: string;
+  deviceId: string;
 };

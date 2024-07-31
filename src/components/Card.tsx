@@ -26,7 +26,7 @@ const CardContent: React.FC<{ reading: Reading; isFirstReading?: boolean }> = ({
           isFirstReading ? "text-2xl font-semibold" : "text-sm font-semibold"
         }
       >
-        Weight: {reading.weight.toFixed(2)} g
+        {reading.weight.toFixed(2)} g
       </h3>
       <p className={`text-gray-400 ${isFirstReading ? "text-md" : "text-xs"}`}>
         {new Date(reading.createdAt).toLocaleString()}

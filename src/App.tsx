@@ -1,10 +1,12 @@
+import { Reading } from "./types";
 import useData from "./hooks/useData";
 import Card from "./components/Card";
-import { groupBy } from "./utils";
+import { groupBy, toCamelCase } from "./utils";
 
 function App() {
   const data = useData();
-  const groupedData = groupBy(data, "item");
+  const camelCaseData = toCamelCase(data) as Reading[];
+  const groupedData = groupBy(camelCaseData, "deviceId");
 
   return (
     <div className="p-4 flex justify-center">
