@@ -23,7 +23,7 @@ const CardHeader: React.FC<{ itemName: string; onAction: () => void }> = ({
       </h2>
       <button
         onClick={onAction}
-        className="absolute bg-white p-2 top-4 right-4 rounded-full border-[#083355] border-[1.5px] [box-shadow:4px_4px_0px_rgba(0,0,0,0.1)] hover:[box-shadow:4px_4px_0px_rgba(0,0,0,0.2)]"
+        className="absolute bg-white p-2 top-4 right-4 rounded-full border-foreground border-[1.5px] shadow hover:shadow-dark"
       >
         <IconEdit size={28} />
       </button>
@@ -53,7 +53,7 @@ const CardContent: React.FC<{ reading: Reading; isFirstReading?: boolean }> = ({
 
 const Card: React.FC<CardProps> = ({ itemName, readings, onAction }) => {
   return (
-    <div className="bg-white border-[#083355] border-[1.5px] rounded-3xl [box-shadow:4px_4px_0px_rgba(0,0,0,0.1)] w-full max-w-2xl mb-6">
+    <div className="bg-white border-foreground border rounded-3xl shadow w-full max-w-2xl mb-6">
       <CardHeader itemName={itemName} onAction={onAction} />
       <div className="py-4">
         {readings.length > 0 && (
