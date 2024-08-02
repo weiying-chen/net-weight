@@ -1,10 +1,12 @@
 import React, { useEffect } from "react";
 
-const Modal: React.FC<{
+type ModalProps = {
   isOpen: boolean;
   onClose: () => void;
   children: React.ReactNode;
-}> = ({ isOpen, onClose, children }) => {
+};
+
+export function Modal({ isOpen, onClose, children }: ModalProps) {
   const handleOutsideClick = (
     e: React.MouseEvent<HTMLDivElement, MouseEvent>,
   ) => {
@@ -38,15 +40,7 @@ const Modal: React.FC<{
     >
       <div className="bg-white p-6 rounded-3xl border-foreground border shadow">
         {children}
-        <button
-          onClick={onClose}
-          className="mt-4 bg-primary text-foreground px-4 py-2 rounded border-foreground border-[1.5px] shadow hover:shadow-dark"
-        >
-          Close
-        </button>
       </div>
     </div>
   );
-};
-
-export default Modal;
+}

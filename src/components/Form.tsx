@@ -1,0 +1,48 @@
+import { useState } from "react";
+
+type FormProps = {
+  deviceName: string;
+  onClose: () => void;
+};
+
+export function Form({ deviceName, onClose }: FormProps) {
+  const [inputValue, setInputValue] = useState(deviceName);
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(event.target.value);
+  };
+
+  const handleFormSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    console.log("Form submitted:", inputValue);
+    // Add your form submission logic here
+    onClose();
+  };
+
+  return (
+    <form onSubmit={handleFormSubmit}>
+      <input
+        type="text"
+        value={inputValue}
+        onChange={handleInputChange}
+        placeholder="Enter device name"
+        className="border border-foreground p-2 mt-4 w-full rounded focus:ring ring-gray-200 ring-offset-2 outline-none"
+      />
+      <div className="mt-4 space-x-2">
+        <button
+          type="submit"
+          className="bg-primary text-foreground rounded px-4 py-2 border border-foreground shadow hover:shadow-dark"
+        >
+          Submit
+        </button>
+        <button
+          type="button"
+          onClick={onClose}
+          className="text-foreground px-4 py-2 rounded border-foreground border shadow hover:shadow-dark"
+        >
+          Close
+        </button>
+      </div>
+    </form>
+  );
+}

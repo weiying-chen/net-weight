@@ -7,10 +7,17 @@ type CardProps = {
   onAction: () => void;
 };
 
-const CardHeader: React.FC<{ itemName: string; onAction: () => void }> = ({
-  itemName: item,
-  onAction,
-}) => {
+type CardHeaderProps = {
+  itemName: string;
+  onAction: () => void;
+};
+
+type CardContentProps = {
+  reading: Reading;
+  isFirstReading?: boolean;
+};
+
+function CardHeader({ itemName, onAction }: CardHeaderProps) {
   return (
     <div className="relative">
       <img
@@ -19,22 +26,19 @@ const CardHeader: React.FC<{ itemName: string; onAction: () => void }> = ({
         className="w-full h-auto rounded-t-3xl"
       />
       <h2 className="font-semibold tracking-tight text-4xl text-center pt-4 capitalize">
-        {item}
+        {itemName}
       </h2>
       <button
         onClick={onAction}
-        className="absolute bg-white p-2 top-4 right-4 rounded-full border-foreground border-[1.5px] shadow hover:shadow-dark"
+        className="absolute bg-white p-2 top-4 right-4 rounded-full border-foreground border  shadow hover:shadow-dark"
       >
         <IconEdit size={28} />
       </button>
     </div>
   );
-};
+}
 
-const CardContent: React.FC<{ reading: Reading; isFirstReading?: boolean }> = ({
-  reading,
-  isFirstReading,
-}) => {
+function CardContent({ reading, isFirstReading }: CardContentProps) {
   return (
     <div className="px-4 space-y-2">
       <h3
@@ -49,9 +53,9 @@ const CardContent: React.FC<{ reading: Reading; isFirstReading?: boolean }> = ({
       </p>
     </div>
   );
-};
+}
 
-const Card: React.FC<CardProps> = ({ itemName, readings, onAction }) => {
+export function Card({ itemName, readings, onAction }: CardProps) {
   return (
     <div className="bg-white border-foreground border rounded-3xl shadow w-full max-w-2xl mb-6">
       <CardHeader itemName={itemName} onAction={onAction} />
@@ -70,6 +74,4 @@ const Card: React.FC<CardProps> = ({ itemName, readings, onAction }) => {
       </div>
     </div>
   );
-};
-
-export default Card;
+}
