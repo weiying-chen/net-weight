@@ -9,7 +9,7 @@ type Reading = {
 };
 
 export function useReadings() {
-  const [data, setData] = useState<Reading[]>([]);
+  const [reading, setReading] = useState<Reading[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -23,7 +23,7 @@ export function useReadings() {
           throw error;
         }
 
-        setData(data);
+        setReading(data);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -40,7 +40,7 @@ export function useReadings() {
         (payload) => {
           console.log("New message received!", payload);
           const newReading = payload.new as Reading; // Type assertion
-          setData((prevData) => [newReading, ...prevData]);
+          setReading((prevReading) => [newReading, ...prevReading]);
         },
       )
       .subscribe();
@@ -51,5 +51,5 @@ export function useReadings() {
     };
   }, []);
 
-  return data;
+  return reading;
 }

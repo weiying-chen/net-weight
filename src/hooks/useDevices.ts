@@ -27,6 +27,29 @@ export function useDevices() {
     };
 
     fetchDevices();
+
+    // Subscribe to changes in the 'devices' table
+    const subscription = supabase
+      .channel("realtime:public:devices")
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "devices" },
+        (payload) => {
+          console.log("Device updated!", payload);
+          const updatedDevice = payload.new as Device; // Type assertion
+          setDevices((prevDevices) =>
+            prevDevices.map((d) =>
+              d.id === updatedDevice.id ? updatedDevice : d,
+            ),
+          );
+        },
+      )
+      .subscribe();
+
+    // Cleanup subscription on unmount
+    return () => {
+      supabase.removeChannel(subscription);
+    };
   }, []);
 
   return devices;

@@ -6,26 +6,27 @@ import { Card } from "./components/Card";
 import { Modal } from "./components/Modal";
 import { Form } from "./components/Form";
 import { groupBy, toCamelCase } from "./utils";
-import { getDeviceName } from "./helpers";
 
 export default function App() {
   const readings = useReadings();
   const devices = useDevices();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
+  const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
 
   const camelCaseReadings = toCamelCase(readings) as Reading[];
   const camelCaseDevices = toCamelCase(devices) as Device[];
   const groupedReadings = groupBy(camelCaseReadings, "deviceId");
 
   const handleOpenModal = (deviceId: string) => {
-    setSelectedDeviceId(deviceId);
+    const device =
+      camelCaseDevices.find((d) => d.deviceId === deviceId) || null;
+    setSelectedDevice(device);
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setSelectedDeviceId(null);
+    setSelectedDevice(null);
   };
 
   return (
@@ -33,7 +34,10 @@ export default function App() {
       {Object.keys(groupedReadings).map((deviceId) => (
         <Card
           key={deviceId}
-          itemName={getDeviceName(camelCaseDevices, deviceId)}
+          itemName={
+            camelCaseDevices.find((d) => d.deviceId === deviceId)?.name ||
+            "Unknown"
+          }
           readings={groupedReadings[deviceId]}
           onAction={() => handleOpenModal(deviceId)}
         />
@@ -41,12 +45,9 @@ export default function App() {
 
       <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
         <h2 className="text-2xl font-bold">Device Details</h2>
-        <p>Details for device: {selectedDeviceId}</p>
-        {selectedDeviceId && (
-          <Form
-            deviceName={getDeviceName(camelCaseDevices, selectedDeviceId)}
-            onClose={handleCloseModal}
-          />
+        <p>Details for device: {selectedDevice?.deviceId}</p>
+        {selectedDevice && (
+          <Form device={selectedDevice} onClose={handleCloseModal} />
         )}
       </Modal>
     </div>

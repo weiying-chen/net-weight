@@ -1,22 +1,38 @@
 import { useState } from "react";
+import supabase from "../supabaseClient"; // import supabase client
+import { Device } from "../types";
 
 type FormProps = {
-  deviceName: string;
+  device: Device;
   onClose: () => void;
 };
 
-export function Form({ deviceName, onClose }: FormProps) {
-  const [inputValue, setInputValue] = useState(deviceName);
+export function Form({ device, onClose }: FormProps) {
+  const [inputValue, setInputValue] = useState(device.name);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(event.target.value);
   };
 
-  const handleFormSubmit = (event: React.FormEvent) => {
+  const handleFormSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    console.log("Form submitted:", inputValue);
-    // Add your form submission logic here
-    onClose();
+
+    try {
+      const { data, error } = await supabase
+        .from("devices")
+        .update({ name: inputValue })
+        .eq("id", device.id)
+        .select();
+
+      if (error) {
+        throw error;
+      }
+
+      console.log("Device updated:", data);
+      onClose();
+    } catch (error) {
+      console.error("Error updating device:", error);
+    }
   };
 
   return (
