@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { Device, Reading } from "./types";
+import { Device } from "./types";
 import { useReadings } from "./hooks/useReadings";
 import { useDevices } from "./hooks/useDevices";
 import { Card } from "./components/Card";
 import { Modal } from "./components/Modal";
 import { Form } from "./components/Form";
-import { groupBy, toCamelCase } from "./utils";
+import { groupBy } from "./utils";
 
 export default function App() {
   const readings = useReadings();
@@ -13,13 +13,10 @@ export default function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
 
-  const camelCaseReadings = toCamelCase(readings) as Reading[];
-  const camelCaseDevices = toCamelCase(devices) as Device[];
-  const groupedReadings = groupBy(camelCaseReadings, "deviceId");
+  const groupedReadings = groupBy(readings, "deviceId");
 
   const handleOpenModal = (deviceId: string) => {
-    const device =
-      camelCaseDevices.find((d) => d.deviceId === deviceId) || null;
+    const device = devices.find((d) => d.deviceId === deviceId) || null;
     setSelectedDevice(device);
     setIsModalOpen(true);
   };
@@ -35,8 +32,7 @@ export default function App() {
         <Card
           key={deviceId}
           itemName={
-            camelCaseDevices.find((d) => d.deviceId === deviceId)?.name ||
-            "Unknown"
+            devices.find((d) => d.deviceId === deviceId)?.name || "Unknown"
           }
           readings={groupedReadings[deviceId]}
           onAction={() => handleOpenModal(deviceId)}

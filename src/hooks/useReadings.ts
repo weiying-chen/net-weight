@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
 import supabase from "../supabaseClient";
+import { Reading } from "../types";
 
-type Reading = {
-  id: number;
-  weight: number;
-  created_at: string;
-  device_id: string;
-};
+function toCamelCaseReading(reading: any): Reading {
+  return {
+    id: reading.id,
+    weight: reading.weight,
+    createdAt: reading.created_at,
+    deviceId: reading.device_id,
+  };
+}
 
 export function useReadings() {
   const [reading, setReading] = useState<Reading[]>([]);
@@ -15,15 +18,16 @@ export function useReadings() {
     const fetchData = async () => {
       try {
         const { data, error } = await supabase
-          .from("readings") // Use the type for the table
+          .from("readings")
           .select("*")
-          .order("created_at", { ascending: false }); // Order by createdAt in descending order
+          .order("created_at", { ascending: false });
 
         if (error) {
           throw error;
         }
 
-        setReading(data);
+        const camelCaseReadings = data.map(toCamelCaseReading);
+        setReading(camelCaseReadings);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -31,15 +35,15 @@ export function useReadings() {
 
     fetchData();
 
-    // Subscribe to changes in the 'messages' table
+    // Subscribe to changes in the 'readings' table
     const subscription = supabase
       .channel("realtime:public:readings")
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "readings" },
         (payload) => {
-          console.log("New message received!", payload);
-          const newReading = payload.new as Reading; // Type assertion
+          console.log("New reading received!", payload);
+          const newReading = toCamelCaseReading(payload.new);
           setReading((prevReading) => [newReading, ...prevReading]);
         },
       )

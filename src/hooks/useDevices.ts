@@ -3,10 +3,19 @@ import supabase from "../supabaseClient";
 
 export type Device = {
   id: number;
-  created_at: string;
-  device_id: string;
+  createdAt: string;
+  deviceId: string;
   name: string;
 };
+
+function toCamelCaseDevice(device: any): Device {
+  return {
+    id: device.id,
+    createdAt: device.created_at,
+    deviceId: device.device_id,
+    name: device.name,
+  };
+}
 
 export function useDevices() {
   const [devices, setDevices] = useState<Device[]>([]);
@@ -20,7 +29,8 @@ export function useDevices() {
           throw error;
         }
 
-        setDevices(data);
+        const camelCaseDevices = data.map(toCamelCaseDevice);
+        setDevices(camelCaseDevices);
       } catch (error) {
         console.error("Error fetching devices:", error);
       }
@@ -36,7 +46,7 @@ export function useDevices() {
         { event: "UPDATE", schema: "public", table: "devices" },
         (payload) => {
           console.log("Device updated!", payload);
-          const updatedDevice = payload.new as Device; // Type assertion
+          const updatedDevice = toCamelCaseDevice(payload.new);
           setDevices((prevDevices) =>
             prevDevices.map((d) =>
               d.id === updatedDevice.id ? updatedDevice : d,
