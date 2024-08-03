@@ -9,7 +9,7 @@ import { groupBy } from "./utils";
 
 export default function App() {
   const readings = useReadings();
-  const devices = useDevices();
+  const { devices, updateDevice } = useDevices(); // Get updateDevice from useDevices
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
 
@@ -43,7 +43,11 @@ export default function App() {
         <h2 className="text-2xl font-bold">Device Details</h2>
         <p>Details for device: {selectedDevice?.deviceId}</p>
         {selectedDevice && (
-          <Form device={selectedDevice} onClose={handleCloseModal} />
+          <Form
+            device={selectedDevice}
+            updateDevice={updateDevice}
+            onClose={handleCloseModal}
+          /> // Pass updateDevice as a prop
         )}
       </Modal>
     </div>

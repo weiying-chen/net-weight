@@ -1,13 +1,13 @@
 import { useState } from "react";
-import supabase from "../supabaseClient"; // import supabase client
 import { Device } from "../types";
 
 type FormProps = {
   device: Device;
   onClose: () => void;
+  updateDevice: (id: number, name: string) => Promise<void>;
 };
 
-export function Form({ device, onClose }: FormProps) {
+export function Form({ device, onClose, updateDevice }: FormProps) {
   const [inputValue, setInputValue] = useState(device.name);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -16,23 +16,8 @@ export function Form({ device, onClose }: FormProps) {
 
   const handleFormSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-
-    try {
-      const { data, error } = await supabase
-        .from("devices")
-        .update({ name: inputValue })
-        .eq("id", device.id)
-        .select();
-
-      if (error) {
-        throw error;
-      }
-
-      console.log("Device updated:", data);
-      onClose();
-    } catch (error) {
-      console.error("Error updating device:", error);
-    }
+    await updateDevice(device.id, inputValue);
+    onClose();
   };
 
   return (

@@ -20,6 +20,23 @@ function toCamelCaseDevice(device: any): Device {
 export function useDevices() {
   const [devices, setDevices] = useState<Device[]>([]);
 
+  const updateDevice = async (id: number, name: string) => {
+    try {
+      const { error } = await supabase
+        .from("devices")
+        .update({ name })
+        .eq("id", id);
+
+      if (error) {
+        throw error;
+      }
+
+      console.log("Device updated");
+    } catch (error) {
+      console.error("Error updating device:", error);
+    }
+  };
+
   useEffect(() => {
     const fetchDevices = async () => {
       try {
@@ -62,5 +79,5 @@ export function useDevices() {
     };
   }, []);
 
-  return devices;
+  return { devices, updateDevice };
 }
