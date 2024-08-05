@@ -7,16 +7,25 @@ import { Modal } from "./components/Modal";
 import { Form } from "./components/Form";
 import { groupBy } from "./utils";
 
+// Utility function to find a device by its ID
+const findDeviceById = (
+  devices: Device[],
+  deviceId: string,
+): Device | undefined => {
+  return devices.find((d) => d.deviceId === deviceId);
+};
+
 export default function App() {
   const readings = useReadings();
-  const { devices, updateDevice } = useDevices(); // Get updateDevice from useDevices
+  const { devices, updateDevice } = useDevices();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
-
   const groupedReadings = groupBy(readings, "deviceId");
 
   const handleOpenModal = (deviceId: string) => {
-    const device = devices.find((d) => d.deviceId === deviceId) || null;
+    const device = findDeviceById(devices, deviceId);
+
+    if (!device) return; // Early return if no device is found
     setSelectedDevice(device);
     setIsModalOpen(true);
   };
@@ -26,18 +35,32 @@ export default function App() {
     setSelectedDevice(null);
   };
 
+  if (devices.length === 0) {
+    return (
+      <div className="text-center text-gray-500">
+        <h2 className="text-2xl font-bold">No Devices Found</h2>
+        <p>Please add a device to get started.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 flex justify-center flex-col items-center">
-      {Object.keys(groupedReadings).map((deviceId) => (
-        <Card
-          key={deviceId}
-          itemName={
-            devices.find((d) => d.deviceId === deviceId)?.name || "Unknown"
-          }
-          readings={groupedReadings[deviceId]}
-          onAction={() => handleOpenModal(deviceId)}
-        />
-      ))}
+      {Object.keys(groupedReadings).map((deviceId) => {
+        const device = findDeviceById(devices, deviceId);
+
+        if (!device) return null; // Skip rendering if no device is found
+
+        return (
+          <Card
+            key={deviceId}
+            itemName={device.name || "Unknown"}
+            readings={groupedReadings[deviceId]}
+            device={device}
+            onAction={() => handleOpenModal(deviceId)}
+          />
+        );
+      })}
 
       <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
         <h2 className="text-2xl font-bold">Device Details</h2>
@@ -47,7 +70,7 @@ export default function App() {
             device={selectedDevice}
             updateDevice={updateDevice}
             onClose={handleCloseModal}
-          /> // Pass updateDevice as a prop
+          />
         )}
       </Modal>
     </div>

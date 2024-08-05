@@ -4,19 +4,26 @@ import { Device } from "../types";
 type FormProps = {
   device: Device;
   onClose: () => void;
-  updateDevice: (id: number, name: string) => Promise<void>;
+  updateDevice: (id: number, name: string, itemWeight: number) => Promise<void>;
 };
 
 export function Form({ device, onClose, updateDevice }: FormProps) {
-  const [inputValue, setInputValue] = useState(device.name);
+  const [name, setName] = useState(device.name);
+  const [itemWeight, setItemWeight] = useState(device.itemWeight || 0);
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(event.target.value);
+  const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setName(event.target.value);
+  };
+
+  const handleItemWeightChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    setItemWeight(parseFloat(event.target.value));
   };
 
   const handleFormSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    await updateDevice(device.id, inputValue);
+    await updateDevice(device.id, name, itemWeight);
     onClose();
   };
 
@@ -24,9 +31,16 @@ export function Form({ device, onClose, updateDevice }: FormProps) {
     <form onSubmit={handleFormSubmit}>
       <input
         type="text"
-        value={inputValue}
-        onChange={handleInputChange}
+        value={name}
+        onChange={handleNameChange}
         placeholder="Enter device name"
+        className="border border-foreground p-2 mt-4 w-full rounded focus:ring ring-gray-200 ring-offset-2 outline-none"
+      />
+      <input
+        type="number"
+        value={itemWeight}
+        onChange={handleItemWeightChange}
+        placeholder="Enter item weight"
         className="border border-foreground p-2 mt-4 w-full rounded focus:ring ring-gray-200 ring-offset-2 outline-none"
       />
       <div className="mt-4 space-x-2">
