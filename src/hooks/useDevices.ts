@@ -9,17 +9,23 @@ function toCamelCaseDevice(device: any): Device {
     deviceId: device.device_id,
     name: device.name,
     itemWeight: device.item_weight,
+    extraWeight: device.extra_weight,
   };
 }
 
 export function useDevices() {
   const [devices, setDevices] = useState<Device[]>([]);
 
-  const updateDevice = async (id: number, name: string, itemWeight: number) => {
+  const updateDevice = async (
+    id: number,
+    name: string,
+    itemWeight: number,
+    extraWeight: number,
+  ) => {
     try {
       const { data, error } = await supabase
         .from("devices")
-        .update({ name, item_weight: itemWeight })
+        .update({ name, item_weight: itemWeight, extra_weight: extraWeight })
         .eq("id", id);
 
       if (error) {

@@ -11,4 +11,5 @@ export type Device = {
   deviceId: string;
   name: string;
   itemWeight: number;
+  extraWeight: number;
 };

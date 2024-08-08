@@ -3,7 +3,6 @@ import { Reading } from "../types";
 import { Device } from "../types";
 
 type CardProps = {
-  itemName: string;
   readings: Reading[];
   device: Device;
   onAction: () => void;
@@ -18,6 +17,7 @@ type CardContentProps = {
   reading: Reading;
   isFirstReading?: boolean;
   itemWeight: number;
+  extraWeight: number;
 };
 
 function CardHeader({ itemName, onAction }: CardHeaderProps) {
@@ -45,9 +45,11 @@ function CardContent({
   reading,
   isFirstReading,
   itemWeight,
+  extraWeight,
 }: CardContentProps) {
+  const adjustedWeight = reading.weight - extraWeight;
   const itemsLeft = itemWeight
-    ? (reading.weight / itemWeight).toFixed(2)
+    ? (adjustedWeight / itemWeight).toFixed(2)
     : "N/A";
 
   return (
@@ -60,7 +62,7 @@ function CardContent({
         {itemsLeft} items
       </h3>
       <p className={`text-gray-400 ${isFirstReading ? "text-md" : "text-xs"}`}>
-        {reading.weight.toFixed(2)} g
+        {reading.weight.toFixed(2)} g (Adjusted: {adjustedWeight.toFixed(2)} g)
       </p>
       <p className={`text-gray-400 ${isFirstReading ? "text-md" : "text-xs"}`}>
         {new Date(reading.createdAt).toLocaleString()}
@@ -69,10 +71,10 @@ function CardContent({
   );
 }
 
-export function Card({ itemName, readings, device, onAction }: CardProps) {
+export function Card({ readings, device, onAction }: CardProps) {
   return (
     <div className="bg-white border-foreground border rounded-3xl shadow w-full max-w-2xl mb-6">
-      <CardHeader itemName={itemName} onAction={onAction} />
+      <CardHeader itemName={device.name || "Unknown"} onAction={onAction} />
       <div className="py-4">
         {readings.length > 0 && (
           <>
@@ -80,6 +82,7 @@ export function Card({ itemName, readings, device, onAction }: CardProps) {
               reading={readings[0]}
               isFirstReading
               itemWeight={device.itemWeight || 0}
+              extraWeight={device.extraWeight || 0}
             />
             {readings.slice(1).map((reading) => (
               <div key={reading.id}>
@@ -87,6 +90,7 @@ export function Card({ itemName, readings, device, onAction }: CardProps) {
                 <CardContent
                   reading={reading}
                   itemWeight={device.itemWeight || 0}
+                  extraWeight={device.extraWeight || 0}
                 />
               </div>
             ))}

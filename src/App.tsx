@@ -54,7 +54,6 @@ export default function App() {
         return (
           <Card
             key={deviceId}
-            itemName={device.name || "Unknown"}
             readings={groupedReadings[deviceId]}
             device={device}
             onAction={() => handleOpenModal(deviceId)}
