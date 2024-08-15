@@ -7,7 +7,6 @@ import { Modal } from "./components/Modal";
 import { Form } from "./components/Form";
 import { groupBy } from "./utils";
 
-// Utility function to find a device by its ID
 const findDeviceById = (
   devices: Device[],
   deviceId: string,
@@ -25,7 +24,7 @@ export default function App() {
   const handleOpenModal = (deviceId: string) => {
     const device = findDeviceById(devices, deviceId);
 
-    if (!device) return; // Early return if no device is found
+    if (!device) return;
     setSelectedDevice(device);
     setIsModalOpen(true);
   };
@@ -45,11 +44,11 @@ export default function App() {
   }
 
   return (
-    <div className="p-4 flex justify-center flex-col items-center">
+    <div className="p-6 flex justify-center md:flex-row flex-col gap-4 items-start">
       {Object.keys(groupedReadings).map((deviceId) => {
         const device = findDeviceById(devices, deviceId);
 
-        if (!device) return null; // Skip rendering if no device is found
+        if (!device) return null;
 
         return (
           <Card
