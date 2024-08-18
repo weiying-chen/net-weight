@@ -43,19 +43,24 @@ export default function App() {
     );
   }
 
+  // Sort devices by name alphabetically
+  const sortedDevices = [...devices].sort((a, b) =>
+    a.name.localeCompare(b.name),
+  );
+
   return (
     <div className="p-6 flex justify-center md:flex-row flex-col gap-4 items-start">
-      {Object.keys(groupedReadings).map((deviceId) => {
-        const device = findDeviceById(devices, deviceId);
+      {sortedDevices.map((device) => {
+        // if (!device) return null;
 
-        if (!device) return null;
+        const readings = groupedReadings[device.deviceId] || [];
 
         return (
           <Card
-            key={deviceId}
-            readings={groupedReadings[deviceId]}
+            key={device.deviceId}
+            readings={readings}
             device={device}
-            onAction={() => handleOpenModal(deviceId)}
+            onAction={() => handleOpenModal(device.deviceId)}
           />
         );
       })}
