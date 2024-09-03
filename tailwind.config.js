@@ -9,6 +9,8 @@ export default {
       colors: {
         foreground: '#083355',
         primary: '#ffde00',
+        secondary: '#eeeeee',
+        border: '#083355',
       },
       fontFamily: {
         sans: ['Nunito', 'sans-serif'],

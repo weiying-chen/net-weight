@@ -1,3 +1,10 @@
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+
 export const groupBy = <T, K extends keyof T>(
   data: T | T[], // Accept either a single object or an array of objects
   key: K,
