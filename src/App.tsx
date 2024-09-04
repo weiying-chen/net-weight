@@ -1,17 +1,24 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Row } from '@/components/Row';
 import { ItemCard } from '@/components/ItemCard';
 import { Title } from '@/components/Title';
 
 export default function App() {
-  const [total, setTotal] = useState(0);
+  const [total, setTotal] = useState<number>(() => {
+    const savedTotal = localStorage.getItem('total');
+    return savedTotal ? parseInt(savedTotal, 10) : 0;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('total', total.toString());
+  }, [total]);
 
   const handleIncrease = (price: number) => {
     setTotal((prevTotal) => prevTotal + price);
   };
 
   const handleDecrease = (price: number) => {
-    setTotal((prevTotal) => Math.max(0, prevTotal - price)); // Ensures total doesn't go below zero
+    setTotal((prevTotal) => Math.max(0, prevTotal - price));
   };
 
   return (
