@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/Card';
 import { Title } from '@/components/Title';
 import { Button } from '@/components/Button';
@@ -19,17 +19,27 @@ export function ItemCard({
   onIncrease,
   onDecrease,
 }: ItemCardProps) {
-  const [isAdded, setIsAdded] = useState(false);
+  const itemKey = `isAdded-${title}`; // Unique key for each item based on its title
+
+  // Initialize isAdded from localStorage
+  const [isAdded, setIsAdded] = useState<boolean>(() => {
+    const savedValue = localStorage.getItem(itemKey);
+    return savedValue ? JSON.parse(savedValue) : false;
+  });
+
   const [increaseTriggered, setIncreaseTriggered] = useState(false); // Track if increase action was triggered
+
+  // Update localStorage whenever isAdded changes
+  useEffect(() => {
+    localStorage.setItem(itemKey, JSON.stringify(isAdded));
+  }, [isAdded, itemKey]);
 
   const handleIncrease = () => {
     if (!isAdded) {
-      // First click: set isAdded to true but do not increase the total
       setIsAdded(true);
       setIncreaseTriggered(false); // Reset increase trigger
     } else {
       if (!increaseTriggered) {
-        // Second click: increase the total price and set isAdded to false
         if (onIncrease) {
           onIncrease(price);
         }
@@ -41,7 +51,6 @@ export function ItemCard({
 
   const handleDecrease = () => {
     if (isAdded) {
-      // Decrease only if the price was increased
       setIsAdded(false); // Reset added state
     } else {
       if (onDecrease) {

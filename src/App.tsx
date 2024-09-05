@@ -25,19 +25,19 @@ export default function App() {
     <div className="p-6">
       <Row>
         <ItemCard
-          title="Toast"
+          title="Toast (吐司)"
           price={45}
           onIncrease={handleIncrease}
           onDecrease={handleDecrease}
         />
         <ItemCard
-          title="Avocado"
+          title="Avocado (酪梨)"
           price={69}
           onIncrease={handleIncrease}
           onDecrease={handleDecrease}
         />
         <ItemCard
-          title="Sweet potatoes"
+          title="Sweet potatoes (甘薯)"
           price={35}
           onIncrease={handleIncrease}
           onDecrease={handleDecrease}
