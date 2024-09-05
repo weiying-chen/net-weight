@@ -7,7 +7,7 @@ type InputProps = {
   label: string;
   error?: string; // Custom prop for handling error messages
   className?: string;
-  name?: string;
+  // name?: string;
   onChange?: React.ChangeEventHandler<HTMLInputElement>;
   onBlur?: React.FocusEventHandler<HTMLInputElement>;
   value?: string | number;
@@ -26,11 +26,11 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         type={type}
         ref={ref}
         className={cn(
-          'w-full rounded border border-border px-3 py-2 outline-none ring-foreground ring-offset-2 focus-visible:ring-2', // Added ring and focus-visible styles
-          { 'border-red-500': error }, // Add error styling if an error exists
+          'w-full rounded border border-border px-3 py-2 outline-none ring-foreground ring-offset-2 focus-visible:ring-2',
           className,
+          error ? 'border-red-500' : '',
         )}
-        {...props} // Spread only the props defined in InputProps
+        {...props}
       />
       {error && <span className="mt-1 text-sm text-red-500">{error}</span>}
     </Col>

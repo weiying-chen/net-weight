@@ -5,7 +5,7 @@ import { cn } from '@/utils';
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: 'primary' | 'secondary';
   isLoading?: boolean;
-  isFull?: boolean; // Use isFull prop for full width
+  isFull?: boolean;
   className?: string;
   children: ReactNode;
 };
@@ -13,7 +13,7 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 export function Button({
   variant = 'primary',
   isLoading = false,
-  isFull = false, // Default isFull to false
+  isFull = false,
   className,
   children,
   ...props
@@ -26,9 +26,9 @@ export function Button({
   return (
     <button
       className={cn(
-        'flex items-center justify-center rounded border border-border px-4 py-2 font-medium shadow outline-none ring-foreground ring-offset-2 hover:shadow-dark focus-visible:ring-2',
+        'flex items-center justify-center rounded border border-border px-4 py-2 font-medium shadow ring-foreground ring-offset-2 hover:shadow-dark focus:outline-none focus-visible:ring-2',
         cnFromVariant[variant],
-        { 'w-full rounded-full': isFull }, // Apply w-full if isFull is true
+        { 'w-full rounded-full': isFull },
         className,
       )}
       disabled={isLoading}

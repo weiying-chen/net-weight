@@ -2,8 +2,8 @@ import { ReactNode } from 'react';
 import { cn } from '@/utils';
 
 type CardProps = {
-  className?: string; // Allows additional custom styles
-  children: ReactNode; // Card content
+  className?: string;
+  children: ReactNode;
 };
 
 export function Card({ className, children }: CardProps) {

@@ -2,25 +2,24 @@ import { ReactNode } from 'react';
 import { cn } from '@/utils';
 
 type TitleProps = {
-  size?: 'sm' | 'md' | 'lg'; // Define size variants
-  className?: string; // Allows additional custom styles
-  children: ReactNode; // Title content
+  size?: 'sm' | 'md' | 'lg';
+  className?: string;
+  children: ReactNode;
 };
 
 export function Title({ size = 'md', className, children }: TitleProps) {
-  // Map size prop to Tailwind font size classes
   const cnFromSize = {
-    sm: 'text-sm',
-    md: 'text-base',
-    lg: 'text-lg',
+    sm: 'text-lg',
+    md: 'text-xl',
+    lg: 'text-2xl',
   };
 
   return (
     <h2
       className={cn(
-        cnFromSize[size], // Apply size class based on the size prop
-        'font-semibold tracking-tight', // Additional default classes
-        className, // Custom classes passed as props
+        'font-semibold tracking-tight',
+        cnFromSize[size],
+        className,
       )}
     >
       {children}

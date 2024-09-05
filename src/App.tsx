@@ -27,20 +27,20 @@ export default function App() {
         <ItemCard
           title="Toast"
           price={45}
-          onIncrease={() => handleIncrease(45)}
-          onDecrease={() => handleDecrease(45)}
+          onIncrease={handleIncrease}
+          onDecrease={handleDecrease}
         />
         <ItemCard
           title="Avocado"
           price={69}
-          onIncrease={() => handleIncrease(69)}
-          onDecrease={() => handleDecrease(69)}
+          onIncrease={handleIncrease}
+          onDecrease={handleDecrease}
         />
         <ItemCard
           title="Sweet potatoes"
           price={35}
-          onIncrease={() => handleIncrease(35)}
-          onDecrease={() => handleDecrease(35)}
+          onIncrease={handleIncrease}
+          onDecrease={handleDecrease}
         />
       </Row>
       <Row align="center">

@@ -4,7 +4,7 @@ import { cn } from '@/utils';
 type RowProps = {
   gap?: 'sm' | 'md' | 'lg' | 'xl';
   align?: 'start' | 'center' | 'end' | 'between';
-  alignItems?: 'start' | 'center' | 'end' | 'stretch';
+  alignItems?: 'start' | 'center' | 'end' | 'between';
   className?: string;
   children: ReactNode;
 };
@@ -35,7 +35,7 @@ export function Row({
     start: 'items-start',
     center: 'items-center',
     end: 'items-end',
-    stretch: 'items-stretch',
+    between: 'items-between',
   };
 
   return (
