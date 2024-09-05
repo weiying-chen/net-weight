@@ -10,6 +10,7 @@ export default {
         foreground: '#083355',
         primary: '#ffde00',
         secondary: '#eeeeee',
+        success: '#00b300',
         border: '#083355',
       },
       fontFamily: {

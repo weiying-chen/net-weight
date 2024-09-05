@@ -4,6 +4,7 @@ import { Title } from '@/components/Title';
 import { Button } from '@/components/Button';
 import { IconMinus, IconPlus } from '@tabler/icons-react';
 import { Row } from '@/components/Row';
+import { cn } from '@/utils';
 
 type ItemCardProps = {
   title: string;
@@ -54,7 +55,12 @@ export function ItemCard({
     <Card>
       <Title>{title}</Title>
       <p>Price: ${price}</p>
-      <p>Status: {isAdded ? 'Added to list' : 'Not in list'}</p>
+      <p>
+        Added:{' '}
+        <span className={cn({ 'text-success': isAdded })}>
+          {isAdded ? 'Yes' : 'No'}
+        </span>
+      </p>
       <Row>
         <Button isFull onClick={handleIncrease}>
           <IconPlus />
