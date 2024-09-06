@@ -9,7 +9,7 @@ const items = [
   { title: 'Ground pork (豬絞肉)', price: 99 },
   { title: 'Avocado (酪梨)', price: 69 },
   { title: 'Ham (火腿)', price: 76 },
-  { title: 'Cheese (奶酪)', price: 83 },
+  { title: 'Cheese (起司)', price: 83 },
   { title: 'Sweet potato leaves (地瓜葉)', price: 35 },
 ];
 
