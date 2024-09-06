@@ -4,14 +4,13 @@ import { Title } from '@/components/Title';
 import { Button } from '@/components/Button';
 import { IconMinus, IconPlus } from '@tabler/icons-react';
 import { Row } from '@/components/Row';
-import { cn } from '@/utils';
 
 type ItemCardProps = {
   title: string;
   price: number;
   onIncrease?: (price: number) => void;
   onDecrease?: (price: number) => void;
-  className?: string; // Add className prop
+  className?: string;
 };
 
 export function ItemCard({
@@ -19,19 +18,17 @@ export function ItemCard({
   price,
   onIncrease,
   onDecrease,
-  className, // Receive className prop
+  className,
 }: ItemCardProps) {
-  const itemKey = `isAdded-${title}`; // Unique key for each item based on its title
+  const itemKey = `isAdded-${title}`;
 
-  // Initialize isAdded from localStorage
   const [isAdded, setIsAdded] = useState<boolean>(() => {
     const savedValue = localStorage.getItem(itemKey);
     return savedValue ? JSON.parse(savedValue) : false;
   });
 
-  const [increaseTriggered, setIncreaseTriggered] = useState(false); // Track if increase action was triggered
+  const [increaseTriggered, setIncreaseTriggered] = useState(false);
 
-  // Update localStorage whenever isAdded changes
   useEffect(() => {
     localStorage.setItem(itemKey, JSON.stringify(isAdded));
   }, [isAdded, itemKey]);
@@ -39,43 +36,40 @@ export function ItemCard({
   const handleIncrease = () => {
     if (!isAdded) {
       setIsAdded(true);
-      setIncreaseTriggered(false); // Reset increase trigger
+      setIncreaseTriggered(false);
     } else {
       if (!increaseTriggered) {
         if (onIncrease) {
           onIncrease(price);
         }
-        setIncreaseTriggered(true); // Mark that increase was triggered
-        setIsAdded(false); // Immediately set isAdded to false
+        setIncreaseTriggered(true);
+        setIsAdded(false);
       }
     }
   };
 
   const handleDecrease = () => {
     if (isAdded) {
-      setIsAdded(false); // Reset added state
+      setIsAdded(false);
     } else {
       if (onDecrease) {
         onDecrease(price);
       }
-      setIncreaseTriggered(false); // Reset trigger
+      setIncreaseTriggered(false);
     }
   };
 
   return (
     <Card className={className}>
-      {' '}
-      {/* Apply className to Card */}
       <Title>{title}</Title>
       <p>Price: ${price}</p>
-      <p>
-        Added:{' '}
-        <span className={cn({ 'text-success': isAdded })}>
-          {isAdded ? 'Yes' : 'No'}
-        </span>
-      </p>
-      <Row>
-        <Button isFull onClick={handleIncrease}>
+      <Row className="flex-row">
+        <Button
+          isFull
+          onClick={handleIncrease}
+          variant={isAdded ? 'success' : 'primary'}
+          className="text-background"
+        >
           <IconPlus />
         </Button>
         <Button

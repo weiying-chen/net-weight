@@ -3,7 +3,7 @@ import { IconLoader2 } from '@tabler/icons-react';
 import { cn } from '@/utils';
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: 'primary' | 'secondary';
+  variant?: 'primary' | 'secondary' | 'success';
   isLoading?: boolean;
   isFull?: boolean;
   className?: string;
@@ -21,6 +21,7 @@ export function Button({
   const cnFromVariant = {
     primary: 'bg-primary',
     secondary: 'bg-secondary',
+    success: 'bg-success',
   };
 
   return (
