@@ -3,10 +3,15 @@ import { Row } from '@/components/Row';
 import { ItemCard } from '@/components/ItemCard';
 import { Title } from '@/components/Title';
 
-const foodItems = [
+const items = [
   { title: 'Toast (吐司)', price: 45 },
+  { title: 'Eggs (雞蛋)', price: 95 },
+  { title: 'Ground pork (豬絞肉)', price: 99 },
   { title: 'Avocado (酪梨)', price: 69 },
-  { title: 'Sweet potatoes (甘薯)', price: 35 },
+  { title: 'Ham (火腿)', price: 76 },
+  { title: 'Cheese (奶酪)', price: 83 },
+  { title: 'Toast (吐司)', price: 45 },
+  { title: 'Sweet potato leaves (地瓜葉)', price: 35 },
 ];
 
 export default function App() {
@@ -29,14 +34,15 @@ export default function App() {
 
   return (
     <div className="p-6">
-      <Row>
-        {foodItems.map((item, index) => (
+      <Row className="flex flex-wrap justify-center gap-4">
+        {items.map((item, index) => (
           <ItemCard
             key={index}
             title={item.title}
             price={item.price}
             onIncrease={handleIncrease}
             onDecrease={handleDecrease}
+            className="w-full md:w-64"
           />
         ))}
       </Row>

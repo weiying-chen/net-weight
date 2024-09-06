@@ -11,6 +11,7 @@ type ItemCardProps = {
   price: number;
   onIncrease?: (price: number) => void;
   onDecrease?: (price: number) => void;
+  className?: string; // Add className prop
 };
 
 export function ItemCard({
@@ -18,6 +19,7 @@ export function ItemCard({
   price,
   onIncrease,
   onDecrease,
+  className, // Receive className prop
 }: ItemCardProps) {
   const itemKey = `isAdded-${title}`; // Unique key for each item based on its title
 
@@ -61,7 +63,9 @@ export function ItemCard({
   };
 
   return (
-    <Card>
+    <Card className={className}>
+      {' '}
+      {/* Apply className to Card */}
       <Title>{title}</Title>
       <p>Price: ${price}</p>
       <p>
