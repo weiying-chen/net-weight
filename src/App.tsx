@@ -7,6 +7,7 @@ const items = [
   { title: 'Toast (吐司)', price: 45 },
   { title: 'Eggs (雞蛋)', price: 95 },
   { title: 'Ground pork (豬絞肉)', price: 99 },
+  { title: 'Chicken thigh (雞腿)', price: 80 },
   { title: 'Avocado (酪梨)', price: 69 },
   { title: 'Ham (火腿)', price: 76 },
   { title: 'Cheese (起司)', price: 83 },
