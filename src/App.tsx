@@ -34,7 +34,7 @@ export default function App() {
 
   return (
     <div className="p-6">
-      <Row className="flex flex-wrap justify-center gap-4">
+      <Row align="center" className="flex-wrap">
         {items.map((item, index) => (
           <ItemCard
             key={index}

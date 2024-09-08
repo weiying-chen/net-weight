@@ -3,8 +3,8 @@ import { cn } from '@/utils';
 
 type ColProps = {
   gap?: 'sm' | 'md' | 'lg' | 'xl';
-  align?: 'start' | 'center' | 'end' | 'between';
-  alignItems?: 'start' | 'center' | 'end' | 'between';
+  align?: 'start' | 'center' | 'end' | 'between' | 'stretch';
+  alignItems?: 'start' | 'center' | 'end' | 'between' | 'stretch';
   className?: string;
   children: ReactNode;
 };
@@ -29,13 +29,15 @@ export function Col({
     center: 'justify-center',
     end: 'justify-end',
     between: 'justify-between',
+    stretch: 'justify-stretch',
   };
 
   const cnFromAlignItems = {
     start: 'items-start',
     center: 'items-center',
     end: 'items-end',
-    between: 'justify-between',
+    between: 'items-between',
+    stretch: 'items-stretch',
   };
 
   return (

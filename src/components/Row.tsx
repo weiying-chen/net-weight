@@ -3,8 +3,8 @@ import { cn } from '@/utils';
 
 type RowProps = {
   gap?: 'sm' | 'md' | 'lg' | 'xl';
-  align?: 'start' | 'center' | 'end' | 'between';
-  alignItems?: 'start' | 'center' | 'end' | 'between';
+  align?: 'start' | 'center' | 'end' | 'between' | 'stretch';
+  alignItems?: 'start' | 'center' | 'end' | 'between' | 'stretch';
   className?: string;
   children: ReactNode;
 };
@@ -29,6 +29,7 @@ export function Row({
     center: 'justify-center',
     end: 'justify-end',
     between: 'justify-between',
+    stretch: 'justify-stretch',
   };
 
   const cnFromAlignItems = {
@@ -36,6 +37,7 @@ export function Row({
     center: 'items-center',
     end: 'items-end',
     between: 'items-between',
+    stretch: 'items-stretch',
   };
 
   return (

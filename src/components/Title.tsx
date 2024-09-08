@@ -9,7 +9,7 @@ type TitleProps = {
 
 export function Title({ size = 'md', className, children }: TitleProps) {
   const cnFromSize = {
-    sm: 'text-lg',
+    sm: 'text-base uppercase',
     md: 'text-xl',
     lg: 'text-2xl',
   };
