@@ -15,6 +15,7 @@ export default {
         primary: '#ff7a00',
         secondary: '#eeeeee',
         success: '#00b300',
+        danger: '#b30000',
         border: '#083355',
       },
       fontFamily: {

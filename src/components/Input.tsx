@@ -5,16 +5,14 @@ import { cn } from '@/utils';
 type InputProps = {
   type?: 'text' | 'number' | 'password' | 'email' | 'tel';
   label: string;
-  error?: string; // Custom prop for handling error messages
+  error?: string;
   className?: string;
-  // name?: string;
   onChange?: React.ChangeEventHandler<HTMLInputElement>;
   onBlur?: React.FocusEventHandler<HTMLInputElement>;
   value?: string | number;
   placeholder?: string;
 };
 
-// Define the Input component using the function keyword with forwardRef
 const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   { type = 'text', label, className, error, ...props },
   ref,
@@ -27,8 +25,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         ref={ref}
         className={cn(
           'w-full rounded border border-border px-3 py-2 outline-none ring-foreground ring-offset-2 focus-visible:ring-2',
+          { 'border-danger': error },
           className,
-          error ? 'border-red-500' : '',
         )}
         {...props}
       />

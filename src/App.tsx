@@ -3,7 +3,7 @@ import { Row } from '@/components/Row';
 import { ItemCard } from '@/components/ItemCard';
 import { Title } from '@/components/Title';
 import { Input } from '@/components/Input';
-import { Button } from '@/components/Button';
+import { Select } from '@/components/Select';
 
 const items = [
   { title: 'Toast (吐司)', price: 45 },
@@ -19,6 +19,8 @@ const items = [
 ];
 
 export default function App() {
+  const [selectedValue, setSelectedValue] = useState('');
+
   const [total, setTotal] = useState<number>(() => {
     const savedTotal = localStorage.getItem('total');
     return savedTotal ? parseInt(savedTotal, 10) : 0;
@@ -36,8 +38,30 @@ export default function App() {
     setTotal((prevTotal) => Math.max(0, prevTotal - price));
   };
 
+  const handleSelectChange = (event: any) => {
+    setSelectedValue(event.target.value);
+    console.log(event.target.value);
+  };
+
+  const options = [
+    { value: 'option1', label: 'Option 1' },
+    { value: 'option2', label: 'Option 2' },
+    { value: 'option3', label: 'Option 3' },
+  ];
+
   return (
     <div className="p-2">
+      <Row>
+        <Input label="test" />
+        <Select
+          label="Select an Option"
+          options={options}
+          placeholder="Choose an option"
+          value={selectedValue}
+          onChange={handleSelectChange}
+        />
+      </Row>
+      <br />
       <Row align="center" className="flex-wrap">
         {items.map((item, index) => (
           <ItemCard
