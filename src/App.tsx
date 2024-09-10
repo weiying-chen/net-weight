@@ -2,16 +2,20 @@ import { useState, useEffect } from 'react';
 import { Row } from '@/components/Row';
 import { ItemCard } from '@/components/ItemCard';
 import { Title } from '@/components/Title';
+import { Input } from '@/components/Input';
+import { Button } from '@/components/Button';
 
 const items = [
   { title: 'Toast (吐司)', price: 45 },
   { title: 'Eggs (雞蛋)', price: 95 },
-  { title: 'Ground pork (豬絞肉)', price: 99 },
+  { title: 'Ground pork (豬絞肉)', price: 92 },
   { title: 'Chicken thigh (雞腿)', price: 80 },
+  { title: 'Chicken breast (雞胸)', price: 79 },
   { title: 'Avocado (酪梨)', price: 69 },
   { title: 'Ham (火腿)', price: 76 },
   { title: 'Cheese (起司)', price: 83 },
   { title: 'Sweet potato leaves (地瓜葉)', price: 35 },
+  { title: 'Onions (洋蔥)', price: 32 },
 ];
 
 export default function App() {
@@ -33,7 +37,7 @@ export default function App() {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-2">
       <Row align="center" className="flex-wrap">
         {items.map((item, index) => (
           <ItemCard

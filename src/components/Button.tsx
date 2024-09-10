@@ -19,9 +19,9 @@ export function Button({
   ...props
 }: ButtonProps) {
   const cnFromVariant = {
-    primary: 'bg-primary',
-    secondary: 'bg-secondary',
-    success: 'bg-success',
+    primary: 'text-background bg-primary',
+    secondary: 'text-foreground bg-secondary',
+    success: 'text-background bg-success',
   };
 
   return (
