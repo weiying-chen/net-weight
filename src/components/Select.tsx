@@ -1,15 +1,11 @@
-import { forwardRef } from 'react';
+import { forwardRef, SelectHTMLAttributes } from 'react';
 import { Col } from '@/components/Col';
 import { cn } from '@/utils';
 
-type SelectProps = {
+type SelectProps = SelectHTMLAttributes<HTMLSelectElement> & {
   label: string;
   options: { value: string | number; label: string }[];
   error?: string;
-  className?: string;
-  onChange?: React.ChangeEventHandler<HTMLSelectElement>;
-  onBlur?: React.FocusEventHandler<HTMLSelectElement>;
-  value?: string | number;
   placeholder?: string;
 };
 
