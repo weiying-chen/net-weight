@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Col } from '@/components/Col';
 import { cn } from '@/utils';
-import { IconCheck } from '@tabler/icons-react';
 
 type SelectProps = {
   label: string;
@@ -28,45 +27,59 @@ export const Select: React.FC<SelectProps> = ({
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
-  // Function to set the initial focused index based on the selected option
   const setInitialFocusedIndex = () => {
-    const selectedIndex = selected
-      ? options.findIndex((opt) => opt.value === selected.value)
-      : 0;
-    setFocusedIndex(selectedIndex !== -1 ? selectedIndex : 0);
+    if (selected) {
+      const selectedIndex = options.findIndex(
+        (opt) => opt.value === selected.value,
+      );
+      setFocusedIndex(selectedIndex !== -1 ? selectedIndex : null);
+    } else {
+      setFocusedIndex(null);
+    }
   };
 
   const handleOptionClick = (
     option: { value: string | number; label: string },
     event: React.MouseEvent<HTMLLIElement>,
   ) => {
-    event.stopPropagation(); // Stop event from bubbling to avoid re-toggling dropdown
+    event.stopPropagation();
     setSelected(option);
     onChange(option.value);
-    setIsOpen(false); // Close dropdown on option click
+    setIsOpen(false);
     setFocusedIndex(null);
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (isOpen) {
-      if (event.key === 'ArrowDown') {
-        setFocusedIndex((prevIndex) =>
-          prevIndex === null ? 0 : Math.min(prevIndex + 1, options.length - 1),
-        );
-      } else if (event.key === 'ArrowUp') {
-        setFocusedIndex((prevIndex) =>
-          prevIndex === null ? options.length - 1 : Math.max(prevIndex - 1, 0),
-        );
-      } else if (event.key === 'Enter' && focusedIndex !== null) {
-        handleOptionClick(options[focusedIndex], event as any); // Pass event to handleOptionClick
-      } else if (event.key === 'Escape') {
-        setIsOpen(false);
-        setFocusedIndex(null);
-      }
-    } else if (event.key === 'Enter') {
-      // Open the dropdown and set the initial focused index
+    if (!isOpen && event.key === 'Enter') {
       setIsOpen(true);
       setInitialFocusedIndex();
+      return;
+    }
+
+    if (!isOpen) return;
+
+    switch (event.key) {
+      case 'ArrowDown':
+        setFocusedIndex((prev) =>
+          prev === null ? 0 : Math.min(prev + 1, options.length - 1),
+        );
+        break;
+      case 'ArrowUp':
+        setFocusedIndex((prev) =>
+          prev === null ? options.length - 1 : Math.max(prev - 1, 0),
+        );
+        break;
+      case 'Enter':
+        if (focusedIndex !== null) {
+          handleOptionClick(options[focusedIndex], event as any);
+        }
+        break;
+      case 'Escape':
+        setIsOpen(false);
+        setFocusedIndex(null);
+        break;
+      default:
+        break;
     }
   };
 
@@ -88,10 +101,10 @@ export const Select: React.FC<SelectProps> = ({
   }, []);
 
   const handleDropdownToggle = (event: React.MouseEvent<HTMLDivElement>) => {
-    event.stopPropagation(); // Prevent click inside from toggling dropdown incorrectly
+    event.stopPropagation();
     setIsOpen((prev) => !prev);
     if (!isOpen) {
-      setInitialFocusedIndex(); // Set the initial focused index when opening the dropdown
+      setInitialFocusedIndex();
     }
   };
 
@@ -100,19 +113,12 @@ export const Select: React.FC<SelectProps> = ({
       {options.map((option, index) => (
         <li
           key={option.value}
-          className={cn(
-            'flex cursor-pointer items-center px-4 py-2 hover:bg-secondary',
-            {
-              'bg-secondary': focusedIndex === index,
-            },
-          )}
+          className={cn('flex cursor-pointer items-center px-4 py-2', {
+            'bg-secondary': focusedIndex === index,
+          })}
           onClick={(event) => handleOptionClick(option, event)}
+          onMouseEnter={() => setFocusedIndex(index)}
         >
-          <span className="mr-2 flex w-4 items-center justify-center">
-            {selected?.value === option.value && (
-              <IconCheck className="text-primary" size={16} />
-            )}
-          </span>
           {option.label}
         </li>
       ))}
