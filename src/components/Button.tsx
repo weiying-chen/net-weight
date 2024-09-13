@@ -27,12 +27,16 @@ export function Button({
   return (
     <button
       className={cn(
-        'flex items-center justify-center rounded border border-border px-4 py-2 font-medium shadow ring-foreground ring-offset-2 hover:shadow-dark focus:outline-none focus-visible:ring-2',
+        'flex items-center justify-center rounded border border-border px-4 py-2 font-medium shadow ring-foreground ring-offset-2 focus:outline-none focus-visible:ring-2',
         cnFromVariant[variant],
-        { 'w-full rounded-full': isFull },
+        {
+          'w-full rounded-full': isFull,
+          'hover:shadow-dark': !props.disabled && !isLoading,
+          'cursor-not-allowed opacity-50': props.disabled || isLoading,
+        },
         className,
       )}
-      disabled={isLoading}
+      disabled={isLoading || props.disabled}
       {...props}
     >
       {isLoading && <IconLoader2 className="mr-2 animate-spin" size={16} />}

@@ -5,18 +5,18 @@ import { cn } from '@/utils';
 type SelectProps = {
   label: string;
   options: { value: string | number; label: string }[];
-  error?: string;
-  onChange: (value: string | number) => void;
-  className?: string;
   placeholder?: string;
+  error?: string;
+  className?: string;
+  onChange: (value: string | number) => void;
 };
 
 export const Select: React.FC<SelectProps> = ({
   label,
   options,
-  className,
-  error,
   placeholder,
+  error,
+  className,
   onChange,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -114,7 +114,7 @@ export const Select: React.FC<SelectProps> = ({
         <li
           key={option.value}
           className={cn('flex cursor-pointer items-center px-4 py-2', {
-            'bg-secondary': focusedIndex === index,
+            'bg-subtle': focusedIndex === index,
           })}
           onClick={(event) => handleOptionClick(option, event)}
           onMouseEnter={() => setFocusedIndex(index)}

@@ -1,4 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useForm, SubmitHandler } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Row } from '@/components/Row';
 import { ItemCard } from '@/components/ItemCard';
 import { Title } from '@/components/Title';
@@ -7,6 +10,18 @@ import { Select } from '@/components/Select';
 import { Textarea } from '@/components/Textarea';
 import { Col } from '@/components/Col';
 import { TagInput } from '@/components/TagInput';
+import { Button } from '@/components/Button';
+import { Item } from '@/types';
+
+// Zod schema for form validation
+const schema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  description: z.string().optional(),
+  tags: z.array(z.string()).min(1, 'At least one tag is required'),
+  country: z.string().min(1, 'Country is required'),
+});
+
+type FormData = z.infer<typeof schema>;
 
 const items = [
   { title: 'Toast (吐司)', price: 45 },
@@ -29,55 +44,90 @@ export default function App() {
     return savedTotal ? parseInt(savedTotal, 10) : 0;
   });
 
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    getValues,
+    formState: { errors, isDirty },
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      name: '',
+      description: '',
+      tags: ['tag 1', 'tag 2'],
+      country: '',
+    },
+  });
+
+  const [tags, setTags] = useState<string[]>(getValues('tags'));
+
   useEffect(() => {
     localStorage.setItem('total', total.toString());
   }, [total]);
 
-  const handleIncrease = (item: { title: string; price: number }) => {
+  const handleIncrease = (item: Item) => {
     setTotal((prevTotal) => prevTotal + item.price);
   };
 
-  const handleDecrease = (item: { title: string; price: number }) => {
+  const handleDecrease = (item: Item) => {
     setTotal((prevTotal) => Math.max(0, prevTotal - item.price));
   };
 
-  const handleSelectChange = (value: string | number) => {
-    console.log(value);
+  const onSubmit: SubmitHandler<FormData> = (data) => {
+    console.log('Form submitted:', data);
   };
-
-  const options = [
-    { value: 'option1', label: 'Option 1' },
-    { value: 'option2', label: 'Option 2' },
-    { value: 'option3', label: 'Option 3' },
-  ];
-
-  const [tags, setTags] = useState<string[]>([]);
 
   const handleTagChange = (newTags: string[]) => {
-    console.log(newTags);
     setTags(newTags);
+    setValue('tags', newTags, { shouldDirty: true });
   };
+
+  const countryOptions = [
+    { value: 'usa', label: 'United States' },
+    { value: 'canada', label: 'Canada' },
+    { value: 'uk', label: 'United Kingdom' },
+    { value: 'australia', label: 'Australia' },
+    { value: 'india', label: 'India' },
+  ];
 
   return (
     <div className="p-2">
-      <Col gap="lg">
-        <Row>
-          <Input label="Test" />
-          <Select
-            label="Select an Option"
-            options={options}
-            placeholder="Choose an option"
-            onChange={handleSelectChange}
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <Col gap="lg">
+          <Row>
+            <Input
+              label="Name"
+              {...register('name')}
+              error={errors.name?.message}
+            />
+            <Select
+              label="Country"
+              options={countryOptions}
+              placeholder="Select your country"
+              onChange={(value) =>
+                setValue('country', value.toString(), { shouldDirty: true })
+              }
+              error={errors.country?.message}
+            />
+          </Row>
+          <Textarea
+            label="Description"
+            {...register('description')}
+            error={errors.description?.message}
           />
-        </Row>
-        <Textarea label="Test" />
-        <TagInput
-          label="Tags"
-          tags={tags}
-          onChange={handleTagChange}
-          placeholder="Add a tag"
-        />
-      </Col>
+          <TagInput
+            label="Tags"
+            tags={tags}
+            placeholder="Type and press Enter or Tab"
+            onChange={handleTagChange}
+            error={errors.tags?.message}
+          />
+          <Button type="submit" disabled={!isDirty}>
+            Submit
+          </Button>
+        </Col>
+      </form>
       <br />
       <Row align="center" className="flex-wrap">
         {items.map((item, index) => (

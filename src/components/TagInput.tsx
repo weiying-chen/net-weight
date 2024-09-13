@@ -5,19 +5,19 @@ import { cn } from '@/utils';
 type TagInputProps = {
   label: string;
   tags: string[];
-  onChange: (tags: string[]) => void;
-  className?: string;
-  error?: string;
   placeholder?: string;
+  error?: string;
+  className?: string;
+  onChange: (tags: string[]) => void;
 };
 
 export const TagInput: React.FC<TagInputProps> = ({
   label,
   tags,
-  onChange,
-  className,
-  error,
   placeholder,
+  error,
+  className,
+  onChange,
 }) => {
   const [inputValue, setInputValue] = useState('');
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -49,6 +49,7 @@ export const TagInput: React.FC<TagInputProps> = ({
           { 'border-danger': error },
           className,
         )}
+        tabIndex={0}
       >
         {tags.map((tag) => (
           <span
@@ -70,7 +71,7 @@ export const TagInput: React.FC<TagInputProps> = ({
           value={inputValue}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
-          placeholder={placeholder || 'Add a tag'}
+          placeholder={placeholder || 'Type and press Enter or Tab'}
           className="flex-grow bg-background outline-none"
         />
       </div>
