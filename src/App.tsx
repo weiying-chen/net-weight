@@ -16,6 +16,8 @@ const items = [
   { title: 'Cheese (起司)', price: 83 },
   { title: 'Sweet potato leaves (地瓜葉)', price: 35 },
   { title: 'Onions (洋蔥)', price: 32 },
+  { title: 'Lettuce (A菜)', price: 32 },
+  { title: 'Cabbage (高麗菜)', price: 32 },
 ];
 
 export default function App() {
