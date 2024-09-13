@@ -4,22 +4,22 @@ import { Title } from '@/components/Title';
 import { Button } from '@/components/Button';
 import { IconMinus, IconPlus } from '@tabler/icons-react';
 import { Row } from '@/components/Row';
+import { Item } from '@/types';
 
 type ItemCardProps = {
-  title: string;
-  price: number;
-  onIncrease?: (price: number) => void;
-  onDecrease?: (price: number) => void;
+  item: Item;
+  onIncrease?: (item: Item) => void;
+  onDecrease?: (item: Item) => void;
   className?: string;
 };
 
 export function ItemCard({
-  title,
-  price,
+  item,
   onIncrease,
   onDecrease,
   className,
 }: ItemCardProps) {
+  const { title, price } = item;
   const itemKey = `isAdded-${title}`;
 
   const [isAdded, setIsAdded] = useState<boolean>(() => {
@@ -40,7 +40,7 @@ export function ItemCard({
     } else {
       if (!increaseTriggered) {
         if (onIncrease) {
-          onIncrease(price);
+          onIncrease(item);
         }
         setIncreaseTriggered(true);
         setIsAdded(false);
@@ -53,7 +53,7 @@ export function ItemCard({
       setIsAdded(false);
     } else {
       if (onDecrease) {
-        onDecrease(price);
+        onDecrease(item);
       }
       setIncreaseTriggered(false);
     }

@@ -20,7 +20,7 @@ export function Button({
 }: ButtonProps) {
   const cnFromVariant = {
     primary: 'text-background bg-primary',
-    secondary: 'text-foreground bg-secondary',
+    secondary: 'text-foreground bg-subtle',
     success: 'text-background bg-success',
   };
 

@@ -4,6 +4,9 @@ import { ItemCard } from '@/components/ItemCard';
 import { Title } from '@/components/Title';
 import { Input } from '@/components/Input';
 import { Select } from '@/components/Select';
+import { Textarea } from '@/components/Textarea';
+import { Col } from '@/components/Col';
+import { TagInput } from '@/components/TagInput';
 
 const items = [
   { title: 'Toast (吐司)', price: 45 },
@@ -30,12 +33,12 @@ export default function App() {
     localStorage.setItem('total', total.toString());
   }, [total]);
 
-  const handleIncrease = (price: number) => {
-    setTotal((prevTotal) => prevTotal + price);
+  const handleIncrease = (item: { title: string; price: number }) => {
+    setTotal((prevTotal) => prevTotal + item.price);
   };
 
-  const handleDecrease = (price: number) => {
-    setTotal((prevTotal) => Math.max(0, prevTotal - price));
+  const handleDecrease = (item: { title: string; price: number }) => {
+    setTotal((prevTotal) => Math.max(0, prevTotal - item.price));
   };
 
   const handleSelectChange = (value: string | number) => {
@@ -48,24 +51,39 @@ export default function App() {
     { value: 'option3', label: 'Option 3' },
   ];
 
+  const [tags, setTags] = useState<string[]>([]);
+
+  const handleTagChange = (newTags: string[]) => {
+    console.log(newTags);
+    setTags(newTags);
+  };
+
   return (
     <div className="p-2">
-      <Row>
-        <Input label="test" />
-        <Select
-          label="Select an Option"
-          options={options}
-          placeholder="Choose an option"
-          onChange={handleSelectChange}
+      <Col gap="lg">
+        <Row>
+          <Input label="Test" />
+          <Select
+            label="Select an Option"
+            options={options}
+            placeholder="Choose an option"
+            onChange={handleSelectChange}
+          />
+        </Row>
+        <Textarea label="Test" />
+        <TagInput
+          label="Tags"
+          tags={tags}
+          onChange={handleTagChange}
+          placeholder="Add a tag"
         />
-      </Row>
+      </Col>
       <br />
       <Row align="center" className="flex-wrap">
         {items.map((item, index) => (
           <ItemCard
             key={index}
-            title={item.title}
-            price={item.price}
+            item={item}
             onIncrease={handleIncrease}
             onDecrease={handleDecrease}
             className="w-full md:w-64"

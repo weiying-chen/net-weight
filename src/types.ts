@@ -13,3 +13,8 @@ export type Device = {
   itemWeight: number;
   extraWeight: number;
 };
+
+export type Item = {
+  title: string;
+  price: number;
+};
