@@ -4,6 +4,7 @@ import { cn } from '@/utils';
 
 type SelectProps = {
   label: string;
+  value: string;
   options: { value: string | number; label: string }[];
   placeholder?: string;
   error?: string;
@@ -13,6 +14,7 @@ type SelectProps = {
 
 export const Select: React.FC<SelectProps> = ({
   label,
+  value,
   options,
   placeholder,
   error,
@@ -20,11 +22,13 @@ export const Select: React.FC<SelectProps> = ({
   onChange,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+
   const [selected, setSelected] = useState<{
     value: string | number;
     label: string;
-  } | null>(null);
+  } | null>(() => options.find((option) => option.value === value) || null); // Set initial selected value based on props
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
+
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
   const setInitialFocusedIndex = () => {
@@ -130,8 +134,8 @@ export const Select: React.FC<SelectProps> = ({
       <label className="text-sm font-semibold">{label}</label>
       <div
         ref={dropdownRef}
-        className="relative w-full rounded outline-none ring-foreground ring-offset-2 focus-visible:ring-2"
         tabIndex={0}
+        className="relative w-full rounded outline-none ring-foreground ring-offset-2 focus-visible:ring-2"
         onKeyDown={handleKeyDown}
         onClick={handleDropdownToggle}
       >

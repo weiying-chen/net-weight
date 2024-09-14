@@ -56,11 +56,11 @@ export default function App() {
       name: '',
       description: '',
       tags: ['tag 1', 'tag 2'],
-      country: '',
+      country: 'usa',
     },
   });
 
-  const [tags, setTags] = useState<string[]>(getValues('tags'));
+  // const [tags, setTags] = useState<string[]>(getValues('tags'));
 
   useEffect(() => {
     localStorage.setItem('total', total.toString());
@@ -79,7 +79,8 @@ export default function App() {
   };
 
   const handleTagChange = (newTags: string[]) => {
-    setTags(newTags);
+    // setTags(newTags);
+    // setValue('tags', newTags, { shouldDirty: true, shouldValidate: true });
     setValue('tags', newTags, { shouldDirty: true });
   };
 
@@ -103,10 +104,14 @@ export default function App() {
             />
             <Select
               label="Country"
+              value={getValues('country')} // Pass the initial value
               options={countryOptions}
               placeholder="Select your country"
               onChange={(value) =>
-                setValue('country', value.toString(), { shouldDirty: true })
+                setValue('country', value.toString(), {
+                  shouldDirty: true,
+                  // shouldValidate: true,
+                })
               }
               error={errors.country?.message}
             />
@@ -118,7 +123,7 @@ export default function App() {
           />
           <TagInput
             label="Tags"
-            tags={tags}
+            tags={getValues('tags')}
             placeholder="Type and press Enter or Tab"
             onChange={handleTagChange}
             error={errors.tags?.message}
