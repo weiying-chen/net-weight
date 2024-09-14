@@ -1,6 +1,6 @@
-import { useState, useRef, KeyboardEvent, useEffect } from 'react';
-import { Col } from '@repo/ui/custom/Col';
-import { cn } from '@repo/ui/lib/utils';
+import { useState, useRef, KeyboardEvent } from 'react';
+import { Col } from '@/components/Col';
+import { cn } from '@/utils';
 
 type TagInputProps = {
   label: string;
