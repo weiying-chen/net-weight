@@ -36,7 +36,6 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
     const updatedFields = fields.map((field, i) =>
       i === index ? { ...field, [fieldType]: value } : field,
     );
-    console.log(updatedFields);
     setFields(updatedFields);
     onChange(updatedFields);
   };
@@ -44,16 +43,14 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
   const handleAddField = () => {
     const updatedFields = [
       ...fields,
-      { key: '', value: '', type: 'string' as 'string' | 'number' | 'boolean' }, // Correct type casting
+      { key: '', value: '', type: 'string' as 'string' | 'number' | 'boolean' },
     ];
-    console.log(updatedFields);
     setFields(updatedFields);
     onChange(updatedFields);
   };
 
   const handleRemoveField = (index: number) => {
     const updatedFields = fields.filter((_, i) => i !== index);
-    console.log(updatedFields);
     setFields(updatedFields);
     onChange(updatedFields);
   };

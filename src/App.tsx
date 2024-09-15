@@ -135,7 +135,6 @@ export default function App() {
             label="Custom Fields"
             fields={getValues('customFields')}
             onChange={(newFields) => {
-              console.log('Updated Fields:', newFields); // Log the new fields
               setValue('customFields', newFields, { shouldDirty: true });
             }}
             error={errors.customFields?.message}
