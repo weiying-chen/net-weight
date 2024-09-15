@@ -41,7 +41,10 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
   };
 
   const handleAddField = () => {
-    const updatedFields = [...fields, { key: '', value: '', type: 'string' }];
+    const updatedFields = [
+      ...fields,
+      { key: '', value: '', type: 'string' as 'string' | 'number' | 'boolean' },
+    ];
     setFields(updatedFields);
     onChange(updatedFields);
   };

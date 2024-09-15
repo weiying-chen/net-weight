@@ -24,6 +24,7 @@ const schema = z.object({
     z.object({
       key: z.string().min(1, 'Key is required'),
       value: z.string().min(1, 'Value is required'),
+      type: z.enum(['string', 'number', 'boolean']), // Ensure the type field is validated as well
     }),
   ),
 });
@@ -65,7 +66,7 @@ export default function App() {
       description: '',
       tags: ['tag 1', 'tag 2'],
       country: 'usa',
-      customFields: [{ key: '', value: '' }],
+      customFields: [{ key: '', value: '', type: 'string' }],
     },
   });
 
