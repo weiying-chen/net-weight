@@ -7,7 +7,7 @@ import { Select } from '@/components/Select';
 
 type CustomField = {
   key: string;
-  value: string;
+  value: string | number | boolean;
   type: 'string' | 'number' | 'boolean';
 };
 
@@ -31,11 +31,12 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
   const handleFieldChange = (
     index: number,
     fieldType: 'key' | 'value' | 'type',
-    value: string,
+    value: string | number | boolean,
   ) => {
     const updatedFields = fields.map((field, i) =>
       i === index ? { ...field, [fieldType]: value } : field,
     );
+    console.log(updatedFields);
     setFields(updatedFields);
     onChange(updatedFields);
   };
@@ -43,14 +44,16 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
   const handleAddField = () => {
     const updatedFields = [
       ...fields,
-      { key: '', value: '', type: 'string' as 'string' | 'number' | 'boolean' },
+      { key: '', value: '', type: 'string' as 'string' | 'number' | 'boolean' }, // Correct type casting
     ];
+    console.log(updatedFields);
     setFields(updatedFields);
     onChange(updatedFields);
   };
 
   const handleRemoveField = (index: number) => {
     const updatedFields = fields.filter((_, i) => i !== index);
+    console.log(updatedFields);
     setFields(updatedFields);
     onChange(updatedFields);
   };
@@ -60,6 +63,44 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
     { value: 'number', label: 'Number' },
     { value: 'boolean', label: 'Boolean' },
   ];
+
+  const renderValueInput = (field: CustomField, index: number) => {
+    switch (field.type) {
+      case 'number':
+        return (
+          <Input
+            label="Value"
+            type="number"
+            value={String(field.value)}
+            onChange={(e) =>
+              handleFieldChange(index, 'value', Number(e.target.value))
+            }
+          />
+        );
+      case 'boolean':
+        return (
+          <Select
+            label="Value"
+            value={String(field.value)}
+            options={[
+              { value: 'true', label: 'True' },
+              { value: 'false', label: 'False' },
+            ]}
+            onChange={(value) =>
+              handleFieldChange(index, 'value', value === 'true')
+            }
+          />
+        );
+      default:
+        return (
+          <Input
+            label="Value"
+            value={String(field.value)}
+            onChange={(e) => handleFieldChange(index, 'value', e.target.value)}
+          />
+        );
+    }
+  };
 
   return (
     <Col className={className}>
@@ -72,13 +113,7 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
               value={field.key}
               onChange={(e) => handleFieldChange(index, 'key', e.target.value)}
             />
-            <Input
-              label="Value"
-              value={field.value}
-              onChange={(e) =>
-                handleFieldChange(index, 'value', e.target.value)
-              }
-            />
+            {renderValueInput(field, index)}
             <Select
               label="Type"
               value={field.type}

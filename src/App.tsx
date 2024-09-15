@@ -134,9 +134,10 @@ export default function App() {
           <CustomFields
             label="Custom Fields"
             fields={getValues('customFields')}
-            onChange={(newFields) =>
-              setValue('customFields', newFields, { shouldDirty: true })
-            }
+            onChange={(newFields) => {
+              console.log('Updated Fields:', newFields); // Log the new fields
+              setValue('customFields', newFields, { shouldDirty: true });
+            }}
             error={errors.customFields?.message}
           />
           <Button type="submit" disabled={!isDirty}>
