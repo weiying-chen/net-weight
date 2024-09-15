@@ -3,7 +3,7 @@ import { IconLoader2 } from '@tabler/icons-react';
 import { cn } from '@/utils';
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: 'primary' | 'secondary' | 'success';
+  variant?: 'primary' | 'secondary' | 'success' | 'danger';
   isLoading?: boolean;
   isFull?: boolean;
   className?: string;
@@ -22,6 +22,7 @@ export function Button({
     primary: 'text-background bg-primary',
     secondary: 'text-foreground bg-subtle',
     success: 'text-background bg-success',
+    danger: 'text-background bg-danger',
   };
 
   return (

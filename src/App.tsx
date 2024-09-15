@@ -11,6 +11,7 @@ import { Textarea } from '@/components/Textarea';
 import { Col } from '@/components/Col';
 import { TagInput } from '@/components/TagInput';
 import { Button } from '@/components/Button';
+import { CustomFields } from '@/components/CustomFields'; // Assuming CustomFields is in the same path
 import { Item } from '@/types';
 
 // Zod schema for form validation
@@ -19,6 +20,12 @@ const schema = z.object({
   description: z.string().optional(),
   tags: z.array(z.string()).min(1, 'At least one tag is required'),
   country: z.string().min(1, 'Country is required'),
+  customFields: z.array(
+    z.object({
+      key: z.string().min(1, 'Key is required'),
+      value: z.string().min(1, 'Value is required'),
+    }),
+  ),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -36,6 +43,7 @@ const items = [
   { title: 'Onions (洋蔥)', price: 32 },
   { title: 'Lettuce (A菜)', price: 32 },
   { title: 'Cabbage (高麗菜)', price: 32 },
+  { title: 'Rice (米)', price: 159 },
 ];
 
 export default function App() {
@@ -57,10 +65,9 @@ export default function App() {
       description: '',
       tags: ['tag 1', 'tag 2'],
       country: 'usa',
+      customFields: [{ key: '', value: '' }],
     },
   });
-
-  // const [tags, setTags] = useState<string[]>(getValues('tags'));
 
   useEffect(() => {
     localStorage.setItem('total', total.toString());
@@ -76,12 +83,6 @@ export default function App() {
 
   const onSubmit: SubmitHandler<FormData> = (data) => {
     console.log('Form submitted:', data);
-  };
-
-  const handleTagChange = (newTags: string[]) => {
-    // setTags(newTags);
-    // setValue('tags', newTags, { shouldDirty: true, shouldValidate: true });
-    setValue('tags', newTags, { shouldDirty: true });
   };
 
   const countryOptions = [
@@ -104,13 +105,12 @@ export default function App() {
             />
             <Select
               label="Country"
-              value={getValues('country')} // Pass the initial value
+              value={getValues('country')}
               options={countryOptions}
               placeholder="Select your country"
               onChange={(value) =>
                 setValue('country', value.toString(), {
                   shouldDirty: true,
-                  // shouldValidate: true,
                 })
               }
               error={errors.country?.message}
@@ -125,8 +125,18 @@ export default function App() {
             label="Tags"
             tags={getValues('tags')}
             placeholder="Type and press Enter or Tab"
-            onChange={handleTagChange}
+            onChange={(newTags) =>
+              setValue('tags', newTags, { shouldDirty: true })
+            }
             error={errors.tags?.message}
+          />
+          <CustomFields
+            label="Custom Fields"
+            fields={getValues('customFields')}
+            onChange={(newFields) =>
+              setValue('customFields', newFields, { shouldDirty: true })
+            }
+            error={errors.customFields?.message}
           />
           <Button type="submit" disabled={!isDirty}>
             Submit
