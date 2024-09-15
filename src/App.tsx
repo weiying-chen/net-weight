@@ -14,7 +14,7 @@ import { Button } from '@/components/Button';
 import { CustomFields } from '@/components/CustomFields'; // Assuming CustomFields is in the same path
 import { Item } from '@/types';
 
-// Zod schema for form validation
+// Updated Zod schema for form validation
 const schema = z.object({
   name: z.string().min(1, 'Name is required'),
   description: z.string().optional(),
@@ -23,8 +23,8 @@ const schema = z.object({
   customFields: z.array(
     z.object({
       key: z.string().min(1, 'Key is required'),
-      value: z.string().min(1, 'Value is required'),
-      type: z.enum(['string', 'number', 'boolean']), // Ensure the type field is validated as well
+      value: z.union([z.string(), z.number(), z.boolean()]), // Accept multiple types
+      type: z.enum(['string', 'number', 'boolean']),
     }),
   ),
 });
