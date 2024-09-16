@@ -13,6 +13,7 @@ import { TagInput } from '@/components/TagInput';
 import { Button } from '@/components/Button';
 import { CustomFields } from '@/components/CustomFields'; // Assuming CustomFields is in the same path
 import { Item } from '@/types';
+import { Switch } from '@/components/Switch'; // Assuming the Switch component is in the same path
 
 // Updated Zod schema for form validation
 const schema = z.object({
@@ -27,6 +28,7 @@ const schema = z.object({
       type: z.enum(['string', 'number', 'boolean']),
     }),
   ),
+  isEnabled: z.boolean(), // Added field for Switch component
 });
 
 type FormData = z.infer<typeof schema>;
@@ -67,6 +69,7 @@ export default function App() {
       tags: ['tag 1', 'tag 2'],
       country: 'usa',
       customFields: [{ key: '', value: '', type: 'string' }],
+      isEnabled: false, // Default value for Switch component
     },
   });
 
@@ -138,6 +141,13 @@ export default function App() {
               setValue('customFields', newFields, { shouldDirty: true });
             }}
             error={errors.customFields?.message}
+          />
+          <Switch
+            label="Enabled"
+            checked={getValues('isEnabled')}
+            onChange={(checked) =>
+              setValue('isEnabled', checked, { shouldDirty: true })
+            }
           />
           <Button type="submit" disabled={!isDirty}>
             Submit

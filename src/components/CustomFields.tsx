@@ -102,41 +102,39 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
   return (
     <Col className={className}>
       <label className="text-sm font-semibold">{label}</label>
-      <div className="flex flex-col gap-2">
-        {fields.map((field, index) => (
-          <Row key={index} className="items-end gap-2">
-            <Input
-              label="Key"
-              value={field.key}
-              onChange={(e) => handleFieldChange(index, 'key', e.target.value)}
-            />
-            {renderValueInput(field, index)}
-            <Select
-              label="Type"
-              value={field.type}
-              options={typeOptions}
-              onChange={(value) =>
-                handleFieldChange(
-                  index,
-                  'type',
-                  value as 'string' | 'number' | 'boolean',
-                )
-              }
-              className="flex-1"
-            />
-            <Button
-              type="button"
-              variant="danger"
-              onClick={() => handleRemoveField(index)}
-            >
-              Delete
-            </Button>
-          </Row>
-        ))}
-        <Button type="button" onClick={handleAddField} className="self-start">
-          Add Field
-        </Button>
-      </div>
+      {fields.map((field, index) => (
+        <Row key={index} className="items-end gap-2">
+          <Input
+            label="Key"
+            value={field.key}
+            onChange={(e) => handleFieldChange(index, 'key', e.target.value)}
+          />
+          {renderValueInput(field, index)}
+          <Select
+            label="Type"
+            value={field.type}
+            options={typeOptions}
+            onChange={(value) =>
+              handleFieldChange(
+                index,
+                'type',
+                value as 'string' | 'number' | 'boolean',
+              )
+            }
+            className="flex-1"
+          />
+          <Button
+            type="button"
+            variant="danger"
+            onClick={() => handleRemoveField(index)}
+          >
+            Delete
+          </Button>
+        </Row>
+      ))}
+      <Button type="button" onClick={handleAddField} className="self-start">
+        Add Field
+      </Button>
       {error && <span className="mt-1 text-sm text-danger">{error}</span>}
     </Col>
   );
