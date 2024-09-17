@@ -4,6 +4,8 @@ import { Row } from '@/components/Row';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
 import { Select } from '@/components/Select';
+import { IconTrash } from '@tabler/icons-react';
+import { Switch } from '@/components/Switch';
 
 type CustomField = {
   key: string;
@@ -76,16 +78,11 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
         );
       case 'boolean':
         return (
-          <Select
+          <Switch
+            checked={Boolean(field.value)}
+            onChange={(checked) => handleFieldChange(index, 'value', checked)}
             label="Value"
-            value={String(field.value)}
-            options={[
-              { value: 'true', label: 'True' },
-              { value: 'false', label: 'False' },
-            ]}
-            onChange={(value) =>
-              handleFieldChange(index, 'value', value === 'true')
-            }
+            className="w-auto"
           />
         );
       default:
@@ -125,10 +122,10 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
           />
           <Button
             type="button"
-            variant="danger"
+            variant="secondary"
             onClick={() => handleRemoveField(index)}
           >
-            Delete
+            <IconTrash />
           </Button>
         </Row>
       ))}

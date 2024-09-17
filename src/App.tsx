@@ -11,11 +11,10 @@ import { Textarea } from '@/components/Textarea';
 import { Col } from '@/components/Col';
 import { TagInput } from '@/components/TagInput';
 import { Button } from '@/components/Button';
-import { CustomFields } from '@/components/CustomFields'; // Assuming CustomFields is in the same path
+import { CustomFields } from '@/components/CustomFields';
 import { Item } from '@/types';
-import { Switch } from '@/components/Switch'; // Assuming the Switch component is in the same path
+import { Switch } from '@/components/Switch';
 
-// Updated Zod schema for form validation
 const schema = z.object({
   name: z.string().min(1, 'Name is required'),
   description: z.string().optional(),
@@ -24,11 +23,11 @@ const schema = z.object({
   customFields: z.array(
     z.object({
       key: z.string().min(1, 'Key is required'),
-      value: z.union([z.string(), z.number(), z.boolean()]), // Accept multiple types
+      value: z.union([z.string(), z.number(), z.boolean()]),
       type: z.enum(['string', 'number', 'boolean']),
     }),
   ),
-  isEnabled: z.boolean(), // Added field for Switch component
+  isEnabled: z.boolean(),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -68,8 +67,8 @@ export default function App() {
       description: '',
       tags: ['tag 1', 'tag 2'],
       country: 'usa',
-      customFields: [{ key: '', value: '', type: 'string' }],
-      isEnabled: false, // Default value for Switch component
+      customFields: [],
+      isEnabled: false,
     },
   });
 
@@ -107,6 +106,13 @@ export default function App() {
               {...register('name')}
               error={errors.name?.message}
             />
+            <Switch
+              label="Enabled"
+              checked={getValues('isEnabled')}
+              onChange={(checked) =>
+                setValue('isEnabled', checked, { shouldDirty: true })
+              }
+            />
             <Select
               label="Country"
               value={getValues('country')}
@@ -118,6 +124,7 @@ export default function App() {
                 })
               }
               error={errors.country?.message}
+              className="w-auto"
             />
           </Row>
           <Textarea
@@ -141,13 +148,6 @@ export default function App() {
               setValue('customFields', newFields, { shouldDirty: true });
             }}
             error={errors.customFields?.message}
-          />
-          <Switch
-            label="Enabled"
-            checked={getValues('isEnabled')}
-            onChange={(checked) =>
-              setValue('isEnabled', checked, { shouldDirty: true })
-            }
           />
           <Button type="submit" disabled={!isDirty}>
             Submit

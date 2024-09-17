@@ -10,14 +10,13 @@ type TextareaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & {
 const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
   function Textarea({ label, className, error, ...props }, ref) {
     return (
-      <Col>
+      <Col className={className}>
         <label className="text-sm font-semibold">{label}</label>
         <textarea
           ref={ref}
           className={cn(
             'w-full rounded border border-border bg-background px-3 py-2 outline-none ring-foreground ring-offset-2 focus-visible:ring-2',
             { 'border-danger': error },
-            className,
           )}
           {...props}
         />

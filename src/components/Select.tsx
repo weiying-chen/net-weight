@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Col } from '@/components/Col';
 import { cn } from '@/utils';
+import { IconChevronDown } from '@tabler/icons-react';
 
 type SelectProps = {
   label: string;
@@ -22,11 +23,10 @@ export const Select: React.FC<SelectProps> = ({
   onChange,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-
   const [selected, setSelected] = useState<{
     value: string | number;
     label: string;
-  } | null>(() => options.find((option) => option.value === value) || null); // Set initial selected value based on props
+  } | null>(() => options.find((option) => option.value === value) || null);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
 
   const dropdownRef = useRef<HTMLDivElement | null>(null);
@@ -64,11 +64,13 @@ export const Select: React.FC<SelectProps> = ({
 
     switch (event.key) {
       case 'ArrowDown':
+        event.preventDefault(); // Prevent window from scrolling
         setFocusedIndex((prev) =>
           prev === null ? 0 : Math.min(prev + 1, options.length - 1),
         );
         break;
       case 'ArrowUp':
+        event.preventDefault(); // Prevent window from scrolling
         setFocusedIndex((prev) =>
           prev === null ? options.length - 1 : Math.max(prev - 1, 0),
         );
@@ -130,7 +132,7 @@ export const Select: React.FC<SelectProps> = ({
   );
 
   return (
-    <Col>
+    <Col className={className}>
       <label className="text-sm font-semibold">{label}</label>
       <div
         ref={dropdownRef}
@@ -141,12 +143,14 @@ export const Select: React.FC<SelectProps> = ({
       >
         <div
           className={cn(
-            'w-full cursor-pointer rounded border border-border bg-background px-3 py-2',
+            'flex w-full cursor-pointer items-center justify-between rounded border border-border bg-background px-3 py-2',
             { 'border-danger': error },
-            className,
           )}
         >
-          {selected ? selected.label : placeholder || 'Select an option'}
+          <span>
+            {selected ? selected.label : placeholder || 'Select an option'}
+          </span>
+          <IconChevronDown size={20} className="ml-2" />
         </div>
         {isOpen && renderDropdown()}
       </div>
