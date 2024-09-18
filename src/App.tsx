@@ -14,6 +14,7 @@ import { Button } from '@/components/Button';
 import { CustomFields } from '@/components/CustomFields';
 import { Item } from '@/types';
 import { Switch } from '@/components/Switch';
+import { Detail } from '@/components/Detail';
 
 const schema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -53,6 +54,8 @@ export default function App() {
     const savedTotal = localStorage.getItem('total');
     return savedTotal ? parseInt(savedTotal, 10) : 0;
   });
+
+  const [isEdit, setIsEdit] = useState(true); // State to toggle form/details
 
   const {
     register,
@@ -97,63 +100,113 @@ export default function App() {
   ];
 
   return (
-    <div className="p-2">
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Col gap="lg">
-          <Row>
-            <Input
-              label="Name"
-              {...register('name')}
-              error={errors.name?.message}
-            />
-            <Switch
-              label="Enabled"
-              checked={getValues('isEnabled')}
-              onChange={(checked) =>
-                setValue('isEnabled', checked, { shouldDirty: true })
-              }
-              className="w-auto"
-            />
-            <Select
-              label="Country"
-              value={getValues('country')}
-              options={countryOptions}
-              placeholder="Select your country"
-              onChange={(value) =>
-                setValue('country', value.toString(), {
-                  shouldDirty: true,
-                })
-              }
-              error={errors.country?.message}
-            />
-          </Row>
-          <Textarea
-            label="Description"
-            {...register('description')}
-            error={errors.description?.message}
-          />
-          <TagInput
-            label="Tags"
-            tags={getValues('tags')}
-            placeholder="Type and press Enter or Tab"
-            onChange={(newTags) =>
-              setValue('tags', newTags, { shouldDirty: true })
-            }
-            error={errors.tags?.message}
-          />
-          <CustomFields
-            label="Custom Fields"
-            fields={getValues('customFields')}
-            onChange={(newFields) => {
-              setValue('customFields', newFields, { shouldDirty: true });
-            }}
-            error={errors.customFields?.message}
-          />
-          <Button type="submit" disabled={!isDirty}>
-            Submit
-          </Button>
+    <div className="p-4">
+      <Button
+        type="button"
+        onClick={() => setIsEdit((prevShowForm) => !prevShowForm)} // Toggle button
+      >
+        {isEdit ? 'Editing' : 'Viewing'}
+      </Button>
+      <br />
+      {isEdit ? (
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <Col gap="xl">
+            <Col gap="lg">
+              <Title hasBorder isFull>
+                Basic information
+              </Title>
+              <Row>
+                <Input
+                  label="Name"
+                  {...register('name')}
+                  error={errors.name?.message}
+                />
+                <Switch
+                  label="Enabled"
+                  checked={getValues('isEnabled')}
+                  onChange={(checked) =>
+                    setValue('isEnabled', checked, { shouldDirty: true })
+                  }
+                  className="w-auto"
+                />
+                <Select
+                  label="Country"
+                  value={getValues('country')}
+                  options={countryOptions}
+                  placeholder="Select your country"
+                  onChange={(value) =>
+                    setValue('country', value.toString(), {
+                      shouldDirty: true,
+                    })
+                  }
+                  error={errors.country?.message}
+                />
+              </Row>
+              <Textarea
+                label="Description"
+                {...register('description')}
+                error={errors.description?.message}
+              />
+            </Col>
+            <Col gap="lg">
+              <Title hasBorder isFull>
+                Tags
+              </Title>
+              <TagInput
+                label=""
+                tags={getValues('tags')}
+                placeholder="Type and press Enter or Tab"
+                onChange={(newTags) =>
+                  setValue('tags', newTags, { shouldDirty: true })
+                }
+                error={errors.tags?.message}
+              />
+              <CustomFields
+                label="Custom Fields"
+                fields={getValues('customFields')}
+                onChange={(newFields) => {
+                  setValue('customFields', newFields, { shouldDirty: true });
+                }}
+                error={errors.customFields?.message}
+              />
+            </Col>
+            <Button type="submit" disabled={!isDirty}>
+              Submit
+            </Button>
+          </Col>
+        </form>
+      ) : (
+        <Col gap="xl">
+          <Col gap="lg">
+            <Title hasBorder isFull>
+              Basic information
+            </Title>
+            <Row>
+              <Detail label="Name" text={getValues('name')} />
+              <Detail
+                label="Enabled"
+                text={getValues('isEnabled') ? 'Yes' : 'No'}
+              />
+              <Detail label="Country" text={getValues('country')} />
+            </Row>
+            <Detail label="Description" text={getValues('name')} />
+          </Col>
+          <Col gap="lg">
+            <Title hasBorder isFull>
+              Other information
+            </Title>
+            <Row>
+              <Detail label="Name" text={getValues('name')} />
+              <Detail
+                label="Enabled"
+                text={getValues('isEnabled') ? 'Yes' : 'No'}
+              />
+              <Detail label="Country" text={getValues('country')} />
+            </Row>
+            <Detail label="Description" text={getValues('name')} />
+          </Col>
         </Col>
-      </form>
+      )}
       <br />
       <Row align="center" className="flex-wrap">
         {items.map((item, index) => (
