@@ -28,7 +28,7 @@ export function Button({
   return (
     <button
       className={cn(
-        'flex items-center justify-center rounded border border-border px-4 py-2 font-medium shadow ring-foreground ring-offset-2 focus:outline-none focus-visible:ring-2',
+        'flex h-10 items-center justify-center rounded border border-border px-4 py-2 font-medium shadow ring-foreground ring-offset-2 focus:outline-none focus-visible:ring-2',
         cnFromVariant[variant],
         {
           'w-full rounded-full': isFull,

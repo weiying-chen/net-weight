@@ -58,9 +58,9 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
   };
 
   const typeOptions = [
-    { value: 'string', label: 'String' },
+    { value: 'string', label: 'Text' },
     { value: 'number', label: 'Number' },
-    { value: 'boolean', label: 'Boolean' },
+    { value: 'boolean', label: 'Switch' },
   ];
 
   const renderValueInput = (field: CustomField, index: number) => {
@@ -100,7 +100,7 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
     <Col className={className}>
       <label className="text-sm font-semibold">{label}</label>
       {fields.map((field, index) => (
-        <Row key={index} className="items-end gap-2">
+        <Row alignItems="end" key={index}>
           <Input
             label="Key"
             value={field.key}
@@ -118,14 +118,13 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
                 value as 'string' | 'number' | 'boolean',
               )
             }
-            className="flex-1"
           />
           <Button
             type="button"
             variant="secondary"
             onClick={() => handleRemoveField(index)}
           >
-            <IconTrash />
+            <IconTrash size={20} />
           </Button>
         </Row>
       ))}

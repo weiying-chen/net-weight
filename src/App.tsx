@@ -112,6 +112,7 @@ export default function App() {
               onChange={(checked) =>
                 setValue('isEnabled', checked, { shouldDirty: true })
               }
+              className="w-auto"
             />
             <Select
               label="Country"
@@ -124,7 +125,6 @@ export default function App() {
                 })
               }
               error={errors.country?.message}
-              className="w-auto"
             />
           </Row>
           <Textarea
