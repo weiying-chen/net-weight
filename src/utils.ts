@@ -31,7 +31,7 @@ export function toCamelCase(
     return data.map((item) => toCamelCase(item)) as AnyObject[];
   }
 
-  if (typeof data === "object" && data !== null) {
+  if (typeof data === 'object' && data !== null) {
     const camelCaseObj: AnyObject = {};
     for (let key in data) {
       if (data.hasOwnProperty(key)) {

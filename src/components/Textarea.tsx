@@ -3,7 +3,7 @@ import { Col } from '@/components/Col';
 import { cn } from '@/utils';
 
 type TextareaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & {
-  label: string;
+  label?: string;
   error?: string;
 };
 
@@ -11,7 +11,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
   function Textarea({ label, className, error, ...props }, ref) {
     return (
       <Col className={className}>
-        <label className="text-sm font-semibold">{label}</label>
+        {label && <label className="font-semibold">{label}</label>}
         <textarea
           ref={ref}
           className={cn(

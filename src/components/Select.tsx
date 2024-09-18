@@ -4,7 +4,7 @@ import { cn } from '@/utils';
 import { IconChevronDown } from '@tabler/icons-react';
 
 type SelectProps = {
-  label: string;
+  label?: string;
   value: string;
   options: { value: string | number; label: string }[];
   placeholder?: string;
@@ -64,13 +64,13 @@ export const Select: React.FC<SelectProps> = ({
 
     switch (event.key) {
       case 'ArrowDown':
-        event.preventDefault(); // Prevent window from scrolling
+        event.preventDefault();
         setFocusedIndex((prev) =>
           prev === null ? 0 : Math.min(prev + 1, options.length - 1),
         );
         break;
       case 'ArrowUp':
-        event.preventDefault(); // Prevent window from scrolling
+        event.preventDefault();
         setFocusedIndex((prev) =>
           prev === null ? options.length - 1 : Math.max(prev - 1, 0),
         );
@@ -133,7 +133,7 @@ export const Select: React.FC<SelectProps> = ({
 
   return (
     <Col className={className}>
-      <label className="text-sm font-semibold">{label}</label>
+      {label && <label className="font-semibold">{label}</label>}
       <div
         ref={dropdownRef}
         tabIndex={0}

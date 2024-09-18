@@ -3,7 +3,7 @@ import { Col } from '@/components/Col';
 import { cn } from '@/utils';
 
 type TagInputProps = {
-  label: string;
+  label?: string;
   tags: string[];
   placeholder?: string;
   error?: string;
@@ -54,7 +54,7 @@ export const TagInput: React.FC<TagInputProps> = ({
 
   return (
     <Col className={className}>
-      <label className="text-sm font-semibold">{label}</label>
+      {label && <label className="font-semibold">{label}</label>}
       <div
         tabIndex={0}
         className={cn(

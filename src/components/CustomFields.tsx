@@ -7,18 +7,31 @@ import { Select } from '@/components/Select';
 import { IconTrash } from '@tabler/icons-react';
 import { Switch } from '@/components/Switch';
 
+type ValueType = 'string' | 'number' | 'boolean';
+
 type CustomField = {
   key: string;
   value: string | number | boolean;
-  type: 'string' | 'number' | 'boolean';
+  type: ValueType;
 };
 
 type CustomFieldsProps = {
-  label: string;
+  label?: string;
   fields: CustomField[];
   error?: string;
   className?: string;
   onChange: (fields: CustomField[]) => void;
+};
+
+export const resetType = (type: ValueType): string | number | boolean => {
+  switch (type) {
+    case 'number':
+      return 0;
+    case 'boolean':
+      return false;
+    default:
+      return '';
+  }
 };
 
 export const CustomFields: React.FC<CustomFieldsProps> = ({
@@ -35,9 +48,20 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
     fieldType: 'key' | 'value' | 'type',
     value: string | number | boolean,
   ) => {
-    const updatedFields = fields.map((field, i) =>
-      i === index ? { ...field, [fieldType]: value } : field,
-    );
+    const updatedFields = fields.map((field, i) => {
+      if (i === index) {
+        if (fieldType === 'type') {
+          const resetValue = resetType(value as ValueType);
+          return {
+            ...field,
+            type: value as ValueType,
+            value: resetValue,
+          };
+        }
+        return { ...field, [fieldType]: value };
+      }
+      return field;
+    });
     setFields(updatedFields);
     onChange(updatedFields);
   };
@@ -45,7 +69,7 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
   const handleAddField = () => {
     const updatedFields = [
       ...fields,
-      { key: '', value: '', type: 'string' as 'string' | 'number' | 'boolean' },
+      { key: '', value: '', type: 'string' as ValueType },
     ];
     setFields(updatedFields);
     onChange(updatedFields);
@@ -78,12 +102,14 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
         );
       case 'boolean':
         return (
-          <Switch
-            checked={Boolean(field.value)}
-            onChange={(checked) => handleFieldChange(index, 'value', checked)}
-            label="Value"
-            className="w-auto"
-          />
+          <Row>
+            <Switch
+              checked={Boolean(field.value)}
+              onChange={(checked) => handleFieldChange(index, 'value', checked)}
+              label="Value"
+              className="w-auto"
+            />
+          </Row>
         );
       default:
         return (
@@ -98,7 +124,7 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
 
   return (
     <Col className={className}>
-      <label className="text-sm font-semibold">{label}</label>
+      {label && <label className="font-semibold">{label}</label>}
       {fields.map((field, index) => (
         <Row alignItems="end" key={index}>
           <Input
@@ -106,19 +132,15 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
             value={field.key}
             onChange={(e) => handleFieldChange(index, 'key', e.target.value)}
           />
-          {renderValueInput(field, index)}
           <Select
             label="Type"
             value={field.type}
             options={typeOptions}
             onChange={(value) =>
-              handleFieldChange(
-                index,
-                'type',
-                value as 'string' | 'number' | 'boolean',
-              )
+              handleFieldChange(index, 'type', value as ValueType)
             }
           />
+          {renderValueInput(field, index)}
           <Button
             type="button"
             variant="secondary"

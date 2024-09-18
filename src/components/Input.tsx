@@ -3,7 +3,7 @@ import { Col } from '@/components/Col';
 import { cn } from '@/utils';
 
 type InputProps = InputHTMLAttributes<HTMLInputElement> & {
-  label: string;
+  label?: string;
   error?: string;
 };
 
@@ -13,7 +13,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
 ) {
   return (
     <Col className={className}>
-      <label className="text-sm font-semibold">{label}</label>
+      {label && <label className="font-semibold">{label}</label>}
       <input
         ref={ref}
         className={cn(

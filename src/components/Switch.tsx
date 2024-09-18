@@ -4,17 +4,17 @@ import { Col } from '@/components/Col';
 import { IconCheck, IconX } from '@tabler/icons-react';
 
 type SwitchProps = {
+  label?: string;
   checked: boolean;
   onChange?: (checked: boolean) => void;
-  label?: string;
   className?: string;
   error?: string;
 };
 
 export const Switch: React.FC<SwitchProps> = ({
+  label,
   checked,
   onChange,
-  label,
   className,
   error,
 }) => {
@@ -29,7 +29,7 @@ export const Switch: React.FC<SwitchProps> = ({
 
   return (
     <Col className={className}>
-      {label && <label className="text-sm font-semibold">{label}</label>}
+      {label && <label className="font-semibold">{label}</label>}
       <button
         type="button"
         onClick={handleToggle}
