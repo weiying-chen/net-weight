@@ -18,7 +18,8 @@ type CustomField = {
 type CustomFieldsProps = {
   label?: string;
   fields: CustomField[];
-  error?: string;
+  // 'type' is set with a select, so it'll never be wrong
+  errors?: Array<{ key?: string; value?: string }>;
   className?: string;
   onChange: (fields: CustomField[]) => void;
 };
@@ -37,7 +38,7 @@ export const resetType = (type: ValueType): string | number | boolean => {
 export const CustomFields: React.FC<CustomFieldsProps> = ({
   label,
   fields: initialFields,
-  error,
+  errors, // Add errors prop here
   className,
   onChange,
 }) => {
@@ -98,6 +99,7 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
             onChange={(e) =>
               handleFieldChange(index, 'value', Number(e.target.value))
             }
+            error={errors?.[index]?.value}
           />
         );
       case 'boolean':
@@ -117,6 +119,7 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
             label="Value"
             value={String(field.value)}
             onChange={(e) => handleFieldChange(index, 'value', e.target.value)}
+            error={errors?.[index]?.value}
           />
         );
     }
@@ -126,11 +129,12 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
     <Col className={className}>
       {label && <label className="font-semibold">{label}</label>}
       {fields.map((field, index) => (
-        <Row alignItems="end" key={index}>
+        <Row alignItems="start" key={index}>
           <Input
             label="Key"
             value={field.key}
             onChange={(e) => handleFieldChange(index, 'key', e.target.value)}
+            error={errors?.[index]?.key}
           />
           <Select
             label="Type"
@@ -153,7 +157,6 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
       <Button type="button" onClick={handleAddField} className="self-start">
         Add Field
       </Button>
-      {error && <span className="mt-1 text-sm text-danger">{error}</span>}
     </Col>
   );
 };

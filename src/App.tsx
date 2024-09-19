@@ -23,8 +23,14 @@ const schema = z.object({
   country: z.string().min(1, 'Country is required'),
   customFields: z.array(
     z.object({
-      key: z.string().min(1, 'Key is required'),
-      value: z.union([z.string(), z.number(), z.boolean()]),
+      key: z.string().min(1, 'Key is required'), // Ensure key is not empty
+      value: z.union([
+        z.string().min(1, 'String value cannot be empty'), // Ensure string has at least 1 character
+        z.number().refine((val) => val !== null && val !== undefined, {
+          message: 'Number cannot be null or undefined',
+        }), // Ensure valid number
+        z.boolean(), // Booleans are valid as-is
+      ]),
       type: z.enum(['string', 'number', 'boolean']),
     }),
   ),
@@ -99,6 +105,10 @@ export default function App() {
     { value: 'india', label: 'India' },
   ];
 
+  useEffect(() => {
+    console.log('Form errors:', errors);
+  }, [errors]);
+
   return (
     <div className="p-4">
       <Button
@@ -167,7 +177,14 @@ export default function App() {
                 onChange={(newFields) => {
                   setValue('customFields', newFields, { shouldDirty: true });
                 }}
-                error={errors.customFields?.message}
+                errors={
+                  Array.isArray(errors.customFields)
+                    ? errors.customFields.map((fieldError) => ({
+                        key: fieldError?.key?.message,
+                        value: fieldError?.value?.message,
+                      }))
+                    : []
+                } // Transforming the errors structure to match the expected shape
               />
             </Col>
             <Button type="submit" disabled={!isDirty}>
