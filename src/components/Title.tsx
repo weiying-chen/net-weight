@@ -28,6 +28,7 @@ export function Title({
         'font-semibold tracking-tight',
         cnFromSize[size],
         { 'w-full': isFull },
+        // The "margin" will be set by the `gap`
         { 'border-b border-border pb-2': hasBorder },
         className,
       )}
