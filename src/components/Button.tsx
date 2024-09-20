@@ -5,6 +5,7 @@ import { cn } from '@/utils';
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: 'primary' | 'secondary' | 'success' | 'danger';
   isLoading?: boolean;
+  locked?: boolean;
   isFull?: boolean;
   className?: string;
   children: ReactNode;
@@ -13,6 +14,7 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 export function Button({
   variant = 'primary',
   isLoading = false,
+  locked = false,
   isFull = false,
   className,
   children,
@@ -32,6 +34,7 @@ export function Button({
         cnFromVariant[variant],
         {
           'w-full rounded-full': isFull,
+          'w-full md:w-auto': !locked,
           'hover:shadow-dark': !props.disabled && !isLoading,
           'cursor-not-allowed opacity-50': props.disabled || isLoading,
         },

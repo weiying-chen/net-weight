@@ -111,12 +111,26 @@ export default function App() {
 
   return (
     <div className="p-4">
-      <Button
-        type="button"
-        onClick={() => setIsEdit((prevShowForm) => !prevShowForm)} // Toggle button
-      >
-        {isEdit ? 'Editing' : 'Viewing'}
-      </Button>
+      <Row align="between">
+        <Row locked>
+          <Input {...register('name')} error={errors.name?.message} />
+          <Button
+            type="button"
+            locked
+            onClick={() => setIsEdit((prevShowForm) => !prevShowForm)} // Toggle button
+          >
+            {isEdit ? 'Editing' : 'Viewing'}
+          </Button>
+        </Row>
+        <Row align="end">
+          <Button
+            type="button"
+            onClick={() => setIsEdit((prevShowForm) => !prevShowForm)} // Toggle button
+          >
+            Add item
+          </Button>
+        </Row>
+      </Row>
       <br />
       {isEdit ? (
         <form onSubmit={handleSubmit(onSubmit)}>

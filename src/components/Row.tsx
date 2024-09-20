@@ -5,15 +5,16 @@ type RowProps = {
   gap?: 'sm' | 'md' | 'lg' | 'xl';
   align?: 'start' | 'center' | 'end' | 'between' | 'stretch';
   alignItems?: 'start' | 'center' | 'end' | 'between' | 'stretch';
+  locked?: boolean;
   className?: string;
   children: ReactNode;
 };
 
 export function Row({
   gap = 'md',
-  // What should the default be?
   align = 'start',
   alignItems = 'start',
+  locked = false,
   className,
   children,
 }: RowProps) {
@@ -43,10 +44,11 @@ export function Row({
   return (
     <div
       className={cn(
-        'flex w-full flex-col md:flex-row',
+        'flex w-full',
         cnFromGap[gap],
         cnFromAlign[align],
         cnFromAlignItems[alignItems],
+        { 'flex-col md:flex-row': !locked },
         className,
       )}
     >
