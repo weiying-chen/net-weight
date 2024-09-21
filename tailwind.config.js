@@ -3,10 +3,7 @@ export default {
   future: {
     hoverOnlyWhenSupported: true,
   },
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
       colors: {
@@ -19,6 +16,13 @@ export default {
         success: '#00b300',
         danger: '#b30000',
         border: '#083355',
+      },
+      fontSize: {
+        sm: ['0.857145rem', { lineHeight: '1rem' }],
+        base: ['0.875rem', { lineHeight: '1.25rem' }],
+        lg: ['1rem', { lineHeight: '1.5rem' }],
+        xl: ['1.125rem', { lineHeight: '1.75rem' }],
+        '2xl': ['1.25rem', { lineHeight: '1.75rem' }],
       },
       fontFamily: {
         sans: ['Nunito', 'sans-serif'],
@@ -33,4 +37,4 @@ export default {
     },
   },
   plugins: [],
-}
+};

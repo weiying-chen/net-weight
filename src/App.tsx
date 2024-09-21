@@ -23,13 +23,13 @@ const schema = z.object({
   country: z.string().min(1, 'Country is required'),
   customFields: z.array(
     z.object({
-      key: z.string().min(1, 'Key is required'), // Ensure key is not empty
+      key: z.string().min(1, 'Key is required'),
       value: z.union([
-        z.string().min(1, 'String value cannot be empty'), // Ensure string has at least 1 character
+        z.string().min(1, 'String value cannot be empty'),
         z.number().refine((val) => val !== null && val !== undefined, {
           message: 'Number cannot be null or undefined',
-        }), // Ensure valid number
-        z.boolean(), // Booleans are valid as-is
+        }),
+        z.boolean(),
       ]),
       type: z.enum(['string', 'number', 'boolean']),
     }),
@@ -61,7 +61,7 @@ export default function App() {
     return savedTotal ? parseInt(savedTotal, 10) : 0;
   });
 
-  const [isEdit, setIsEdit] = useState(true); // State to toggle form/details
+  const [isEdit, setIsEdit] = useState(true);
 
   const {
     register,
@@ -117,7 +117,7 @@ export default function App() {
           <Button
             type="button"
             locked
-            onClick={() => setIsEdit((prevShowForm) => !prevShowForm)} // Toggle button
+            onClick={() => setIsEdit((prevShowForm) => !prevShowForm)}
           >
             {isEdit ? 'Editing' : 'Viewing'}
           </Button>
@@ -125,7 +125,7 @@ export default function App() {
         <Row align="end">
           <Button
             type="button"
-            onClick={() => setIsEdit((prevShowForm) => !prevShowForm)} // Toggle button
+            onClick={() => setIsEdit((prevShowForm) => !prevShowForm)}
           >
             Add item
           </Button>
@@ -198,7 +198,7 @@ export default function App() {
                         value: fieldError?.value?.message,
                       }))
                     : []
-                } // Transforming the errors structure to match the expected shape
+                }
               />
             </Col>
             <Button type="submit" disabled={!isDirty}>
