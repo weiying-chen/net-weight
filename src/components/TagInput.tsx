@@ -86,7 +86,7 @@ export const TagInput: React.FC<TagInputProps> = ({
           className="flex-grow bg-background outline-none"
         />
       </div>
-      {error && <span className="mt-1 text-sm text-danger">{error}</span>}
+      {error && <span className="text-sm text-danger">{error}</span>}
     </Col>
   );
 };

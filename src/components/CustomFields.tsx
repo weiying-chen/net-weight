@@ -148,6 +148,8 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
           <Button
             type="button"
             variant="secondary"
+            // This offsets the height of the labels
+            className="md:mt-8"
             onClick={() => handleRemoveField(index)}
           >
             <IconTrash size={20} />

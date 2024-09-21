@@ -154,7 +154,7 @@ export const Select: React.FC<SelectProps> = ({
         </div>
         {isOpen && renderDropdown()}
       </div>
-      {error && <span className="mt-1 text-sm text-danger">{error}</span>}
+      {error && <span className="text-sm text-danger">{error}</span>}
     </Col>
   );
 };

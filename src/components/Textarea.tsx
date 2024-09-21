@@ -20,7 +20,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           )}
           {...props}
         />
-        {error && <span className="mt-1 text-sm text-danger">{error}</span>}
+        {error && <span className="text-sm text-danger">{error}</span>}
       </Col>
     );
   },
