@@ -4,12 +4,14 @@
 @tailwind components;
 @tailwind utilities;
 
-/* body { */
-  /* @apply bg-gray-100 text-foreground; */
-/* } */
-
 @layer base {
   html {
-    @apply text-base;
+    font-size: 16px;
+  }
+
+  @media (min-width: 768px) {
+    html {
+      font-size: 14px;
+    }
   }
 }
