@@ -127,7 +127,7 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
 
   return (
     <Col className={className}>
-      {label && <label className="font-semibold">{label}</label>}
+      {label && <label className="text-sm font-semibold">{label}</label>}
       {fields.map((field, index) => (
         <Row alignItems="start" key={index}>
           <Input
@@ -149,8 +149,9 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
             type="button"
             variant="secondary"
             // This offsets the height of the labels
-            className="md:mt-8"
+            className="md:mt-7"
             onClick={() => handleRemoveField(index)}
+            locked
           >
             <IconTrash size={20} />
           </Button>

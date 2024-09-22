@@ -29,7 +29,7 @@ export const Switch: React.FC<SwitchProps> = ({
 
   return (
     <Col className={className}>
-      {label && <label className="font-semibold">{label}</label>}
+      {label && <label className="text-sm font-semibold">{label}</label>}
       <button
         type="button"
         onClick={handleToggle}

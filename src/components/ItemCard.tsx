@@ -70,7 +70,7 @@ export function ItemCard({
           variant={isAdded ? 'success' : 'primary'}
           className="text-background"
         >
-          <IconPlus />
+          <IconPlus size={20} />
         </Button>
         <Button
           variant="secondary"
@@ -78,7 +78,7 @@ export function ItemCard({
           className="w-12"
           onClick={handleDecrease}
         >
-          <IconMinus className="shrink-0" />
+          <IconMinus size={20} className="shrink-0" />
         </Button>
       </Row>
     </Card>

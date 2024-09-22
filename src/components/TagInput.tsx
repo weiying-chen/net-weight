@@ -54,7 +54,7 @@ export const TagInput: React.FC<TagInputProps> = ({
 
   return (
     <Col className={className}>
-      {label && <label className="font-semibold">{label}</label>}
+      {label && <label className="text-sm font-semibold">{label}</label>}
       <div
         tabIndex={0}
         className={cn(
@@ -83,7 +83,7 @@ export const TagInput: React.FC<TagInputProps> = ({
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           placeholder={placeholder || 'Type and press Enter or Tab'}
-          className="flex-grow bg-background outline-none"
+          className="flex-grow bg-background text-sm outline-none"
         />
       </div>
       {error && <span className="text-sm text-danger">{error}</span>}

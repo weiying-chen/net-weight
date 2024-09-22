@@ -119,7 +119,7 @@ export const Select: React.FC<SelectProps> = ({
       {options.map((option, index) => (
         <li
           key={option.value}
-          className={cn('flex cursor-pointer items-center px-4 py-2', {
+          className={cn('flex cursor-pointer items-center px-4 py-2 text-sm', {
             'bg-subtle': focusedIndex === index,
           })}
           onClick={(event) => handleOptionClick(option, event)}
@@ -133,7 +133,7 @@ export const Select: React.FC<SelectProps> = ({
 
   return (
     <Col className={className}>
-      {label && <label className="font-semibold">{label}</label>}
+      {label && <label className="text-sm font-semibold">{label}</label>}
       <div
         ref={dropdownRef}
         tabIndex={0}
@@ -143,13 +143,11 @@ export const Select: React.FC<SelectProps> = ({
       >
         <div
           className={cn(
-            'flex h-10 w-full cursor-pointer items-center justify-between rounded border border-border bg-background px-3 py-2',
+            'flex h-10 w-full cursor-pointer items-center justify-between rounded border border-border bg-background px-3 py-2 text-sm',
             { 'border-danger': error },
           )}
         >
-          <span>
-            {selected ? selected.label : placeholder || 'Select an option'}
-          </span>
+          {selected ? selected.label : placeholder || 'Select an option'}
           <IconChevronDown size={20} className="ml-2" />
         </div>
         {isOpen && renderDropdown()}

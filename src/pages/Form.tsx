@@ -76,26 +76,12 @@ export function Form() {
 
   return (
     <>
-      <Row align="between">
-        <Row locked>
-          <Input {...register('name')} error={errors.name?.message} />
-          <Button
-            type="button"
-            locked
-            onClick={() => setIsEdit((prevShowForm) => !prevShowForm)}
-          >
-            {isEdit ? 'Editing' : 'Viewing'}
-          </Button>
-        </Row>
-        <Row align="end">
-          <Button
-            type="button"
-            onClick={() => setIsEdit((prevShowForm) => !prevShowForm)}
-          >
-            Add item
-          </Button>
-        </Row>
-      </Row>
+      <Button
+        type="button"
+        onClick={() => setIsEdit((prevShowForm) => !prevShowForm)}
+      >
+        {isEdit ? 'Editing' : 'Viewing'}
+      </Button>
       <br />
       {isEdit ? (
         <form onSubmit={handleSubmit(onSubmit)}>

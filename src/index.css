@@ -4,14 +4,18 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  html {
-    font-size: 16px;
-  }
-
-  @media (min-width: 768px) {
-    html {
-      font-size: 14px;
-    }
-  }
+body {
+  @apply text-base;
 }
+
+/* @layer base { */
+  /* html { */
+    /* font-size: 16px; */
+  /* } */
+
+  /* @media (min-width: 768px) { */
+    /* html { */
+      /* font-size: 14px; */
+    /* } */
+  /* } */
+/* } */

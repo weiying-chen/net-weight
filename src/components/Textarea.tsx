@@ -11,11 +11,11 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
   function Textarea({ label, className, error, ...props }, ref) {
     return (
       <Col className={className}>
-        {label && <label className="font-semibold">{label}</label>}
+        {label && <label className="text-sm font-semibold">{label}</label>}
         <textarea
           ref={ref}
           className={cn(
-            'w-full rounded border border-border bg-background px-3 py-2 outline-none ring-foreground ring-offset-2 focus-visible:ring-2',
+            'w-full rounded border border-border bg-background px-3 py-2 text-sm outline-none ring-foreground ring-offset-2 focus-visible:ring-2',
             { 'border-danger': error },
           )}
           {...props}
