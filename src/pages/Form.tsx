@@ -53,6 +53,7 @@ const schema = z.object({
     .superRefine((customFields, ctx) => {
       findDupeKeys(customFields, ctx);
     }),
+  isEnabled: z.boolean(),
 });
 
 type FormData = z.infer<typeof schema>;
