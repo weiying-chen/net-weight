@@ -23,7 +23,6 @@ type CustomFieldsProps = {
   className?: string;
   onChange: (fields: CustomField[]) => void;
 };
-
 export const resetType = (type: ValueType): string | number | boolean => {
   switch (type) {
     case 'number':
@@ -38,7 +37,7 @@ export const resetType = (type: ValueType): string | number | boolean => {
 export const CustomFields: React.FC<CustomFieldsProps> = ({
   label,
   fields: initialFields,
-  errors, // Add errors prop here
+  errors,
   className,
   onChange,
 }) => {

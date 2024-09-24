@@ -14,25 +14,45 @@ import { Switch } from '@/components/Switch';
 import { Detail } from '@/components/Detail';
 import { useEffect, useState } from 'react';
 
+function findDupeKeys(customFields: Array<{ key: string }>, ctx: any) {
+  const keys = customFields.map((field) => field.key);
+  const dupes = keys.filter((key, index) => keys.indexOf(key) !== index);
+
+  dupes.forEach((dupe) => {
+    keys.forEach((key, index) => {
+      if (key === dupe) {
+        ctx.addIssue({
+          code: 'custom',
+          path: [index, 'key'],
+          message: `Duplicate key "${dupe}" found`,
+        });
+      }
+    });
+  });
+}
+
 const schema = z.object({
   name: z.string().min(1, 'Name is required'),
   description: z.string().optional(),
   tags: z.array(z.string()).min(1, 'At least one tag is required'),
   country: z.string().min(1, 'Country is required'),
-  customFields: z.array(
-    z.object({
-      key: z.string().min(1, 'Key is required'),
-      value: z.union([
-        z.string().min(1, 'String value cannot be empty'),
-        z.number().refine((val) => val !== null && val !== undefined, {
-          message: 'Number cannot be null or undefined',
-        }),
-        z.boolean(),
-      ]),
-      type: z.enum(['string', 'number', 'boolean']),
+  customFields: z
+    .array(
+      z.object({
+        key: z.string().min(1, 'Key is required'),
+        value: z.union([
+          z.string().min(1, 'String value cannot be empty'),
+          z.number().refine((val) => val !== null && val !== undefined, {
+            message: 'Number cannot be null or undefined',
+          }),
+          z.boolean(),
+        ]),
+        type: z.enum(['string', 'number', 'boolean']),
+      }),
+    )
+    .superRefine((customFields, ctx) => {
+      findDupeKeys(customFields, ctx);
     }),
-  ),
-  isEnabled: z.boolean(),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -164,7 +184,7 @@ export function Form() {
               Basic information
             </Title>
             <Row>
-              <Detail label="Name" text={getValues('name')} />
+              <Detail label="Name" text={getValues('name') || '-'} />
               <Detail
                 label="Enabled"
                 text={getValues('isEnabled') ? 'Yes' : 'No'}
@@ -178,7 +198,7 @@ export function Form() {
               Other information
             </Title>
             <Row>
-              <Detail label="Name" text={getValues('name')} />
+              <Detail label="Name" text={getValues('name') || '-'} />
               <Detail
                 label="Enabled"
                 text={getValues('isEnabled') ? 'Yes' : 'No'}

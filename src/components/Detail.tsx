@@ -10,7 +10,7 @@ type DetailProps = {
 export const Detail: React.FC<DetailProps> = ({ label, className, text }) => {
   return (
     <Col className={className}>
-      {label && <label className="font-semibold">{label}</label>}
+      {label && <label className="text-sm font-semibold">{label}</label>}
       <div className={cn('h-10 w-full border-b border-subtle pb-2')}>
         {text}
       </div>
