@@ -1,19 +1,22 @@
+import { ReactNode } from 'react';
 import { Col } from '@/components/Col';
-import { cn } from '@/utils';
+import { Row } from '@/components/Row';
 
 type DetailProps = {
   label?: string;
-  text: string;
+  content: ReactNode;
   className?: string;
 };
 
-export const Detail: React.FC<DetailProps> = ({ label, className, text }) => {
+export const Detail: React.FC<DetailProps> = ({
+  label,
+  content,
+  className,
+}) => {
   return (
     <Col className={className}>
       {label && <label className="text-sm font-semibold">{label}</label>}
-      <div className={cn('h-10 w-full border-b border-subtle pb-2')}>
-        {text}
-      </div>
+      <Row className="h-10 w-full border-b border-subtle pb-2">{content}</Row>
     </Col>
   );
 };

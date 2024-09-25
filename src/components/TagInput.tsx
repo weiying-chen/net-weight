@@ -1,5 +1,6 @@
 import { useState, useRef, KeyboardEvent } from 'react';
 import { Col } from '@/components/Col';
+import { Tag } from '@/components/Tag';
 import { cn } from '@/utils';
 
 type TagInputProps = {
@@ -19,15 +20,9 @@ export const TagInput: React.FC<TagInputProps> = ({
   className,
   onChange,
 }) => {
-  // Using `tags` directly prevents new tags from appearing in the UI when the form is dirty.
-  const [tags, setTags] = useState<string[]>(initialTags); // Local state for tags
+  const [tags, setTags] = useState<string[]>(initialTags);
   const [inputValue, setInputValue] = useState('');
   const inputRef = useRef<HTMLInputElement | null>(null);
-
-  // Sync initial tags with local state when they change
-  // useEffect(() => {
-  //   setTags(initialTags);
-  // }, [initialTags]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
@@ -40,7 +35,7 @@ export const TagInput: React.FC<TagInputProps> = ({
       if (!tags.includes(newTag)) {
         const updatedTags = [...tags, newTag];
         setTags(updatedTags);
-        onChange(updatedTags); // Sync with parent
+        onChange(updatedTags);
         setInputValue('');
       }
     }
@@ -49,7 +44,7 @@ export const TagInput: React.FC<TagInputProps> = ({
   const handleRemoveTag = (tagToRemove: string) => {
     const updatedTags = tags.filter((tag) => tag !== tagToRemove);
     setTags(updatedTags);
-    onChange(updatedTags); // Sync with parent
+    onChange(updatedTags);
   };
 
   return (
@@ -63,19 +58,9 @@ export const TagInput: React.FC<TagInputProps> = ({
         )}
       >
         {tags.map((tag) => (
-          <span
-            key={tag}
-            className="flex items-center gap-1 rounded bg-muted px-2 py-1 text-sm text-white"
-          >
-            <span>{tag}</span>
-            <button
-              type="button"
-              className="ml-1 cursor-pointer text-xs text-white"
-              onClick={() => handleRemoveTag(tag)}
-            >
-              x
-            </button>
-          </span>
+          <Tag key={tag} onClick={() => handleRemoveTag(tag)}>
+            {tag}
+          </Tag>
         ))}
         <input
           ref={inputRef}

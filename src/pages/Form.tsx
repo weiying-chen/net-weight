@@ -13,6 +13,7 @@ import { CustomFields } from '@/components/CustomFields';
 import { Switch } from '@/components/Switch';
 import { Detail } from '@/components/Detail';
 import { useEffect, useState } from 'react';
+import { Tag } from '@/components/Tag';
 
 function findDupeKeys(customFields: Array<{ key: string }>, ctx: any) {
   const keys = customFields.map((field) => field.key);
@@ -94,6 +95,10 @@ export function Form() {
   useEffect(() => {
     console.log('Form errors:', errors);
   }, [errors]);
+
+  useEffect(() => {
+    console.log('Tags:', getValues('tags'));
+  }, [setValue]);
 
   return (
     <>
@@ -195,28 +200,25 @@ export function Form() {
               Basic information
             </Title>
             <Row>
-              <Detail label="Name" text={getValues('name') || '-'} />
+              <Detail label="Name" content={getValues('name') || '-'} />
               <Detail
                 label="Enabled"
-                text={getValues('isEnabled') ? 'Yes' : 'No'}
+                content={getValues('isEnabled') ? 'Yes' : 'No'}
               />
-              <Detail label="Country" text={getValues('country')} />
+              <Detail label="Country" content={getValues('country')} />
             </Row>
-            <Detail label="Description" text={getValues('name')} />
+            <Detail label="Description" content={getValues('name')} />
           </Col>
           <Col gap="lg">
             <Title hasBorder isFull>
-              Other information
+              Tags
             </Title>
-            <Row>
-              <Detail label="Name" text={getValues('name') || '-'} />
-              <Detail
-                label="Enabled"
-                text={getValues('isEnabled') ? 'Yes' : 'No'}
-              />
-              <Detail label="Country" text={getValues('country')} />
-            </Row>
-            <Detail label="Description" text={getValues('name')} />
+            <Detail
+              label="Tags"
+              content={getValues('tags').map((tag) => (
+                <Tag key={tag}>{tag}</Tag>
+              ))}
+            />
           </Col>
         </Col>
       )}
