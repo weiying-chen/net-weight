@@ -97,7 +97,7 @@ export function Form() {
   }, [errors]);
 
   useEffect(() => {
-    console.log('Tags:', getValues('tags'));
+    console.log('Custom fields:', getValues('customFields'));
   }, [setValue]);
 
   return (
@@ -158,7 +158,6 @@ export function Form() {
                 Tags
               </Heading>
               <TagInput
-                label=""
                 tags={getValues('tags')}
                 placeholder="Type and press Enter or Tab"
                 onChange={(newTags) =>
@@ -169,8 +168,12 @@ export function Form() {
                 }
                 error={errors.tags?.message}
               />
+            </Col>
+            <Col gap="lg">
+              <Heading hasBorder isFull>
+                Custom fields
+              </Heading>
               <CustomFields
-                label="Custom Fields"
                 fields={getValues('customFields')}
                 onChange={(newFields) => {
                   setValue('customFields', newFields, {
@@ -207,18 +210,38 @@ export function Form() {
               />
               <Detail label="Country" content={getValues('country')} />
             </Row>
-            <Detail label="Description" content={getValues('name')} />
+            <Detail
+              label="Description"
+              content={getValues('description') || '-'}
+            />
           </Col>
           <Col gap="lg">
             <Heading hasBorder isFull>
               Tags
             </Heading>
             <Detail
-              label="Tags"
               content={getValues('tags').map((tag) => (
                 <Tag key={tag}>{tag}</Tag>
               ))}
             />
+          </Col>
+          <Col gap="lg">
+            <Heading hasBorder isFull>
+              Custom Fields
+            </Heading>
+            {getValues('customFields').map((field, index) => (
+              <Detail
+                key={index}
+                label={field.key}
+                content={
+                  field.type === 'boolean' ? (
+                    <Switch checked={field.value as boolean} />
+                  ) : (
+                    field.value
+                  )
+                }
+              />
+            ))}
           </Col>
         </Col>
       )}
