@@ -66,7 +66,7 @@ export function Form() {
     handleSubmit,
     setValue,
     getValues,
-    formState: { errors, isDirty },
+    formState: { errors, isDirty, isSubmitted },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -121,7 +121,10 @@ export function Form() {
                   label="Enabled"
                   checked={getValues('isEnabled')}
                   onChange={(checked) =>
-                    setValue('isEnabled', checked, { shouldDirty: true })
+                    setValue('isEnabled', checked, {
+                      shouldDirty: true,
+                      shouldValidate: isSubmitted,
+                    })
                   }
                   className="w-auto"
                 />
@@ -133,6 +136,7 @@ export function Form() {
                   onChange={(value) =>
                     setValue('country', value.toString(), {
                       shouldDirty: true,
+                      shouldValidate: isSubmitted,
                     })
                   }
                   error={errors.country?.message}
@@ -153,7 +157,10 @@ export function Form() {
                 tags={getValues('tags')}
                 placeholder="Type and press Enter or Tab"
                 onChange={(newTags) =>
-                  setValue('tags', newTags, { shouldDirty: true })
+                  setValue('tags', newTags, {
+                    shouldDirty: true,
+                    shouldValidate: isSubmitted,
+                  })
                 }
                 error={errors.tags?.message}
               />
@@ -161,7 +168,10 @@ export function Form() {
                 label="Custom Fields"
                 fields={getValues('customFields')}
                 onChange={(newFields) => {
-                  setValue('customFields', newFields, { shouldDirty: true });
+                  setValue('customFields', newFields, {
+                    shouldDirty: true,
+                    shouldValidate: isSubmitted,
+                  });
                 }}
                 errors={
                   Array.isArray(errors.customFields)
