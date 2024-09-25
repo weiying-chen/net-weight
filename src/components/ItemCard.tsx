@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/Card';
-import { Title } from '@/components/Title';
+import { Heading } from '@/components/Heading';
 import { Button } from '@/components/Button';
 import { IconMinus, IconPlus } from '@tabler/icons-react';
 import { Row } from '@/components/Row';
@@ -61,7 +61,7 @@ export function ItemCard({
 
   return (
     <Card className={className}>
-      <Title>{title}</Title>
+      <Heading>{title}</Heading>
       <p>Price: ${price}</p>
       <Row className="flex-row">
         <Button

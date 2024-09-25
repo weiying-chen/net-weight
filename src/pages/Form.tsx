@@ -2,7 +2,7 @@ import { useForm, SubmitHandler } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Row } from '@/components/Row';
-import { Title } from '@/components/Title';
+import { Heading } from '@/components/Heading';
 import { Input } from '@/components/Input';
 import { Select } from '@/components/Select';
 import { Textarea } from '@/components/Textarea';
@@ -113,9 +113,9 @@ export function Form() {
         <form onSubmit={handleSubmit(onSubmit)}>
           <Col gap="xl">
             <Col gap="lg">
-              <Title hasBorder isFull>
+              <Heading hasBorder isFull>
                 Basic information
-              </Title>
+              </Heading>
               <Row>
                 <Input
                   label="Name"
@@ -154,9 +154,9 @@ export function Form() {
               />
             </Col>
             <Col gap="lg">
-              <Title hasBorder isFull>
+              <Heading hasBorder isFull>
                 Tags
-              </Title>
+              </Heading>
               <TagInput
                 label=""
                 tags={getValues('tags')}
@@ -196,9 +196,9 @@ export function Form() {
       ) : (
         <Col gap="xl">
           <Col gap="lg">
-            <Title hasBorder isFull>
+            <Heading hasBorder isFull>
               Basic information
-            </Title>
+            </Heading>
             <Row>
               <Detail label="Name" content={getValues('name') || '-'} />
               <Detail
@@ -210,9 +210,9 @@ export function Form() {
             <Detail label="Description" content={getValues('name')} />
           </Col>
           <Col gap="lg">
-            <Title hasBorder isFull>
+            <Heading hasBorder isFull>
               Tags
-            </Title>
+            </Heading>
             <Detail
               label="Tags"
               content={getValues('tags').map((tag) => (

@@ -1,6 +1,6 @@
 import { ItemCard } from '@/components/ItemCard';
 import { Row } from '@/components/Row';
-import { Title } from '@/components/Title';
+import { Heading } from '@/components/Heading';
 import { Item } from '@/types';
 import { useEffect, useState } from 'react';
 
@@ -52,9 +52,9 @@ export function Home() {
         ))}
       </Row>
       <Row align="center">
-        <Title size="lg" className="mt-4">
+        <Heading size="lg" className="mt-4">
           Total: ${total}
-        </Title>
+        </Heading>
       </Row>
     </>
   );

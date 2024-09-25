@@ -2,7 +2,7 @@ import { Button } from '@/components/Button';
 import { Col } from '@/components/Col';
 import { Input } from '@/components/Input';
 import { Row } from '@/components/Row';
-import { Title } from '@/components/Title';
+import { Heading } from '@/components/Heading';
 
 export function Misc() {
   return (
@@ -21,7 +21,7 @@ export function Misc() {
       <br />
       <Row gap="xl">
         <Col className="w-auto">
-          <Title>Categories</Title>
+          <Heading>Categories</Heading>
           <p>Category 1</p>
           <p>Category 2</p>
           <p>Category 3</p>

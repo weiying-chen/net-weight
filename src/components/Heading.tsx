@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { cn } from '@/utils';
 
-type TitleProps = {
+type HeadingProps = {
   size?: 'sm' | 'md' | 'lg';
   className?: string;
   children: ReactNode;
@@ -9,13 +9,13 @@ type TitleProps = {
   hasBorder?: boolean;
 };
 
-export function Title({
+export function Heading({
   size = 'md',
   className,
   children,
   isFull,
   hasBorder,
-}: TitleProps) {
+}: HeadingProps) {
   const cnFromSize = {
     sm: 'text-base uppercase',
     // md: 'text-xl',
