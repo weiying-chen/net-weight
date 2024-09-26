@@ -42,6 +42,23 @@ export function FileUpload({
     };
   }, [previews]);
 
+  const renderPreviews = () => (
+    <div className="grid grid-cols-4 gap-2 md:grid-cols-8">
+      {previews.map((preview, index) => (
+        <div
+          key={index}
+          className="aspect-w-1 aspect-h-1 relative w-full overflow-hidden rounded border border-border"
+        >
+          <img
+            src={preview}
+            alt={`Preview ${index + 1}`}
+            className="h-full w-full object-contain p-2"
+          />
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <Col className={className}>
       {label && <label className="text-sm font-semibold">{label}</label>}
@@ -57,16 +74,7 @@ export function FileUpload({
           {isDragActive ? 'Drop the images here...' : placeholder}
         </p>
       </div>
-      <div className="grid grid-cols-3 gap-2">
-        {previews.map((preview, index) => (
-          <img
-            key={index}
-            src={preview}
-            alt={`Preview ${index + 1}`}
-            className="h-24 w-full rounded object-cover"
-          />
-        ))}
-      </div>
+      {renderPreviews()}
       {error && <span className="text-sm text-danger">{error}</span>}
     </Col>
   );

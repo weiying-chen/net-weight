@@ -141,8 +141,8 @@ export function Form() {
                   value={getValues('country')}
                   options={countryOptions}
                   placeholder="Select your country"
-                  onChange={(value) =>
-                    setValue('country', value.toString(), {
+                  onChange={(option) =>
+                    setValue('country', option.toString(), {
                       shouldDirty: true,
                       shouldValidate: isSubmitted,
                     })
@@ -173,8 +173,8 @@ export function Form() {
               <TagInput
                 tags={getValues('tags')}
                 placeholder="Type and press Enter or Tab"
-                onChange={(newTags) =>
-                  setValue('tags', newTags, {
+                onChange={(tags) =>
+                  setValue('tags', tags, {
                     shouldDirty: true,
                     shouldValidate: isSubmitted,
                   })
@@ -188,8 +188,8 @@ export function Form() {
               </Heading>
               <CustomFields
                 fields={getValues('customFields')}
-                onChange={(newFields) => {
-                  setValue('customFields', newFields, {
+                onChange={(fields) => {
+                  setValue('customFields', fields, {
                     shouldDirty: true,
                     shouldValidate: isSubmitted,
                   });

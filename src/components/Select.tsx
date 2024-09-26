@@ -6,7 +6,7 @@ import { IconChevronDown } from '@tabler/icons-react';
 type SelectProps = {
   label?: string;
   value: string;
-  options: { value: string | number; label: string }[];
+  options: { label: string; value: string | number }[];
   placeholder?: string;
   error?: string;
   className?: string;
@@ -143,7 +143,7 @@ export const Select: React.FC<SelectProps> = ({
       >
         <div
           className={cn(
-            'flex h-10 w-full cursor-pointer items-center justify-between rounded border border-border bg-background px-3 py-2 text-sm',
+            'flex h-10 w-full cursor-pointer items-center justify-between rounded border border-border bg-background px-3 py-2 text-sm shadow hover:shadow-dark',
             { 'border-danger': error },
           )}
         >

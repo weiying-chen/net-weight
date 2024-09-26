@@ -49,7 +49,7 @@ export const Switch: React.FC<SwitchProps> = ({
         )}
         <span
           className={cn(
-            'pointer-events-none block h-10 w-10 rounded border border-border bg-background ring-0 transition-transform',
+            'block h-10 w-10 rounded border border-border bg-background shadow ring-0 transition-transform hover:shadow-dark',
             {
               'translate-x-10': isChecked,
               'translate-x-0': !isChecked,
