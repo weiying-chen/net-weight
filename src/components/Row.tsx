@@ -1,7 +1,7 @@
-import { ReactNode } from 'react';
+import { ReactNode, HTMLAttributes } from 'react';
 import { cn } from '@/utils';
 
-type RowProps = {
+type RowProps = HTMLAttributes<HTMLDivElement> & {
   gap?: 'sm' | 'md' | 'lg' | 'xl';
   align?: 'start' | 'center' | 'end' | 'between' | 'stretch';
   alignItems?: 'start' | 'center' | 'end' | 'between' | 'stretch';
@@ -17,6 +17,7 @@ export function Row({
   locked = false,
   className,
   children,
+  ...props
 }: RowProps) {
   const cnFromGap = {
     sm: 'gap-1',
@@ -51,6 +52,7 @@ export function Row({
         { 'flex-col md:flex-row': !locked },
         className,
       )}
+      {...props} // Spread the props to allow attributes like onClick
     >
       {children}
     </div>
