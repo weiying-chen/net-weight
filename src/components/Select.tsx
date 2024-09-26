@@ -119,7 +119,7 @@ export const Select: React.FC<SelectProps> = ({
       {options.map((option, index) => (
         <li
           key={option.value}
-          className={cn('flex cursor-pointer items-center px-4 py-2 text-sm', {
+          className={cn('flex cursor-pointer items-center px-3 py-2 text-sm', {
             'bg-subtle': focusedIndex === index,
           })}
           onClick={(event) => handleOptionClick(option, event)}

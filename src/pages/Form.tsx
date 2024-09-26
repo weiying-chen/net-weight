@@ -12,6 +12,7 @@ import { Button } from '@/components/Button';
 import { CustomFields } from '@/components/CustomFields';
 import { Switch } from '@/components/Switch';
 import { Detail } from '@/components/Detail';
+import { FileUpload } from '@/components/FileUpload';
 import { useEffect, useState } from 'react';
 import { Tag } from '@/components/Tag';
 
@@ -55,6 +56,7 @@ const schema = z.object({
       findDupeKeys(customFields, ctx);
     }),
   isEnabled: z.boolean(),
+  files: z.array(z.instanceof(File)).optional(),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -77,6 +79,7 @@ export function Form() {
       country: 'usa',
       customFields: [],
       isEnabled: false,
+      files: [], // Initialize files as an empty array
     },
   });
 
@@ -151,6 +154,16 @@ export function Form() {
                 label="Description"
                 {...register('description')}
                 error={errors.description?.message}
+              />
+              <FileUpload
+                label="Upload Images"
+                onChange={(files) =>
+                  setValue('files', files, {
+                    shouldDirty: true,
+                    shouldValidate: isSubmitted,
+                  })
+                }
+                error={errors.files?.message}
               />
             </Col>
             <Col gap="lg">
@@ -242,6 +255,18 @@ export function Form() {
                 }
               />
             ))}
+          </Col>
+          <Col gap="lg">
+            <Heading hasBorder isFull>
+              Uploaded Files
+            </Heading>
+            <Detail
+              content={
+                getValues('files')?.length
+                  ? `${getValues('files')?.length} file(s) uploaded`
+                  : 'No files uploaded'
+              }
+            />
           </Col>
         </Col>
       )}
