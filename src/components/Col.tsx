@@ -1,7 +1,7 @@
-import { ReactNode } from 'react';
+import { ReactNode, HTMLAttributes } from 'react';
 import { cn } from '@/utils';
 
-type ColProps = {
+type ColProps = HTMLAttributes<HTMLDivElement> & {
   gap?: 'sm' | 'md' | 'lg' | 'xl';
   align?: 'start' | 'center' | 'end' | 'between' | 'stretch';
   alignItems?: 'start' | 'center' | 'end' | 'between' | 'stretch';
@@ -11,11 +11,11 @@ type ColProps = {
 
 export function Col({
   gap = 'md',
-  // What should the default be?
   align = 'start',
   alignItems = 'start',
   className,
   children,
+  ...props
 }: ColProps) {
   const cnFromGap = {
     sm: 'gap-1',
@@ -49,6 +49,7 @@ export function Col({
         cnFromAlignItems[alignItems],
         className,
       )}
+      {...props}
     >
       {children}
     </div>

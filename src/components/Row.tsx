@@ -52,7 +52,7 @@ export function Row({
         { 'flex-col md:flex-row': !locked },
         className,
       )}
-      {...props} // Spread the props to allow attributes like onClick
+      {...props}
     >
       {children}
     </div>

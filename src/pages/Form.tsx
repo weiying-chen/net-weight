@@ -128,26 +128,26 @@ export function Form() {
                 <Switch
                   label="Enabled"
                   checked={getValues('isEnabled')}
+                  className="w-auto"
                   onChange={(checked) =>
                     setValue('isEnabled', checked, {
                       shouldDirty: true,
                       shouldValidate: isSubmitted,
                     })
                   }
-                  className="w-auto"
                 />
                 <Select
                   label="Country"
                   value={getValues('country')}
                   options={countryOptions}
                   placeholder="Select your country"
+                  error={errors.country?.message}
                   onChange={(option) =>
                     setValue('country', option.toString(), {
                       shouldDirty: true,
                       shouldValidate: isSubmitted,
                     })
                   }
-                  error={errors.country?.message}
                 />
               </Row>
               <Textarea
@@ -173,13 +173,13 @@ export function Form() {
               <TagInput
                 tags={getValues('tags')}
                 placeholder="Type and press Enter or Tab"
+                error={errors.tags?.message}
                 onChange={(tags) =>
                   setValue('tags', tags, {
                     shouldDirty: true,
                     shouldValidate: isSubmitted,
                   })
                 }
-                error={errors.tags?.message}
               />
             </Col>
             <Col gap="lg">
@@ -188,12 +188,6 @@ export function Form() {
               </Heading>
               <CustomFields
                 fields={getValues('customFields')}
-                onChange={(fields) => {
-                  setValue('customFields', fields, {
-                    shouldDirty: true,
-                    shouldValidate: isSubmitted,
-                  });
-                }}
                 errors={
                   Array.isArray(errors.customFields)
                     ? errors.customFields.map((fieldError) => ({
@@ -202,6 +196,12 @@ export function Form() {
                       }))
                     : []
                 }
+                onChange={(fields) => {
+                  setValue('customFields', fields, {
+                    shouldDirty: true,
+                    shouldValidate: isSubmitted,
+                  });
+                }}
               />
             </Col>
             <Button type="submit" disabled={!isDirty}>

@@ -30,13 +30,13 @@ export function Button({
   return (
     <button
       className={cn(
-        'flex h-10 items-center justify-center gap-2 rounded border border-border px-4 py-2 text-sm font-medium shadow ring-foreground ring-offset-2 focus:outline-none focus-visible:ring-2',
+        'flex h-10 items-center justify-center gap-2 whitespace-nowrap rounded border border-border px-4 py-2 text-sm font-medium shadow ring-foreground ring-offset-2 hover:shadow-dark focus:outline-none focus-visible:ring-2',
         cnFromVariant[variant],
         {
           'w-full rounded-full': isFull,
           'w-full md:w-auto': !locked,
-          'hover:shadow-dark': !props.disabled && !isLoading,
-          'cursor-not-allowed opacity-50': props.disabled || isLoading,
+          'pointer-events-none cursor-not-allowed opacity-50':
+            props.disabled || isLoading,
         },
         className,
       )}
