@@ -137,7 +137,11 @@ export const Select: React.FC<SelectProps> = ({
       <div
         ref={dropdownRef}
         tabIndex={0}
-        className="relative w-full rounded outline-none ring-foreground ring-offset-2 focus-visible:ring-2"
+        className={cn(
+          'relative w-full rounded outline-none ring-foreground ring-offset-2',
+          // This prevents the ring from appearing when using the arrow keys
+          { 'focus-visible:ring-2': !isOpen },
+        )}
         onKeyDown={handleKeyDown}
         onClick={handleDropdownToggle}
       >
