@@ -18,7 +18,10 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         ref={ref}
         className={cn(
           'h-10 w-full rounded border border-border bg-background px-3 py-2 text-sm outline-none ring-foreground ring-offset-2 focus-visible:ring-2',
-          { 'border-danger': error },
+          {
+            'border-danger': error,
+            'cursor-not-allowed opacity-50': props.disabled,
+          },
         )}
         {...props}
       />

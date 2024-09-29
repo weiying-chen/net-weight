@@ -43,10 +43,12 @@ const schema = z.object({
       z.object({
         key: z.string().min(1, 'Key is required'),
         value: z.union([
-          z.string().min(1, 'String value cannot be empty'),
-          z.number().refine((val) => val !== null && val !== undefined, {
-            message: 'Number cannot be null or undefined',
-          }),
+          // z.string().min(1, 'String value cannot be empty'),
+          z.string(),
+          // z.number().refine((val) => val !== null && val !== undefined, {
+          //   message: 'Number cannot be null or undefined',
+          // }),
+          z.number(),
           z.boolean(),
         ]),
         type: z.enum(['string', 'number', 'boolean']),
@@ -188,6 +190,7 @@ export function Form() {
               </Heading>
               <CustomFields
                 fields={getValues('customFields')}
+                keysOnly
                 errors={
                   Array.isArray(errors.customFields)
                     ? errors.customFields.map((fieldError) => ({

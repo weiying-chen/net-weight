@@ -18,11 +18,12 @@ type CustomField = {
 type CustomFieldsProps = {
   label?: string;
   fields: CustomField[];
-  // 'type' is set with a select, so it'll never be wrong
   errors?: Array<{ key?: string; value?: string }>;
   className?: string;
   onChange: (fields: CustomField[]) => void;
+  keysOnly?: boolean;
 };
+
 export const resetType = (type: ValueType): string | number | boolean => {
   switch (type) {
     case 'number':
@@ -40,6 +41,7 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
   errors,
   className,
   onChange,
+  keysOnly: keyOnly = false,
 }) => {
   const [fields, setFields] = useState<CustomField[]>(initialFields);
 
@@ -84,7 +86,7 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
   const typeOptions = [
     { value: 'string', label: 'Text' },
     { value: 'number', label: 'Number' },
-    { value: 'boolean', label: 'Switch' },
+    { value: 'boolean', label: 'Switch (on/off)' },
   ];
 
   const renderValueInput = (field: CustomField, index: number) => {
@@ -99,6 +101,7 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
               handleFieldChange(index, 'value', Number(e.target.value))
             }
             error={errors?.[index]?.value}
+            disabled={keyOnly}
           />
         );
       case 'boolean':
@@ -108,6 +111,7 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
               checked={Boolean(field.value)}
               onChange={(checked) => handleFieldChange(index, 'value', checked)}
               label="Value"
+              disabled={keyOnly}
               className="w-auto"
             />
           </Row>
@@ -119,6 +123,7 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
             value={String(field.value)}
             onChange={(e) => handleFieldChange(index, 'value', e.target.value)}
             error={errors?.[index]?.value}
+            disabled={keyOnly}
           />
         );
     }
@@ -147,7 +152,6 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
           <Button
             type="button"
             variant="secondary"
-            // This offsets the height of the labels
             className="md:mt-7"
             onClick={() => handleRemoveField(index)}
             locked

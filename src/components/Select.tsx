@@ -11,6 +11,7 @@ type SelectProps = {
   error?: string;
   className?: string;
   onChange: (value: string | number) => void;
+  disabled?: boolean; // Add the disabled prop
 };
 
 export const Select: React.FC<SelectProps> = ({
@@ -21,6 +22,8 @@ export const Select: React.FC<SelectProps> = ({
   error,
   className,
   onChange,
+  disabled, // Destructure the disabled prop
+  ...props
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState<{
@@ -54,6 +57,8 @@ export const Select: React.FC<SelectProps> = ({
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (disabled) return; // Prevent interaction if disabled
+
     if (!isOpen && event.key === 'Enter') {
       setIsOpen(true);
       setInitialFocusedIndex();
@@ -107,6 +112,7 @@ export const Select: React.FC<SelectProps> = ({
   }, []);
 
   const handleDropdownToggle = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (disabled) return; // Prevent interaction if disabled
     event.stopPropagation();
     setIsOpen((prev) => !prev);
     if (!isOpen) {
@@ -139,16 +145,19 @@ export const Select: React.FC<SelectProps> = ({
         tabIndex={0}
         className={cn(
           'relative w-full rounded outline-none ring-foreground ring-offset-2',
-          // This prevents the ring from appearing when using the arrow keys
           { 'focus-visible:ring-2': !isOpen },
         )}
         onKeyDown={handleKeyDown}
         onClick={handleDropdownToggle}
+        {...props}
       >
         <div
           className={cn(
             'flex h-10 w-full cursor-pointer items-center justify-between rounded border border-border bg-background px-3 py-2 text-sm shadow hover:shadow-dark',
-            { 'border-danger': error },
+            {
+              'border-danger': error,
+              'cursor-not-allowed opacity-50': disabled,
+            },
           )}
         >
           {selected ? selected.label : placeholder || 'Select an option'}

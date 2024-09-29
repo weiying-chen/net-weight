@@ -9,6 +9,7 @@ type SwitchProps = {
   onChange?: (checked: boolean) => void;
   className?: string;
   error?: string;
+  disabled?: boolean;
 };
 
 export const Switch: React.FC<SwitchProps> = ({
@@ -17,11 +18,12 @@ export const Switch: React.FC<SwitchProps> = ({
   onChange,
   className,
   error,
+  disabled,
 }) => {
   const [isChecked, setIsChecked] = useState(checked);
 
   const handleToggle = () => {
-    if (onChange) {
+    if (onChange && !disabled) {
       setIsChecked(!isChecked);
       onChange(!isChecked);
     }
@@ -33,11 +35,12 @@ export const Switch: React.FC<SwitchProps> = ({
       <button
         type="button"
         onClick={handleToggle}
-        disabled={!onChange} // Disable the button if onChange is not provided
+        disabled={disabled}
         className={cn(
-          'relative inline-flex h-10 w-20 shrink-0 cursor-pointer items-center justify-between rounded border border-transparent bg-subtle outline-none ring-foreground ring-offset-2 transition-colors focus-visible:ring-2 disabled:cursor-not-allowed',
+          'relative inline-flex h-10 w-20 shrink-0 cursor-pointer items-center justify-between rounded border border-transparent bg-subtle outline-none ring-foreground ring-offset-2 transition-colors focus-visible:ring-2',
           {
             'border-danger': error,
+            'cursor-not-allowed opacity-50': disabled,
           },
         )}
       >
