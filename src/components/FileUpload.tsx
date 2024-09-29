@@ -3,7 +3,7 @@ import { useDropzone } from 'react-dropzone';
 import { Col } from '@/components/Col';
 import { cn } from '@/utils';
 import { Row } from '@/components/Row';
-import { IconX } from '@tabler/icons-react';
+import { IconFileDescription, IconX } from '@tabler/icons-react';
 
 type FileUploadProps = {
   label?: string;
@@ -53,6 +53,7 @@ export function FileUpload({
       'image/jpeg': ['.jpeg', '.jpg'],
       'image/png': ['.png'],
       'image/svg+xml': ['.svg'],
+      'application/pdf': ['.pdf'],
     },
   });
 
@@ -75,12 +76,18 @@ export function FileUpload({
           >
             <IconX size={16} />
           </button>
+          {fileData.file.type.startsWith('image/') ? (
+            <img
+              src={fileData.url}
+              alt={`Preview ${index + 1}`}
+              className="h-full w-full object-contain"
+            />
+          ) : (
+            <Col align="center" alignItems="center" className="h-full">
+              <IconFileDescription size={60} stroke={1} />
+            </Col>
+          )}
 
-          <img
-            src={fileData.url}
-            alt={`Preview ${index + 1}`}
-            className="h-full w-full object-contain"
-          />
           <Row
             align="center"
             alignItems="center"
