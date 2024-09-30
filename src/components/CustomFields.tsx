@@ -101,7 +101,6 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
               handleFieldChange(index, 'value', Number(e.target.value))
             }
             error={errors?.[index]?.value}
-            disabled={keyOnly}
           />
         );
       case 'boolean':
@@ -111,7 +110,6 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
               checked={Boolean(field.value)}
               onChange={(checked) => handleFieldChange(index, 'value', checked)}
               label="Value"
-              disabled={keyOnly}
               className="w-auto"
             />
           </Row>
@@ -123,7 +121,6 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
             value={String(field.value)}
             onChange={(e) => handleFieldChange(index, 'value', e.target.value)}
             error={errors?.[index]?.value}
-            disabled={keyOnly}
           />
         );
     }
@@ -140,21 +137,24 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
             onChange={(e) => handleFieldChange(index, 'key', e.target.value)}
             error={errors?.[index]?.key}
           />
-          <Select
-            label="Type"
-            value={field.type}
-            options={typeOptions}
-            onChange={(value) =>
-              handleFieldChange(index, 'type', value as ValueType)
-            }
-          />
-          {renderValueInput(field, index)}
+          {!keyOnly && (
+            <>
+              <Select
+                label="Type"
+                value={field.type}
+                options={typeOptions}
+                onChange={(value) =>
+                  handleFieldChange(index, 'type', value as ValueType)
+                }
+              />
+              {renderValueInput(field, index)}
+            </>
+          )}
           <Button
             type="button"
             variant="secondary"
             className="md:mt-7"
             onClick={() => handleRemoveField(index)}
-            locked
           >
             <IconTrash size={20} />
           </Button>

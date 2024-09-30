@@ -1,4 +1,10 @@
-import { useForm, SubmitHandler } from 'react-hook-form';
+import {
+  useForm,
+  SubmitHandler,
+  Merge,
+  FieldError,
+  FieldErrorsImpl,
+} from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Row } from '@/components/Row';
@@ -32,6 +38,24 @@ function findDupeKeys(customFields: Array<{ key: string }>, ctx: any) {
     });
   });
 }
+
+export const cfErrFromErr = (
+  errors?:
+    | Merge<
+        FieldError,
+        (FieldError | Merge<FieldError, FieldErrorsImpl<any>> | undefined)[]
+      >
+    | undefined,
+) => {
+  if (!Array.isArray(errors)) {
+    return [];
+  }
+
+  return errors.map((fieldError: any) => ({
+    key: fieldError?.key?.message,
+    value: fieldError?.value?.message,
+  }));
+};
 
 const schema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -154,6 +178,7 @@ export function Form() {
               </Row>
               <Textarea
                 label="Description"
+                disabled
                 {...register('description')}
                 error={errors.description?.message}
               />
@@ -191,20 +216,13 @@ export function Form() {
               <CustomFields
                 fields={getValues('customFields')}
                 keysOnly
-                errors={
-                  Array.isArray(errors.customFields)
-                    ? errors.customFields.map((fieldError) => ({
-                        key: fieldError?.key?.message,
-                        value: fieldError?.value?.message,
-                      }))
-                    : []
-                }
                 onChange={(fields) => {
                   setValue('customFields', fields, {
                     shouldDirty: true,
                     shouldValidate: isSubmitted,
                   });
                 }}
+                errors={cfErrFromErr(errors.customFields)}
               />
             </Col>
             <Button type="submit" disabled={!isDirty}>
