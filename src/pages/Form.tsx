@@ -21,6 +21,23 @@ import { Detail } from '@/components/Detail';
 import { FileUpload } from '@/components/FileUpload';
 import { useEffect, useState } from 'react';
 import { Tag } from '@/components/Tag';
+import { Modal } from '@/components/Modal';
+
+type Folder = {
+  id: string;
+  name: string;
+  fileIds: string[];
+  attributes: string[];
+  folders: Folder[];
+};
+
+type ValueType = 'string' | 'number' | 'boolean';
+
+type CustomField = {
+  key: string;
+  value: string | number | boolean;
+  type: ValueType;
+};
 
 function findDupeKeys(customFields: Array<{ key: string }>, ctx: any) {
   const keys = customFields.map((field) => field.key);
@@ -89,6 +106,11 @@ type FormData = z.infer<typeof schema>;
 
 export function Form() {
   const [isEdit, setIsEdit] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
+  const [currFolder, setCurrFolder] = useState<Folder | null>(null);
+  const [confirmResolve, setConfirmResolve] = useState<
+    ((value: boolean) => void) | null
+  >(null);
 
   const {
     register,
@@ -128,6 +150,62 @@ export function Form() {
   useEffect(() => {
     console.log('Custom fields:', getValues('customFields'));
   }, [setValue]);
+
+  const asset = {
+    id: 'file1',
+  };
+
+  const folders = [
+    {
+      id: 'folder1',
+      name: 'Folder 1',
+      fileIds: ['file1', 'file2'],
+      attributes: ['attr1', 'attr2'],
+      folders: [],
+    },
+    {
+      id: 'folder2',
+      name: 'Folder 2',
+      fileIds: ['file1', 'file2'],
+      attributes: ['attr2', 'attr3'],
+      folders: [],
+    },
+  ];
+
+  const handleBeforeRemove = (field: CustomField) => {
+    const foldersWithFile = folders
+      .flatMap((folder) => [folder, ...folder.folders])
+      .filter((folder) => folder.fileIds.includes(asset.id));
+
+    // Find the first folder with a matching attribute
+    for (const folder of foldersWithFile) {
+      const attrToRemove = field.key;
+      const isMatch = folder.attributes.includes(attrToRemove);
+
+      if (isMatch) {
+        setCurrFolder(folder);
+        setIsModalOpen(true);
+
+        // Return a promise that resolves based on user confirmation
+        return new Promise<boolean>((resolve) => {
+          setConfirmResolve(() => resolve);
+        });
+      }
+    }
+
+    // If no match, return true (allow removal)
+    return Promise.resolve(true);
+  };
+
+  const handleOkClick = () => {
+    if (confirmResolve) confirmResolve(true);
+    setIsModalOpen(false);
+  };
+
+  const handleCloseClick = () => {
+    if (confirmResolve) confirmResolve(false);
+    setIsModalOpen(false);
+  };
 
   return (
     <>
@@ -222,6 +300,9 @@ export function Form() {
                     shouldValidate: isSubmitted,
                   });
                 }}
+                onBeforeRemove={async (field) =>
+                  await handleBeforeRemove(field)
+                }
                 errors={cfErrFromErr(errors.customFields)}
               />
             </Col>
@@ -291,6 +372,15 @@ export function Form() {
           </Col>
         </Col>
       )}
+      <Modal isOpen={isModalOpen} onClose={handleCloseClick}>
+        <p>{currFolder?.name}</p>
+        <Button type="button" onClick={handleOkClick}>
+          OK
+        </Button>
+        <Button type="button" onClick={handleCloseClick}>
+          Close
+        </Button>
+      </Modal>{' '}
     </>
   );
 }

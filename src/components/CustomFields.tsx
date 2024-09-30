@@ -18,10 +18,11 @@ type CustomField = {
 type CustomFieldsProps = {
   label?: string;
   fields: CustomField[];
+  keysOnly?: boolean;
   errors?: Array<{ key?: string; value?: string }>;
   className?: string;
   onChange: (fields: CustomField[]) => void;
-  keysOnly?: boolean;
+  onBeforeRemove?: (field: CustomField) => Promise<boolean> | boolean; // Updated type
 };
 
 export const resetType = (type: ValueType): string | number | boolean => {
@@ -38,10 +39,11 @@ export const resetType = (type: ValueType): string | number | boolean => {
 export const CustomFields: React.FC<CustomFieldsProps> = ({
   label,
   fields: initialFields,
-  errors,
+  keysOnly = false,
   className,
+  errors,
   onChange,
-  keysOnly: keyOnly = false,
+  onBeforeRemove,
 }) => {
   const [fields, setFields] = useState<CustomField[]>(initialFields);
 
@@ -77,7 +79,16 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
     onChange(updatedFields);
   };
 
-  const handleRemoveField = (index: number) => {
+  const handleRemoveField = async (index: number) => {
+    const fieldToRemove = fields[index];
+
+    if (onBeforeRemove) {
+      const canRemove = await onBeforeRemove(fieldToRemove);
+      if (!canRemove) {
+        return; // Do not proceed with removal if the user rejects
+      }
+    }
+
     const updatedFields = fields.filter((_, i) => i !== index);
     setFields(updatedFields);
     onChange(updatedFields);
@@ -137,7 +148,7 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
             onChange={(e) => handleFieldChange(index, 'key', e.target.value)}
             error={errors?.[index]?.key}
           />
-          {!keyOnly && (
+          {!keysOnly && (
             <>
               <Select
                 label="Type"
