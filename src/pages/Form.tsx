@@ -374,13 +374,9 @@ export function Form() {
       )}
       <Modal isOpen={isModalOpen} onClose={handleCloseClick}>
         <p>{currFolder?.name}</p>
-        <Button type="button" onClick={handleOkClick}>
-          OK
-        </Button>
-        <Button type="button" onClick={handleCloseClick}>
-          Close
-        </Button>
-      </Modal>{' '}
+        <Button onClick={handleOkClick}>OK</Button>
+        <Button onClick={handleCloseClick}>Close</Button>
+      </Modal>
     </>
   );
 }

@@ -3,10 +3,17 @@ import { Col } from '@/components/Col';
 import { Input } from '@/components/Input';
 import { Row } from '@/components/Row';
 import { Heading } from '@/components/Heading';
+import { Card } from '@/components/Card';
 
 export function Misc() {
   return (
-    <>
+    <Col gap="lg">
+      <Card>
+        <Col alignItems="center">
+          <Heading>Heading-heading-heading-heading-heading</Heading>
+          <p>Some text</p>
+        </Col>
+      </Card>
       <Row align="between">
         <Row locked>
           <Input />
@@ -32,6 +39,6 @@ export function Misc() {
           <p>This is the main content</p>
         </Col>
       </Row>
-    </>
+    </Col>
   );
 }

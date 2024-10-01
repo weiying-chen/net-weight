@@ -1,5 +1,7 @@
 import { ReactNode } from 'react';
 import { cn } from '@/utils';
+import { IconX } from '@tabler/icons-react';
+import { Button } from '@/components/Button';
 
 type ModalProps = {
   isOpen: boolean;
@@ -19,19 +21,14 @@ export function Modal({ isOpen, onClose, children, className }: ModalProps) {
       )}
     >
       <div className="fixed inset-0 bg-black bg-opacity-50" onClick={onClose} />
-
       <div
         className={cn(
-          'relative z-10 rounded-xl border border-border bg-white p-6 shadow',
+          'max-w-screen-3xl relative z-10 border border-border bg-white p-6 shadow md:rounded-xl',
         )}
       >
-        <button
-          type="button"
-          className="absolute right-2 top-2 text-gray-600 hover:text-gray-900"
-          onClick={onClose}
-        >
-          &times;
-        </button>
+        <Button isLink className="absolute right-6 top-6" onClick={onClose}>
+          <IconX size={20} />
+        </Button>
         {children}
       </div>
     </div>

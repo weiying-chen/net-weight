@@ -7,6 +7,7 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   isLoading?: boolean;
   locked?: boolean;
   isFull?: boolean;
+  isLink?: boolean;
   className?: string;
   children: ReactNode;
 };
@@ -16,8 +17,10 @@ export function Button({
   isLoading = false,
   locked = false,
   isFull = false,
+  isLink = false,
   className,
   children,
+  type = 'button',
   ...props
 }: ButtonProps) {
   const cnFromVariant = {
@@ -29,12 +32,15 @@ export function Button({
 
   return (
     <button
+      type={type} // Use the 'type' prop here
       className={cn(
         'flex h-10 items-center justify-center gap-2 whitespace-nowrap rounded border border-border px-4 py-2 text-sm font-medium shadow ring-foreground ring-offset-2 hover:shadow-dark focus:outline-none focus-visible:ring-2',
         cnFromVariant[variant],
         {
-          'w-full rounded-full': isFull,
           'w-full md:w-auto': !locked,
+          'w-full md:w-full': isFull,
+          'h-auto border-none bg-transparent px-0 py-0 text-foreground shadow-none':
+            isLink,
           'pointer-events-none cursor-not-allowed opacity-50':
             props.disabled || isLoading,
         },

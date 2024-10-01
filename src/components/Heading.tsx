@@ -27,7 +27,7 @@ export function Heading({
   return (
     <h2
       className={cn(
-        'font-semibold tracking-tight',
+        'max-w-full overflow-hidden text-ellipsis text-nowrap font-semibold tracking-tight',
         cnFromSize[size],
         { 'w-full': isFull },
         // The "margin" will be set by the `gap`
