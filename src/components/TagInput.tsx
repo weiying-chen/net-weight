@@ -24,6 +24,11 @@ export const TagInput: React.FC<TagInputProps> = ({
   const [inputValue, setInputValue] = useState('');
   const inputRef = useRef<HTMLInputElement | null>(null);
 
+  const updateTags = (updatedTags: string[]) => {
+    setTags(updatedTags);
+    onChange(updatedTags);
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
   };
@@ -33,9 +38,7 @@ export const TagInput: React.FC<TagInputProps> = ({
       e.preventDefault();
       const newTag = inputValue.trim();
       if (!tags.includes(newTag)) {
-        const updatedTags = [...tags, newTag];
-        setTags(updatedTags);
-        onChange(updatedTags);
+        updateTags([...tags, newTag]);
         setInputValue('');
       }
     }
@@ -43,8 +46,7 @@ export const TagInput: React.FC<TagInputProps> = ({
 
   const handleRemoveTag = (tagToRemove: string) => {
     const updatedTags = tags.filter((tag) => tag !== tagToRemove);
-    setTags(updatedTags);
-    onChange(updatedTags);
+    updateTags(updatedTags);
   };
 
   return (

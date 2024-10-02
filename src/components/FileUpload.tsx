@@ -28,23 +28,23 @@ export function FileUpload({
 }: FileUploadProps) {
   const [files, setFiles] = useState<FileData[]>([]);
 
-  const onDrop = (acceptedFiles: File[]) => {
-    onChange(acceptedFiles);
+  const updateFiles = (updatedFiles: FileData[]) => {
+    setFiles(updatedFiles);
+    onChange(updatedFiles.map((fileData) => fileData.file));
+  };
 
+  const onDrop = (acceptedFiles: File[]) => {
     const newFiles = acceptedFiles.map((file) => ({
       url: URL.createObjectURL(file),
       name: file.name,
       file,
     }));
-
-    setFiles(newFiles);
+    updateFiles(newFiles);
   };
 
   const removeFile = (index: number) => {
     const updatedFiles = files.filter((_, i) => i !== index);
-    setFiles(updatedFiles);
-
-    onChange(updatedFiles.map((fileData) => fileData.file));
+    updateFiles(updatedFiles);
   };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({

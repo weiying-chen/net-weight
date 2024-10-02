@@ -293,7 +293,6 @@ export function Form() {
               </Heading>
               <CustomFields
                 fields={getValues('customFields')}
-                keysOnly
                 onChange={(fields) => {
                   setValue('customFields', fields, {
                     shouldDirty: true,

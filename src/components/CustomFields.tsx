@@ -22,7 +22,7 @@ type CustomFieldsProps = {
   errors?: Array<{ key?: string; value?: string }>;
   className?: string;
   onChange: (fields: CustomField[]) => void;
-  onBeforeRemove?: (field: CustomField) => Promise<boolean> | boolean; // Updated type
+  onBeforeRemove?: (field: CustomField) => Promise<boolean> | boolean;
 };
 
 export const resetType = (type: ValueType): string | number | boolean => {
@@ -47,6 +47,11 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
 }) => {
   const [fields, setFields] = useState<CustomField[]>(initialFields);
 
+  const updateFields = (updatedFields: CustomField[]) => {
+    setFields(updatedFields);
+    onChange(updatedFields);
+  };
+
   const handleFieldChange = (
     index: number,
     fieldType: 'key' | 'value' | 'type',
@@ -66,8 +71,7 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
       }
       return field;
     });
-    setFields(updatedFields);
-    onChange(updatedFields);
+    updateFields(updatedFields);
   };
 
   const handleAddField = () => {
@@ -75,8 +79,7 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
       ...fields,
       { key: '', value: '', type: 'string' as ValueType },
     ];
-    setFields(updatedFields);
-    onChange(updatedFields);
+    updateFields(updatedFields);
   };
 
   const handleRemoveField = async (index: number) => {
@@ -90,8 +93,7 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
     }
 
     const updatedFields = fields.filter((_, i) => i !== index);
-    setFields(updatedFields);
-    onChange(updatedFields);
+    updateFields(updatedFields);
   };
 
   const typeOptions = [
