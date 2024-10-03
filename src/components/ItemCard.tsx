@@ -72,12 +72,7 @@ export function ItemCard({
         >
           <IconPlus size={20} />
         </Button>
-        <Button
-          variant="secondary"
-          isFull
-          className="w-12"
-          onClick={handleDecrease}
-        >
+        <Button variant="secondary" locked onClick={handleDecrease}>
           <IconMinus size={20} className="shrink-0" />
         </Button>
       </Row>

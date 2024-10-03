@@ -13,11 +13,18 @@ const items = [
   { title: 'Avocado (酪梨)', price: 69 },
   { title: 'Ham (火腿)', price: 76 },
   { title: 'Cheese (起司)', price: 83 },
+  { title: 'Salmon (鮭魚)', price: 125 },
   { title: 'Sweet potato leaves (地瓜葉)', price: 35 },
+  { title: 'Chicken wings (雞翅)', price: 64 },
   { title: 'Onions (洋蔥)', price: 32 },
-  { title: 'Lettuce (A菜)', price: 32 },
-  { title: 'Cabbage (高麗菜)', price: 32 },
+  { title: 'Lettuce (生菜)', price: 32 },
   { title: 'Rice (米)', price: 159 },
+  { title: 'Cabbage (高麗菜)', price: 32 },
+  { title: 'Powder milk (奶粉)', price: 329 },
+  { title: 'Radish (蘿蔔)', price: 45 },
+  { title: 'Mayo (美乃滋)', price: 20 },
+  { title: 'Lemon (檸檬)', price: 59 },
+  { title: 'Mushrooms (香菇)', price: 68 },
 ];
 
 export function Home() {
