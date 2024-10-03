@@ -40,6 +40,48 @@ type CustomField = {
   type: ValueType;
 };
 
+const asset = {
+  id: 'file1',
+};
+
+const folders = [
+  {
+    id: 'folder1',
+    name: 'Folder 1',
+    fileIds: ['file1', 'file2'],
+    attributes: ['attr1', 'attr2'],
+    folders: [],
+  },
+  {
+    id: 'folder2',
+    name: 'Folder 2',
+    fileIds: ['file1', 'file2'],
+    attributes: ['attr2', 'attr3'],
+    folders: [],
+  },
+];
+
+const uploadedFiles = [
+  {
+    url: 'https://via.placeholder.com/150',
+    name: 'placeholder1.jpg',
+    file: null,
+  },
+  {
+    url: 'https://via.placeholder.com/200',
+    name: 'placeholder2.png',
+    file: null,
+  },
+];
+
+const countryOptions = [
+  { value: 'usa', label: 'United States' },
+  { value: 'canada', label: 'Canada' },
+  { value: 'uk', label: 'United Kingdom' },
+  { value: 'australia', label: 'Australia' },
+  { value: 'india', label: 'India' },
+];
+
 function findDupeKeys(customFields: Array<{ key: string }>, ctx: any) {
   const keys = customFields.map((field) => field.key);
   const dupes = keys.filter((key, index) => keys.indexOf(key) !== index);
@@ -84,15 +126,7 @@ const schema = z.object({
     .array(
       z.object({
         key: z.string().min(1, 'Key is required'),
-        value: z.union([
-          // z.string().min(1, 'String value cannot be empty'),
-          z.string(),
-          // z.number().refine((val) => val !== null && val !== undefined, {
-          //   message: 'Number cannot be null or undefined',
-          // }),
-          z.number(),
-          z.boolean(),
-        ]),
+        value: z.union([z.string(), z.number(), z.boolean()]),
         type: z.enum(['string', 'number', 'boolean']),
       }),
     )
@@ -107,7 +141,7 @@ type FormData = z.infer<typeof schema>;
 
 export function Form() {
   const [isEdit, setIsEdit] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [currFolder, setCurrFolder] = useState<Folder | null>(null);
   const [confirmResolve, setConfirmResolve] = useState<
     ((value: boolean) => void) | null
@@ -128,21 +162,13 @@ export function Form() {
       country: 'usa',
       customFields: [],
       isEnabled: false,
-      files: [], // Initialize files as an empty array
+      files: [],
     },
   });
 
   const onSubmit: SubmitHandler<FormData> = (data) => {
     console.log('Form submitted:', data);
   };
-
-  const countryOptions = [
-    { value: 'usa', label: 'United States' },
-    { value: 'canada', label: 'Canada' },
-    { value: 'uk', label: 'United Kingdom' },
-    { value: 'australia', label: 'Australia' },
-    { value: 'india', label: 'India' },
-  ];
 
   useEffect(() => {
     console.log('Form errors:', errors);
@@ -152,33 +178,11 @@ export function Form() {
     console.log('Custom fields:', getValues('customFields'));
   }, [setValue]);
 
-  const asset = {
-    id: 'file1',
-  };
-
-  const folders = [
-    {
-      id: 'folder1',
-      name: 'Folder 1',
-      fileIds: ['file1', 'file2'],
-      attributes: ['attr1', 'attr2'],
-      folders: [],
-    },
-    {
-      id: 'folder2',
-      name: 'Folder 2',
-      fileIds: ['file1', 'file2'],
-      attributes: ['attr2', 'attr3'],
-      folders: [],
-    },
-  ];
-
   const handleBeforeRemove = (field: CustomField) => {
     const foldersWithFile = folders
       .flatMap((folder) => [folder, ...folder.folders])
       .filter((folder) => folder.fileIds.includes(asset.id));
 
-    // Find the first folder with a matching attribute
     for (const folder of foldersWithFile) {
       const attrToRemove = field.key;
       const isMatch = folder.attributes.includes(attrToRemove);
@@ -187,14 +191,12 @@ export function Form() {
         setCurrFolder(folder);
         setIsModalOpen(true);
 
-        // Return a promise that resolves based on user confirmation
         return new Promise<boolean>((resolve) => {
           setConfirmResolve(() => resolve);
         });
       }
     }
 
-    // If no match, return true (allow removal)
     return Promise.resolve(true);
   };
 
@@ -263,18 +265,7 @@ export function Form() {
               />
               <FileUpload
                 label="Upload Images"
-                files={[
-                  {
-                    url: 'https://via.placeholder.com/150',
-                    name: 'placeholder1.jpg',
-                    file: null,
-                  },
-                  {
-                    url: 'https://via.placeholder.com/200',
-                    name: 'placeholder2.png',
-                    file: null,
-                  },
-                ]}
+                files={uploadedFiles}
                 onChange={(files) =>
                   setValue('files', files, {
                     shouldDirty: true,
@@ -288,7 +279,7 @@ export function Form() {
                 Tags
               </Heading>
               <TagInput
-                tags={getValues('tags')}
+                tags={getValues('tags') || []}
                 placeholder="Type and press Enter or Tab"
                 error={errors.tags?.message}
                 onChange={(tags) =>
@@ -373,16 +364,16 @@ export function Form() {
             <Heading hasBorder isFull>
               Uploaded Files
             </Heading>
-            <Detail
-              content={
-                (getValues('files') ?? []).length > 0 ? (
-                  <FilePreviews files={getValues('files') ?? []} />
-                ) : (
-                  '-'
-                )
-              }
-            />
           </Col>
+          <Detail
+            content={
+              (getValues('files') ?? []).length > 0 ? (
+                <FilePreviews files={uploadedFiles} />
+              ) : (
+                '-'
+              )
+            }
+          />
         </Col>
       )}
       <Modal isOpen={isModalOpen} onClose={handleCloseClick}>

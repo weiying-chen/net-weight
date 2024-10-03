@@ -16,7 +16,7 @@ export const Detail: React.FC<DetailProps> = ({
   return (
     <Col className={className}>
       {label && <label className="text-sm font-semibold">{label}</label>}
-      <Row className="h-10 w-full border-b border-subtle pb-2 text-sm" locked>
+      <Row className="w-full border-b border-subtle pb-2 text-sm" locked>
         {content}
       </Row>
     </Col>
