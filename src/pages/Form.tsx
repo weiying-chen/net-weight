@@ -22,6 +22,7 @@ import { FileUpload } from '@/components/FileUpload';
 import { useEffect, useState } from 'react';
 import { Tag } from '@/components/Tag';
 import { Modal } from '@/components/Modal';
+import { FilePreviews } from '@/components/FilePreviews';
 
 type Folder = {
   id: string;
@@ -77,7 +78,7 @@ export const cfErrFromErr = (
 const schema = z.object({
   name: z.string().min(1, 'Name is required'),
   description: z.string().optional(),
-  tags: z.array(z.string()).min(1, 'At least one tag is required'),
+  tags: z.array(z.string()).optional(),
   country: z.string().min(1, 'Country is required'),
   customFields: z
     .array(
@@ -345,7 +346,7 @@ export function Form() {
               Tags
             </Heading>
             <Detail
-              content={getValues('tags').map((tag) => (
+              content={getValues('tags')?.map((tag) => (
                 <Tag key={tag}>{tag}</Tag>
               ))}
             />
@@ -374,9 +375,11 @@ export function Form() {
             </Heading>
             <Detail
               content={
-                getValues('files')?.length
-                  ? `${getValues('files')?.length} file(s) uploaded`
-                  : 'No files uploaded'
+                (getValues('files') ?? []).length > 0 ? (
+                  <FilePreviews files={getValues('files') ?? []} />
+                ) : (
+                  '-'
+                )
               }
             />
           </Col>
