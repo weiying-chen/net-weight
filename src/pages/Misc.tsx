@@ -25,7 +25,6 @@ export function Misc() {
           <Button type="button">Add item</Button>
         </Row>
       </Row>
-      <br />
       <Row gap="xl">
         <Col className="w-auto">
           <Heading>Categories</Heading>
