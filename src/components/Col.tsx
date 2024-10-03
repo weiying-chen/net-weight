@@ -5,7 +5,7 @@ type ColProps = HTMLAttributes<HTMLDivElement> & {
   gap?: 'sm' | 'md' | 'lg' | 'xl';
   align?: 'start' | 'center' | 'end' | 'between' | 'stretch';
   alignItems?: 'start' | 'center' | 'end' | 'between' | 'stretch';
-  className?: string;
+  fluid?: boolean;
   children: ReactNode;
 };
 
@@ -14,6 +14,7 @@ export function Col({
   align = 'start',
   alignItems = 'start',
   className,
+  fluid = false,
   children,
   ...props
 }: ColProps) {
@@ -44,6 +45,7 @@ export function Col({
     <div
       className={cn(
         'flex w-full flex-col',
+        { 'w-auto': fluid },
         cnFromGap[gap],
         cnFromAlign[align],
         cnFromAlignItems[alignItems],

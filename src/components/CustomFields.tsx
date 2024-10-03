@@ -123,7 +123,6 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
               checked={Boolean(field.value)}
               onChange={(checked) => handleFieldChange(index, 'value', checked)}
               label="Value"
-              className="w-auto"
             />
           </Row>
         );

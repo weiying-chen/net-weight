@@ -134,7 +134,7 @@ const schema = z.object({
       findDupeKeys(customFields, ctx);
     }),
   isEnabled: z.boolean(),
-  files: z.array(z.instanceof(File)).optional(),
+  files: z.array(z.instanceof(File)).min(1, 'Files is required'),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -272,6 +272,7 @@ export function Form() {
                     shouldValidate: isSubmitted,
                   })
                 }
+                error={errors.files?.message}
               />
             </Col>
             <Col gap="lg">

@@ -7,18 +7,20 @@ type SwitchProps = {
   label?: string;
   checked: boolean;
   onChange?: (checked: boolean) => void;
+  disabled?: boolean;
+  fluid?: boolean;
   className?: string;
   error?: string;
-  disabled?: boolean;
 };
 
 export const Switch: React.FC<SwitchProps> = ({
   label,
   checked,
   onChange,
+  disabled,
+  fluid = false,
   className,
   error,
-  disabled,
 }) => {
   const [isChecked, setIsChecked] = useState(checked);
 
@@ -30,7 +32,7 @@ export const Switch: React.FC<SwitchProps> = ({
   };
 
   return (
-    <Col className={className}>
+    <Col className={cn({ 'w-auto': fluid }, className)}>
       {label && <label className="text-sm font-semibold">{label}</label>}
       <button
         type="button"

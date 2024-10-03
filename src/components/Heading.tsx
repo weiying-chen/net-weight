@@ -17,7 +17,7 @@ export function Heading({
   hasBorder,
 }: HeadingProps) {
   const cnFromSize = {
-    sm: 'text-base uppercase',
+    sm: 'text-sm uppercase',
     // md: 'text-xl',
     // lg: 'text-2xl',
     md: 'text-lg',

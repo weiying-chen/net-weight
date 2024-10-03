@@ -8,7 +8,7 @@ type InputProps = InputHTMLAttributes<HTMLInputElement> & {
 };
 
 const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
-  { label, className, error, ...props },
+  { label, disabled, className, error, ...props },
   ref,
 ) {
   return (
@@ -20,7 +20,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           'h-10 w-full rounded border border-border bg-background px-3 py-2 text-sm outline-none ring-foreground ring-offset-2 focus-visible:ring-2',
           {
             'border-danger': error,
-            'cursor-not-allowed opacity-50': props.disabled,
+            'cursor-not-allowed opacity-50': disabled,
           },
         )}
         {...props}
