@@ -3,7 +3,7 @@ import { useDropzone } from 'react-dropzone';
 import { Col } from '@/components/Col';
 import { cn } from '@/utils';
 import { Row } from '@/components/Row';
-import { IconFileDescription, IconX } from '@tabler/icons-react';
+import { IconX } from '@tabler/icons-react';
 
 type FileUploadProps = {
   label?: string;
@@ -11,12 +11,13 @@ type FileUploadProps = {
   error?: string;
   className?: string;
   onChange: (files: File[]) => void;
+  files?: { url: string; name: string; file: File | null }[];
 };
 
 type FileData = {
   url: string;
   name: string;
-  file: File;
+  file: File | null;
 };
 
 export function FileUpload({
@@ -25,12 +26,19 @@ export function FileUpload({
   error,
   className,
   onChange,
+  files: initialFiles = [],
 }: FileUploadProps) {
-  const [files, setFiles] = useState<FileData[]>([]);
+  const [files, setFiles] = useState<FileData[]>(
+    initialFiles.map((file) => ({ ...file })),
+  );
 
   const updateFiles = (updatedFiles: FileData[]) => {
     setFiles(updatedFiles);
-    onChange(updatedFiles.map((fileData) => fileData.file));
+    onChange(
+      updatedFiles
+        .map((fileData) => fileData.file)
+        .filter((file) => file !== null) as File[],
+    );
   };
 
   const onDrop = (acceptedFiles: File[]) => {
@@ -39,7 +47,7 @@ export function FileUpload({
       name: file.name,
       file,
     }));
-    updateFiles(newFiles);
+    updateFiles([...files, ...newFiles]);
   };
 
   const removeFile = (index: number) => {
@@ -59,7 +67,11 @@ export function FileUpload({
 
   useEffect(() => {
     return () => {
-      files.forEach((fileData) => URL.revokeObjectURL(fileData.url));
+      files.forEach((fileData) => {
+        if (fileData.file) {
+          URL.revokeObjectURL(fileData.url);
+        }
+      });
     };
   }, [files]);
 
@@ -76,18 +88,19 @@ export function FileUpload({
           >
             <IconX size={16} />
           </button>
-          {fileData.file.type.startsWith('image/') ? (
+          {fileData.file && fileData.file.type.startsWith('image/') ? (
             <img
               src={fileData.url}
               alt={`Preview ${index + 1}`}
               className="h-full w-full object-contain"
             />
           ) : (
-            <Col align="center" alignItems="center" className="h-full">
-              <IconFileDescription size={60} stroke={1} />
-            </Col>
+            <img
+              src={fileData.url}
+              alt={`Preview ${index + 1}`}
+              className="h-full w-full object-contain"
+            />
           )}
-
           <Row
             align="center"
             alignItems="center"

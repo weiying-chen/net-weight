@@ -262,13 +262,24 @@ export function Form() {
               />
               <FileUpload
                 label="Upload Images"
+                files={[
+                  {
+                    url: 'https://via.placeholder.com/150',
+                    name: 'placeholder1.jpg',
+                    file: null,
+                  },
+                  {
+                    url: 'https://via.placeholder.com/200',
+                    name: 'placeholder2.png',
+                    file: null,
+                  },
+                ]}
                 onChange={(files) =>
                   setValue('files', files, {
                     shouldDirty: true,
                     shouldValidate: isSubmitted,
                   })
                 }
-                error={errors.files?.message}
               />
             </Col>
             <Col gap="lg">
