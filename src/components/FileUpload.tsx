@@ -3,7 +3,7 @@ import { useDropzone } from 'react-dropzone';
 import { Col } from '@/components/Col';
 import { cn } from '@/utils';
 import { Row } from '@/components/Row';
-import { IconX } from '@tabler/icons-react';
+import { IconFileDescription, IconX } from '@tabler/icons-react';
 
 type FileUploadProps = {
   label?: string;
@@ -15,9 +15,10 @@ type FileUploadProps = {
 };
 
 type FileData = {
-  url: string;
+  url: string | null; // Make this nullable for non-image files
   name: string;
   file: File | null;
+  type: string; // New field to store the MIME type
 };
 
 export function FileUpload({
@@ -29,7 +30,10 @@ export function FileUpload({
   files: initialFiles = [],
 }: FileUploadProps) {
   const [files, setFiles] = useState<FileData[]>(
-    initialFiles.map((file) => ({ ...file })),
+    initialFiles.map((file) => ({
+      ...file,
+      type: file.file ? file.file.type : '',
+    })),
   );
 
   const updateFiles = (updatedFiles: FileData[]) => {
@@ -42,11 +46,15 @@ export function FileUpload({
   };
 
   const onDrop = (acceptedFiles: File[]) => {
-    const newFiles = acceptedFiles.map((file) => ({
-      url: URL.createObjectURL(file),
-      name: file.name,
-      file,
-    }));
+    const newFiles = acceptedFiles.map((file) => {
+      const isImage = file.type.startsWith('image/');
+      return {
+        url: isImage ? URL.createObjectURL(file) : null, // Only create URL if it's an image
+        name: file.name,
+        file,
+        type: file.type,
+      };
+    });
     updateFiles([...files, ...newFiles]);
   };
 
@@ -68,7 +76,7 @@ export function FileUpload({
   useEffect(() => {
     return () => {
       files.forEach((fileData) => {
-        if (fileData.file) {
+        if (fileData.url) {
           URL.revokeObjectURL(fileData.url);
         }
       });
@@ -88,18 +96,16 @@ export function FileUpload({
           >
             <IconX size={16} />
           </button>
-          {fileData.file && fileData.file.type.startsWith('image/') ? (
+          {fileData.url ? (
             <img
               src={fileData.url}
               alt={`Preview ${index + 1}`}
               className="h-full w-full object-contain"
             />
           ) : (
-            <img
-              src={fileData.url}
-              alt={`Preview ${index + 1}`}
-              className="h-full w-full object-contain"
-            />
+            <Col align="center" alignItems="center" className="h-full">
+              <IconFileDescription size={60} stroke={1} />
+            </Col>
           )}
           <Row
             align="center"
