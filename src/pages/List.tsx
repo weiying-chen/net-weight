@@ -1,35 +1,68 @@
-import { Col } from '@/components/Col';
-import { Heading } from '@/components/Heading';
-import Table from '@/components/Table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/Table';
 
 const data = [
-  { name: 'John Doe', age: 30, job: 'Engineer' },
-  { name: 'Jane Smith', age: 25, job: 'Designer' },
+  {
+    attributes: {
+      attr1: 'string',
+      attr2: 0,
+      attr3: true,
+    },
+    tags: ['tag 1', 'tag 2'],
+  },
+  {
+    attributes: {
+      attr1: 'another string',
+      attr2: 42,
+      attr3: false,
+    },
+    tags: ['tag 3', 'tag 4'],
+  },
 ];
-
-type DataType = (typeof data)[0];
 
 type Column<T> = {
-  key: keyof T;
   header: string;
-  render?: (item: T) => React.ReactNode;
+  render: (item: T) => React.ReactNode;
 };
 
-const columns: Column<DataType>[] = [
-  { key: 'name', header: 'Name' },
-  {
-    key: 'age',
-    header: 'Age',
-    render: (item) => <strong>{item.age} years old</strong>,
-  },
-  { key: 'job', header: 'Job', render: (item) => <em>{item.job}</em> },
-];
-
 export function List() {
+  const columns: Column<(typeof data)[0]>[] = [
+    { header: 'Attribute 1', render: (item) => item.attributes.attr1 },
+    { header: 'Attribute 2', render: (item) => item.attributes.attr2 },
+    {
+      header: 'Attribute 3',
+      render: (item) => (item.attributes.attr3 ? 'True' : 'False'),
+    },
+    {
+      header: 'Tags',
+      render: (item) => item.tags.join(', '),
+    },
+  ];
+
   return (
-    <Col>
-      <Heading>My Table</Heading>
-      <Table data={data} columns={columns} />
-    </Col>
+    <Table>
+      <TableHead>
+        <TableRow>
+          {columns.map((column, index) => (
+            <TableHeader key={index}>{column.header}</TableHeader>
+          ))}
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {data.map((item, rowIndex) => (
+          <TableRow key={rowIndex}>
+            {columns.map((column, colIndex) => (
+              <TableCell key={colIndex}>{column.render(item)}</TableCell>
+            ))}
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   );
 }
