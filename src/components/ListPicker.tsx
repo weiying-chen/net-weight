@@ -61,7 +61,7 @@ export function ListPicker({ keys, onChange }: ListPickerProps) {
 
   const renderList = (
     items: string[],
-    selectedItems: string[],
+    pickedItems: string[],
     onItemClick: (key: string) => void,
   ) => (
     <ul className="h-40 w-full overflow-y-auto rounded border border-border p-2 text-sm">
@@ -70,7 +70,7 @@ export function ListPicker({ keys, onChange }: ListPickerProps) {
           key={item}
           onClick={() => onItemClick(item)}
           className={cn('cursor-pointer px-2 py-1', {
-            'bg-muted text-white': selectedItems.includes(item),
+            'bg-muted text-white': pickedItems.includes(item),
           })}
         >
           {item}
