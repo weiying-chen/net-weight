@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Table } from '@/components/Table';
-import { ListPicker } from '@/components/ListPicker';
+import { ListEditor } from '@/components/ListEditor';
 import { Col } from '@/components/Col';
 
 function flattenAttrs(
@@ -65,7 +65,7 @@ export function List() {
 
   return (
     <Col gap="lg">
-      <ListPicker keys={keys} onChange={handlePickedKeysChange} />
+      <ListEditor keys={keys} onChange={handlePickedKeysChange} />
       <Table data={flattenedData} columns={columns} />
     </Col>
   );
