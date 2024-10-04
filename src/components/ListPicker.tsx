@@ -8,13 +8,12 @@ import { IconArrowLeft, IconArrowRight } from '@tabler/icons-react';
 import { cn } from '@/utils';
 
 type ListPickerProps = {
-  data: Record<string, any>[];
+  keys: string[];
   onChange: (activeKeys: string[]) => void;
 };
 
-export function ListPicker({ data, onChange }: ListPickerProps) {
-  const initialKeys = Object.keys(data[0]);
-  const [inactiveItems, setInactiveItems] = useState<string[]>(initialKeys);
+export function ListPicker({ keys, onChange }: ListPickerProps) {
+  const [inactiveItems, setInactiveItems] = useState<string[]>(keys);
   const [activeItems, setActiveItems] = useState<string[]>([]);
   const [pickedInactiveItems, setPickedInactiveItems] = useState<string[]>([]);
   const [pickedActiveItems, setPickedActiveItems] = useState<string[]>([]);
