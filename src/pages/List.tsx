@@ -14,6 +14,7 @@ function flattenAttrs(
 
 const data = [
   {
+    name: 'aaa',
     attributes: {
       attr1: 'string',
       attr2: 0,
@@ -22,6 +23,7 @@ const data = [
     tags: ['tag 1', 'tag 2'],
   },
   {
+    name: 'bbb',
     attributes: {
       attr1: 'another string',
       attr2: 42,
@@ -62,6 +64,8 @@ export function List() {
   };
 
   const columns = colsFromKeys<(typeof flattenedData)[0]>(pickedKeys);
+
+  console.log(columns);
 
   return (
     <Col gap="lg">

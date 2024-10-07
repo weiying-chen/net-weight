@@ -12,7 +12,7 @@ export function Tag({ className, children, onClick }: TagProps) {
   return (
     <span
       className={cn(
-        'flex items-center gap-1 rounded bg-muted px-2 py-1 text-sm text-white',
+        'flex items-center gap-1 rounded bg-subtle px-2 py-1 text-sm text-foreground',
         className,
       )}
     >

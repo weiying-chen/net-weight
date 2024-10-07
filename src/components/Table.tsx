@@ -1,40 +1,5 @@
+import { useState } from 'react';
 import { Heading } from '@/components/Heading';
-
-function renderTable(children: React.ReactNode) {
-  return <table className="min-w-full">{children}</table>;
-}
-
-function renderTableHead(children: React.ReactNode) {
-  return <thead className="bg-subtle">{children}</thead>;
-}
-
-function renderTableBody(children: React.ReactNode) {
-  return <tbody className="divide-y divide-subtle">{children}</tbody>;
-}
-
-function renderTableRow(children: React.ReactNode, key?: number | string) {
-  return (
-    <tr key={key} className="hover:bg-subtle">
-      {children}
-    </tr>
-  );
-}
-
-function renderTableHeader(children: React.ReactNode, key: number | string) {
-  return (
-    <th key={key} className="px-4 py-2 text-left">
-      <Heading size="sm">{children}</Heading>
-    </th>
-  );
-}
-
-function renderTableCell(children: React.ReactNode, key: number | string) {
-  return (
-    <td key={key} className="px-4 py-2 text-sm">
-      {children}
-    </td>
-  );
-}
 
 type Column<T> = {
   header: string;
@@ -48,25 +13,71 @@ export function Table<T>({
   data: T[];
   columns: Column<T>[];
 }) {
-  return renderTable(
-    <>
-      {renderTableHead(
-        renderTableRow(
-          columns.map((column, index) =>
-            renderTableHeader(column.header, index),
-          ),
-        ),
-      )}
-      {renderTableBody(
-        data.map((item, rowIndex) =>
-          renderTableRow(
-            columns.map((column, colIndex) =>
-              renderTableCell(column.render(item), colIndex),
-            ),
-            rowIndex,
-          ),
-        ),
-      )}
-    </>,
+  const [sortConfig, setSortConfig] = useState<{
+    index: number;
+    direction: 'asc' | 'desc';
+  } | null>(null);
+
+  const sortedData = [...data].sort((a, b) => {
+    // Ensure the index is within the columns array bounds
+    if (sortConfig && sortConfig.index < columns.length) {
+      const { index, direction } = sortConfig;
+      const aValue = columns[index].render(a);
+      const bValue = columns[index].render(b);
+
+      const aStr =
+        aValue !== null && aValue !== undefined ? String(aValue) : '';
+      const bStr =
+        bValue !== null && bValue !== undefined ? String(bValue) : '';
+
+      if (aStr < bStr) return direction === 'asc' ? -1 : 1;
+      if (aStr > bStr) return direction === 'asc' ? 1 : -1;
+      return 0;
+    }
+    return 0;
+  });
+
+  const handleSort = (index: number) => {
+    let direction: 'asc' | 'desc' = 'asc';
+
+    if (sortConfig?.index === index) {
+      direction = sortConfig.direction === 'asc' ? 'desc' : 'asc';
+    }
+
+    setSortConfig({ index, direction });
+  };
+
+  return (
+    <table className="min-w-full">
+      <thead className="bg-subtle">
+        <tr>
+          {columns.map((column, index) => (
+            <th
+              key={index}
+              className="cursor-pointer px-4 py-2 text-left"
+              onClick={() => handleSort(index)}
+            >
+              <Heading size="sm">
+                {column.header}
+                {sortConfig?.index === index && (
+                  <span>{sortConfig.direction === 'asc' ? ' ↑' : ' ↓'}</span>
+                )}
+              </Heading>
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody className="divide-y divide-subtle">
+        {sortedData.map((item, rowIndex) => (
+          <tr key={rowIndex} className="hover:bg-subtle">
+            {columns.map((column, colIndex) => (
+              <td key={colIndex} className="px-4 py-2 text-sm">
+                {column.render(item)}
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }
