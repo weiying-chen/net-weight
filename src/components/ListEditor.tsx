@@ -14,10 +14,11 @@ import { cn } from '@/utils';
 
 type ListEditorProps = {
   keys: string[];
+  className?: string;
   onChange: (activeKeys: string[]) => void;
 };
 
-export function ListEditor({ keys, onChange }: ListEditorProps) {
+export function ListEditor({ keys, className, onChange }: ListEditorProps) {
   const [inactiveItems, setInactiveItems] = useState<string[]>(keys);
   const [activeItems, setActiveItems] = useState<string[]>([]);
   const [pickedInactiveItems, setPickedInactiveItems] = useState<string[]>([]);
@@ -128,7 +129,7 @@ export function ListEditor({ keys, onChange }: ListEditorProps) {
   const renderEditButtons = () => (
     <>
       {/* The margin offsets the headings */}
-      <Col fluid className="-mt-5 self-center">
+      <Col fluid className="self-center md:-mt-5">
         <Button
           isFull
           onClick={handleAddItems}
@@ -177,7 +178,7 @@ export function ListEditor({ keys, onChange }: ListEditorProps) {
   );
 
   return (
-    <Card>
+    <Card className={className}>
       <Col>
         <Heading>Customize columns</Heading>
         <Row gap="lg">

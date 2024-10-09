@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Table } from '@/components/Table';
 import { ListEditor } from '@/components/ListEditor';
 import { Col } from '@/components/Col';
+import { Row } from '@/components/Row';
 
 function flattenAttrs(
   data: { [key: string]: any; attributes: Record<string, any> }[],
@@ -21,6 +22,14 @@ const data = [
       attr3: true,
     },
     tags: ['tag 1', 'tag 2'],
+    tags1: ['tag 1', 'tag 2'],
+    tags2: ['tag 1', 'tag 2'],
+    tags3: ['tag 1', 'tag 2'],
+    tags4: ['tag 1', 'tag 2'],
+    tags5: ['tag 1', 'tag 2'],
+    tags6: ['tag 1', 'tag 2'],
+    tags7: ['tag 1', 'tag 2'],
+    tags8: ['tag 1', 'tag 2'],
   },
   {
     name: 'bbb',
@@ -30,6 +39,14 @@ const data = [
       attr3: false,
     },
     tags: ['tag 3', 'tag 4'],
+    tags1: ['tag 1', 'tag 2'],
+    tags2: ['tag 1', 'tag 2'],
+    tags3: ['tag 1', 'tag 2'],
+    tags4: ['tag 1', 'tag 2'],
+    tags5: ['tag 1', 'tag 2'],
+    tags6: ['tag 1', 'tag 2'],
+    tags7: ['tag 1', 'tag 2'],
+    tags8: ['tag 1', 'tag 2'],
   },
 ];
 
@@ -65,12 +82,15 @@ export function List() {
 
   const columns = colsFromKeys<(typeof flattenedData)[0]>(pickedKeys);
 
-  console.log(columns);
-
   return (
     <Col gap="lg">
-      <ListEditor keys={keys} onChange={handlePickedKeysChange} />
-      <Table data={flattenedData} columns={columns} />
+      <Row>
+        <Col>ssstw twt wtw twtwt</Col>
+        <Col>
+          <ListEditor keys={keys} onChange={handlePickedKeysChange} />
+          <Table data={flattenedData} columns={columns} />
+        </Col>
+      </Row>
     </Col>
   );
 }

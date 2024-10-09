@@ -3,11 +3,10 @@ import { IconLoader2 } from '@tabler/icons-react';
 import { cn } from '@/utils';
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: 'primary' | 'secondary' | 'success' | 'danger';
+  variant?: 'primary' | 'secondary' | 'success' | 'danger' | 'link';
   isLoading?: boolean;
   locked?: boolean;
   isFull?: boolean;
-  isLink?: boolean;
   className?: string;
   children: ReactNode;
 };
@@ -17,7 +16,6 @@ export function Button({
   isLoading = false,
   locked = false,
   isFull = false,
-  isLink = false,
   className,
   children,
   type = 'button',
@@ -28,6 +26,7 @@ export function Button({
     secondary: 'text-foreground bg-secondary',
     success: 'text-background bg-success',
     danger: 'text-background bg-danger',
+    link: 'h-auto border-none bg-transparent px-0 py-0 text-foreground shadow-none',
   };
 
   return (
@@ -39,8 +38,6 @@ export function Button({
         {
           'w-full md:w-auto': !locked,
           'w-full md:w-full': isFull,
-          'h-auto border-none bg-transparent px-0 py-0 text-foreground shadow-none':
-            isLink,
           'pointer-events-none cursor-not-allowed opacity-50':
             props.disabled || isLoading,
         },

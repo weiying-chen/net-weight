@@ -26,7 +26,11 @@ export function Modal({ isOpen, onClose, children, className }: ModalProps) {
           'max-w-screen-3xl relative z-10 border border-border bg-white p-6 shadow md:rounded-xl',
         )}
       >
-        <Button isLink className="absolute right-6 top-6" onClick={onClose}>
+        <Button
+          variant="link"
+          className="absolute right-6 top-6"
+          onClick={onClose}
+        >
           <IconX size={20} />
         </Button>
         {children}

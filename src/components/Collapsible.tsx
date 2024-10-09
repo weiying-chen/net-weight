@@ -1,5 +1,5 @@
 import { cn } from '@/utils';
-import { useRef, ReactNode } from 'react';
+import { useRef, ReactNode, useState, useEffect } from 'react';
 
 type CollapsibleProps = {
   collapsed?: boolean;
@@ -13,11 +13,29 @@ export const Collapsible = ({
   children,
 }: CollapsibleProps) => {
   const contentRef = useRef<HTMLDivElement | null>(null);
-  let maxHeight = '0px';
+  const [maxHeight, setMaxHeight] = useState('0px');
 
-  if (contentRef.current && !collapsed) {
-    maxHeight = `${contentRef.current.scrollHeight}px`;
-  }
+  const updateMaxHeight = () => {
+    if (contentRef.current && !collapsed) {
+      setMaxHeight(`${contentRef.current.scrollHeight}px`);
+    } else {
+      setMaxHeight('0px');
+    }
+  };
+
+  useEffect(() => {
+    updateMaxHeight();
+
+    const handleResize = () => {
+      updateMaxHeight();
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [collapsed]);
 
   return (
     <div
