@@ -1,22 +1,23 @@
 import { useState } from 'react';
-import { Heading } from '@/components/Heading';
-import { IconArrowUp, IconArrowDown } from '@tabler/icons-react'; // Import the icons
+import { IconArrowUp, IconArrowDown } from '@tabler/icons-react';
 
 type Column<T> = {
   header: string;
   render: (item: T) => React.ReactNode;
 };
 
-function isObject(value: any): boolean {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
-}
+// function isObject(value: any): boolean {
+//   return value !== null && typeof value === 'object' && !Array.isArray(value);
+// }
 
 export function Table<T>({
   data,
   columns,
+  onRowClick,
 }: {
   data: T[];
   columns: Column<T>[];
+  onRowClick?: (item: T) => void;
 }) {
   const [sortConfig, setSortConfig] = useState<{
     index: number;
@@ -47,7 +48,8 @@ export function Table<T>({
 
   const handleSort = (index: number) => {
     const sampleValue = columns[index].render(data[0]);
-    if (isObject(sampleValue)) {
+
+    if (typeof sampleValue === 'object' && sampleValue !== null) {
       return;
     }
 
@@ -71,7 +73,7 @@ export function Table<T>({
                 className="cursor-pointer px-4 py-2 text-left"
                 onClick={() => handleSort(index)}
               >
-                <Heading size="sm" className="flex items-center gap-2">
+                <span className="flex items-center gap-2 text-sm font-semibold">
                   {column.header}
                   {sortConfig?.index === index &&
                     (sortConfig.direction === 'asc' ? (
@@ -79,14 +81,18 @@ export function Table<T>({
                     ) : (
                       <IconArrowDown size={16} />
                     ))}
-                </Heading>
+                </span>
               </th>
             ))}
           </tr>
         </thead>
         <tbody className="divide-y divide-subtle">
           {sortedData.map((item, rowIndex) => (
-            <tr key={rowIndex} className="hover:bg-subtle">
+            <tr
+              key={rowIndex}
+              className="cursor-pointer hover:bg-subtle"
+              onClick={() => onRowClick?.(item)}
+            >
               {columns.map((column, colIndex) => (
                 <td key={colIndex} className="px-4 py-2 text-sm">
                   {column.render(item)}

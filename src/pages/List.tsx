@@ -29,7 +29,7 @@ const data = [
     tags5: ['tag 1', 'tag 2'],
     tags6: ['tag 1', 'tag 2'],
     tags7: ['tag 1', 'tag 2'],
-    tags8: ['tag 1', 'tag 2'],
+    tags8sssssssss: ['tag 1', 'tag 2'],
   },
   {
     name: 'bbb',
@@ -85,8 +85,8 @@ export function List() {
   return (
     <Col gap="lg">
       <Row>
-        <Col>ssstw twt wtw twtwt</Col>
-        <Col>
+        <Col className="w-64">ssstw twt wtw twtwt</Col>
+        <Col className="w-screen-lg w-full min-w-0">
           <ListEditor keys={keys} onChange={handlePickedKeysChange} />
           <Table data={flattenedData} columns={columns} />
         </Col>

@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Col } from '@/components/Col';
 import { Heading } from '@/components/Heading';
-import { Card } from '@/components/Card';
 import { Row } from '@/components/Row';
 import { Button } from '@/components/Button';
 import {
@@ -128,7 +127,6 @@ export function ListEditor({ keys, className, onChange }: ListEditorProps) {
 
   const renderEditButtons = () => (
     <>
-      {/* The margin offsets the headings */}
       <Col fluid className="self-center md:-mt-5">
         <Button
           isFull
@@ -178,22 +176,17 @@ export function ListEditor({ keys, className, onChange }: ListEditorProps) {
   );
 
   return (
-    <Card className={className}>
-      <Col>
-        <Heading>Customize columns</Heading>
-        <Row gap="lg">
-          <Col>
-            <Heading size="sm">Inactive</Heading>
-            {renderList(inactiveItems, pickedInactiveItems, handleAllItemClick)}
-          </Col>
-          {renderEditButtons()}
-          <Col>
-            <Heading size="sm">Active</Heading>
-            {renderList(activeItems, pickedActiveItems, handlePickedItemClick)}
-            {renderMoveButtons()}
-          </Col>
-        </Row>
+    <Row gap="lg" className={className}>
+      <Col className="min-w-0 flex-1">
+        <Heading size="sm">Inactive</Heading>
+        {renderList(inactiveItems, pickedInactiveItems, handleAllItemClick)}
       </Col>
-    </Card>
+      {renderEditButtons()}
+      <Col className="min-w-0 flex-1">
+        <Heading size="sm">Active</Heading>
+        {renderList(activeItems, pickedActiveItems, handlePickedItemClick)}
+        {renderMoveButtons()}
+      </Col>
+    </Row>
   );
 }

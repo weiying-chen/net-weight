@@ -8,10 +8,22 @@ type ModalProps = {
   onClose: () => void;
   children: ReactNode;
   className?: string;
+  size?: 'md' | 'lg';
 };
 
-export function Modal({ isOpen, onClose, children, className }: ModalProps) {
+export function Modal({
+  isOpen,
+  onClose,
+  children,
+  className,
+  size = 'md',
+}: ModalProps) {
   if (!isOpen) return null;
+
+  const cnFromSize = {
+    md: 'max-w-lg',
+    lg: 'max-w-screen-lg',
+  };
 
   return (
     <div
@@ -23,7 +35,8 @@ export function Modal({ isOpen, onClose, children, className }: ModalProps) {
       <div className="fixed inset-0 bg-black bg-opacity-50" onClick={onClose} />
       <div
         className={cn(
-          'max-w-screen-3xl relative z-10 border border-border bg-white p-6 shadow md:rounded-xl',
+          'relative z-10 w-full border border-border bg-white p-6 shadow md:rounded-xl',
+          cnFromSize[size],
         )}
       >
         <Button
