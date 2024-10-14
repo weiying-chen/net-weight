@@ -150,7 +150,7 @@ export function Form() {
   const {
     register,
     handleSubmit,
-    setValue,
+    setValue: setValueBase,
     getValues,
     formState: { errors, isDirty, isSubmitted },
   } = useForm<FormData>({
@@ -176,7 +176,7 @@ export function Form() {
 
   useEffect(() => {
     console.log('Custom fields:', getValues('customFields'));
-  }, [setValue]);
+  }, [setValueBase]);
 
   const handleBeforeRemove = (field: CustomField) => {
     const foldersWithFile = folders
@@ -210,6 +210,13 @@ export function Form() {
     setIsModalOpen(false);
   };
 
+  const setValue = (name: keyof FormData, value: any) => {
+    setValueBase(name, value, {
+      shouldDirty: true,
+      shouldValidate: isSubmitted,
+    });
+  };
+
   return (
     <>
       <Button
@@ -236,12 +243,7 @@ export function Form() {
                   label="Enabled"
                   checked={getValues('isEnabled')}
                   className="w-auto"
-                  onChange={(checked) =>
-                    setValue('isEnabled', checked, {
-                      shouldDirty: true,
-                      shouldValidate: isSubmitted,
-                    })
-                  }
+                  onChange={(checked) => setValue('isEnabled', checked)}
                 />
                 <Select
                   label="Country"
@@ -249,12 +251,7 @@ export function Form() {
                   options={countryOptions}
                   placeholder="Select your country"
                   error={errors.country?.message}
-                  onChange={(option) =>
-                    setValue('country', option.toString(), {
-                      shouldDirty: true,
-                      shouldValidate: isSubmitted,
-                    })
-                  }
+                  onChange={(option) => setValue('country', option.toString())}
                 />
               </Row>
               <Textarea
@@ -266,12 +263,7 @@ export function Form() {
               <FileUpload
                 label="Upload Images"
                 files={uploadedFiles}
-                onChange={(files) =>
-                  setValue('files', files, {
-                    shouldDirty: true,
-                    shouldValidate: isSubmitted,
-                  })
-                }
+                onChange={(files) => setValue('files', files)}
                 error={errors.files?.message}
               />
             </Col>
@@ -283,12 +275,7 @@ export function Form() {
                 tags={getValues('tags') || []}
                 placeholder="Type and press Enter or Tab"
                 error={errors.tags?.message}
-                onChange={(tags) =>
-                  setValue('tags', tags, {
-                    shouldDirty: true,
-                    shouldValidate: isSubmitted,
-                  })
-                }
+                onChange={(tags) => setValue('tags', tags)}
               />
             </Col>
             <Col gap="lg">
@@ -298,10 +285,7 @@ export function Form() {
               <CustomFields
                 fields={getValues('customFields')}
                 onChange={(fields) => {
-                  setValue('customFields', fields, {
-                    shouldDirty: true,
-                    shouldValidate: isSubmitted,
-                  });
+                  setValue('customFields', fields);
                 }}
                 onBeforeRemove={async (field) =>
                   await handleBeforeRemove(field)
