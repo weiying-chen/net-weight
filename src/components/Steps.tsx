@@ -10,11 +10,12 @@ interface StepsProps {
 
 export function Steps({ steps, currentStep }: StepsProps) {
   return (
-    <Row alignItems="center" locked>
+    <Row alignItems="center" locked className="w-auto">
       {steps.map((step, index) => (
         <Row
           key={index}
           alignItems="center"
+          locked
           className="group w-auto cursor-pointer"
         >
           <Button
