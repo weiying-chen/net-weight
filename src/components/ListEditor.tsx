@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Col } from '@/components/Col';
 import { Heading } from '@/components/Heading';
 import { Row } from '@/components/Row';
@@ -12,60 +12,65 @@ import {
 import { cn } from '@/utils';
 
 type ListEditorProps = {
-  keys: string[];
+  items: string[];
+  initialItems?: string[]; // Optional
   className?: string;
-  onChange: (activeKeys: string[]) => void;
+  onChange: (initialItems: string[]) => void;
 };
 
-export function ListEditor({ keys, className, onChange }: ListEditorProps) {
-  const [inactiveItems, setInactiveItems] = useState<string[]>(keys);
-  const [activeItems, setActiveItems] = useState<string[]>([]);
+export function ListEditor({
+  items,
+  initialItems = [], // Default to an empty array if not provided
+  className,
+  onChange,
+}: ListEditorProps) {
+  // Initialize activeItems correctly
+  const [activeItems, setActiveItems] = useState<string[]>(() => {
+    return initialItems && initialItems.length > 0 ? initialItems : items;
+  });
+
+  const [inactiveItems, setInactiveItems] = useState<string[]>(
+    items.filter((item) => !activeItems.includes(item)),
+  );
+
   const [pickedInactiveItems, setPickedInactiveItems] = useState<string[]>([]);
   const [pickedActiveItems, setPickedActiveItems] = useState<string[]>([]);
 
-  const handleAllItemClick = (key: string) => {
-    setPickedInactiveItems((prev) =>
-      prev.includes(key) ? prev.filter((item) => item !== key) : [...prev, key],
-    );
-  };
+  // Update inactive items when activeItems or items change
+  useEffect(() => {
+    setInactiveItems(items.filter((item) => !activeItems.includes(item)));
+  }, [activeItems, items]);
 
-  const handlePickedItemClick = (key: string) => {
-    setPickedActiveItems((prev) =>
-      prev.includes(key) ? prev.filter((item) => item !== key) : [...prev, key],
-    );
-  };
+  // Optional: Update activeItems if initialItems prop changes
+  useEffect(() => {
+    setActiveItems((prevActiveItems) => {
+      if (
+        initialItems &&
+        initialItems.length > 0 &&
+        initialItems !== prevActiveItems
+      ) {
+        return initialItems;
+      }
+      return prevActiveItems;
+    });
+  }, [initialItems]);
 
   const updateActiveItems = (newActiveItems: string[]) => {
     setActiveItems(newActiveItems);
     onChange(newActiveItems);
   };
 
-  const updateAllItems = (
-    newActiveItems: string[],
-    newInactiveItems: string[],
-  ) => {
-    setActiveItems(newActiveItems);
-    setInactiveItems(newInactiveItems);
-    onChange(newActiveItems);
-  };
-
   const handleAddItems = () => {
     const newActiveItems = [...activeItems, ...pickedInactiveItems];
-    const remainingInactiveItems = inactiveItems.filter(
-      (item) => !pickedInactiveItems.includes(item),
-    );
-
-    updateAllItems(newActiveItems, remainingInactiveItems);
+    updateActiveItems(newActiveItems);
     setPickedInactiveItems([]);
   };
 
   const handleRemoveItems = () => {
-    const remainingActiveItems = activeItems.filter(
+    const newActiveItems = activeItems.filter(
       (item) => !pickedActiveItems.includes(item),
     );
-    const newInactiveItems = [...inactiveItems, ...pickedActiveItems];
-
-    updateAllItems(remainingActiveItems, newInactiveItems);
+    updateActiveItems(newActiveItems);
     setPickedActiveItems([]);
   };
 
@@ -105,10 +110,26 @@ export function ListEditor({ keys, className, onChange }: ListEditorProps) {
     updateActiveItems(newActiveItems);
   };
 
+  const handleAllItemClick = (item: string) => {
+    setPickedInactiveItems((prev) =>
+      prev.includes(item)
+        ? prev.filter((item) => item !== item)
+        : [...prev, item],
+    );
+  };
+
+  const handlePickedItemClick = (item: string) => {
+    setPickedActiveItems((prev) =>
+      prev.includes(item)
+        ? prev.filter((item) => item !== item)
+        : [...prev, item],
+    );
+  };
+
   const renderList = (
     items: string[],
     pickedItems: string[],
-    onItemClick: (key: string) => void,
+    onItemClick: (item: string) => void,
   ) => (
     <ul className="h-40 w-full overflow-y-auto rounded border border-border p-2 text-sm">
       {items.map((item) => (
@@ -126,25 +147,23 @@ export function ListEditor({ keys, className, onChange }: ListEditorProps) {
   );
 
   const renderEditButtons = () => (
-    <>
-      <Col fluid className="self-center md:-mt-5">
-        <Button
-          isFull
-          onClick={handleAddItems}
-          disabled={pickedInactiveItems.length === 0}
-        >
-          <IconArrowRight size={20} /> Add
-        </Button>
-        <Button
-          variant="danger"
-          isFull
-          onClick={handleRemoveItems}
-          disabled={pickedActiveItems.length === 0}
-        >
-          <IconArrowLeft size={20} /> Remove
-        </Button>
-      </Col>
-    </>
+    <Col fluid className="self-center md:-mt-5">
+      <Button
+        isFull
+        onClick={handleAddItems}
+        disabled={pickedInactiveItems.length === 0}
+      >
+        <IconArrowRight size={20} /> Add
+      </Button>
+      <Button
+        variant="danger"
+        isFull
+        onClick={handleRemoveItems}
+        disabled={pickedActiveItems.length === 0}
+      >
+        <IconArrowLeft size={20} /> Remove
+      </Button>
+    </Col>
   );
 
   const renderMoveButtons = () => (
