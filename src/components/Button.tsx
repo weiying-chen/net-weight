@@ -7,6 +7,7 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   isLoading?: boolean;
   locked?: boolean;
   isFull?: boolean;
+  circular?: boolean;
   className?: string;
   children: ReactNode;
 };
@@ -16,6 +17,7 @@ export function Button({
   isLoading = false,
   locked = false,
   isFull = false,
+  circular = false,
   className,
   children,
   type = 'button',
@@ -38,6 +40,7 @@ export function Button({
         {
           'w-full md:w-auto': !locked,
           'w-full md:w-full': isFull,
+          'w-10 rounded-full md:w-10': circular,
           'pointer-events-none cursor-not-allowed opacity-50':
             props.disabled || isLoading,
         },
