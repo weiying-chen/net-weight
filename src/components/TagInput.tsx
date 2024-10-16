@@ -34,13 +34,19 @@ export const TagInput: React.FC<TagInputProps> = ({
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if ((e.key === 'Enter' || e.key === 'Tab') && inputValue.trim()) {
+    if (e.key === 'Enter' || e.key === 'Tab') {
       e.preventDefault();
-      const newTag = inputValue.trim();
-      if (!tags.includes(newTag)) {
-        updateTags([...tags, newTag]);
-        setInputValue('');
+      if (inputValue.trim()) {
+        addTag();
       }
+    }
+  };
+
+  const addTag = () => {
+    const newTag = inputValue.trim();
+    if (newTag && !tags.includes(newTag)) {
+      updateTags([...tags, newTag]);
+      setInputValue('');
     }
   };
 
@@ -69,6 +75,7 @@ export const TagInput: React.FC<TagInputProps> = ({
           value={inputValue}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
+          onBlur={addTag}
           placeholder={placeholder || 'Type and press Enter or Tab'}
           className="flex-grow bg-background text-sm outline-none"
         />

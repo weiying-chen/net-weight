@@ -28,6 +28,8 @@ const schema = z.object({
   instagram: z.string().url('Invalid Instagram URL').optional(),
   line: z.string().min(1, 'LINE username is required').optional(),
   wechat: z.string().min(1, 'WeChat ID is required').optional(),
+  socialLink1: z.string().url('Invalid Social Link 1 URL').optional(),
+  socialLink2: z.string().url('Invalid Social Link 2 URL').optional(),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -155,6 +157,18 @@ export function VCard1() {
           label="WeChat"
           {...register('wechat')}
           error={errors.wechat?.message}
+        />
+      </Row>
+      <Row>
+        <Input
+          label="Social Link 1"
+          {...register('socialLink1')}
+          error={errors.socialLink1?.message}
+        />
+        <Input
+          label="Social Link 2"
+          {...register('socialLink2')}
+          error={errors.socialLink2?.message}
         />
       </Row>
     </Col>
