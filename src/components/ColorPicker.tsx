@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { HexColorPicker } from 'react-colorful';
 import { Col } from '@/components/Col';
-import { cn } from '@/utils';
-import { Row } from '@/components/Row';
+import { PseudoInput } from '@/components/PseudoInput';
 
 type ColorPickerProps = {
   label?: string;
@@ -67,15 +66,7 @@ export const ColorPicker = ({
   return (
     <Col className="relative min-w-0" ref={pickerRef}>
       {label && <label className="text-sm font-semibold">{label}</label>}
-      <Row
-        alignItems="center"
-        locked
-        className={cn('h-10 gap-2 rounded border border-border px-3 py-2', {
-          'border-danger': error,
-          'cursor-not-allowed opacity-50': disabled,
-          'border-black': !error && !disabled,
-        })}
-      >
+      <PseudoInput tabIndex={0} error={error} disabled={disabled}>
         <div
           className="h-6 w-6 flex-shrink-0 cursor-pointer rounded border border-border"
           style={{ backgroundColor: color }}
@@ -88,7 +79,7 @@ export const ColorPicker = ({
           className="min-w-0 flex-grow bg-background text-sm outline-none"
           maxLength={7}
         />
-      </Row>
+      </PseudoInput>
       {isPickerOpen && (
         <div className="absolute top-16 z-10 rounded border border-border bg-white p-2 shadow">
           <HexColorPicker color={color} onChange={updateColor} />
