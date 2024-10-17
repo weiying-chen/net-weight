@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Col } from '@/components/Col';
 import { cn } from '@/utils';
 import { IconChevronDown } from '@tabler/icons-react';
+import { Row } from '@/components/Row';
 
 type SelectProps = {
   label?: string;
@@ -151,9 +152,12 @@ export const Select: React.FC<SelectProps> = ({
         onClick={handleDropdownToggle}
         {...props}
       >
-        <div
+        <Row
+          align="between"
+          alignItems="center"
+          locked
           className={cn(
-            'flex h-10 w-full cursor-pointer items-center justify-between rounded border border-border bg-background px-3 py-2 text-sm shadow hover:shadow-dark',
+            'h-10 w-full cursor-pointer rounded border border-border bg-background px-3 py-2 text-sm shadow hover:shadow-dark',
             {
               'border-danger': error,
               'cursor-not-allowed opacity-50': disabled,
@@ -162,7 +166,7 @@ export const Select: React.FC<SelectProps> = ({
         >
           {selected ? selected.label : placeholder || 'Select an option'}
           <IconChevronDown size={20} className="ml-2" />
-        </div>
+        </Row>
         {isOpen && renderDropdown()}
       </div>
       {error && <span className="text-sm text-danger">{error}</span>}

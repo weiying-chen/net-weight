@@ -2,6 +2,7 @@ import { useState, useRef, KeyboardEvent } from 'react';
 import { Col } from '@/components/Col';
 import { Tag } from '@/components/Tag';
 import { cn } from '@/utils';
+import { Row } from '@/components/Row';
 
 type TagInputProps = {
   label?: string;
@@ -58,10 +59,12 @@ export const TagInput: React.FC<TagInputProps> = ({
   return (
     <Col className={className}>
       {label && <label className="text-sm font-semibold">{label}</label>}
-      <div
+      <Row
+        alignItems="center"
         tabIndex={0}
+        locked
         className={cn(
-          'flex w-full flex-wrap items-center gap-2 rounded border border-border bg-background px-3 py-2 outline-none ring-foreground ring-offset-2 focus-visible:ring-2',
+          'flex-wrap rounded border border-border bg-background px-3 py-2 outline-none ring-foreground ring-offset-2 focus-visible:ring-2',
           { 'border-danger': error },
         )}
       >
@@ -79,7 +82,7 @@ export const TagInput: React.FC<TagInputProps> = ({
           placeholder={placeholder || 'Type and press Enter or Tab'}
           className="flex-grow bg-background text-sm outline-none"
         />
-      </div>
+      </Row>
       {error && <span className="text-sm text-danger">{error}</span>}
     </Col>
   );
