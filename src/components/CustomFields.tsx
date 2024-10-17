@@ -166,6 +166,7 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
             type="button"
             variant="secondary"
             className="md:mt-7"
+            locked
             onClick={() => handleRemoveField(index)}
           >
             <IconTrash size={20} />

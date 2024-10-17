@@ -3,12 +3,18 @@ import { Row } from '@/components/Row';
 import { Button } from '@/components/Button';
 import { Heading } from '@/components/Heading';
 
-interface StepsProps {
-  steps: string[];
-  currentStep: number;
+interface Step {
+  label: string;
+  url: string;
 }
 
-export function Steps({ steps, currentStep }: StepsProps) {
+interface StepsProps {
+  steps: Step[];
+  currentStep: number;
+  onStepClick: (url: string, index: number) => void;
+}
+
+export function Steps({ steps, currentStep, onStepClick }: StepsProps) {
   return (
     <Row alignItems="center" locked className="w-auto">
       {steps.map((step, index) => (
@@ -17,15 +23,18 @@ export function Steps({ steps, currentStep }: StepsProps) {
           alignItems="center"
           locked
           className="group w-auto cursor-pointer"
+          onClick={() => onStepClick(step.url, index)}
         >
           <Button
             variant={index + 1 === currentStep ? 'primary' : 'secondary'}
             circular
-            className={`group-hover:shadow-dark ${index + 1 === currentStep ? 'shadow-lg' : ''}`}
+            className={`group-hover:shadow-dark ${
+              index + 1 === currentStep ? 'shadow-lg' : ''
+            }`}
           >
             {index + 1}
           </Button>
-          <Heading>{step}</Heading>
+          <Heading>{step.label}</Heading>
           {index < steps.length - 1 && <IconChevronRight size={30} />}
         </Row>
       ))}

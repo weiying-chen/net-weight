@@ -13,7 +13,7 @@ export function Tag({ className, children, onClick }: TagProps) {
   return (
     <span
       className={cn(
-        'flex items-center gap-2 rounded bg-subtle px-2 py-1 text-sm text-foreground',
+        'flex items-center gap-2 whitespace-nowrap rounded bg-subtle px-2 py-1 text-sm text-foreground',
         className,
       )}
     >

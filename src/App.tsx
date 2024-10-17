@@ -1,6 +1,7 @@
 import { Home } from '@/pages/Home';
 import { Form } from '@/pages/Form';
 import { VCard1 } from '@/pages/VCard1';
+import { VCard2 } from '@/pages/VCard2';
 import { Misc } from '@/pages/Misc';
 import { List } from '@/pages/List';
 import { Route, Routes } from 'react-router-dom';
@@ -12,6 +13,7 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/form" element={<Form />} />
         <Route path="/vcard1" element={<VCard1 />} />
+        <Route path="/vcard2" element={<VCard2 />} />
         <Route path="/misc" element={<Misc />} />
         <Route path="/list" element={<List />} />
       </Routes>

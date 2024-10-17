@@ -49,7 +49,7 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
-export function VCard1() {
+export function VCard2() {
   const {
     register,
     handleSubmit,
@@ -69,7 +69,7 @@ export function VCard1() {
     { label: 'QRCode', url: '/vcard3' },
   ];
 
-  const currentStep = 1;
+  const currentStep = 2;
 
   const handleStepClick = (url: string) => {
     window.location.href = url;
