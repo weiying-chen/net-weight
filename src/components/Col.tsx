@@ -1,4 +1,4 @@
-import { ReactNode, HTMLAttributes } from 'react';
+import { ReactNode, HTMLAttributes, forwardRef } from 'react';
 import { cn } from '@/utils';
 
 type ColProps = HTMLAttributes<HTMLDivElement> & {
@@ -9,51 +9,59 @@ type ColProps = HTMLAttributes<HTMLDivElement> & {
   children: ReactNode;
 };
 
-export function Col({
-  gap = 'md',
-  align = 'start',
-  alignItems = 'start',
-  className,
-  fluid = false,
-  children,
-  ...props
-}: ColProps) {
-  const cnFromGap = {
-    sm: 'gap-1',
-    md: 'gap-2',
-    lg: 'gap-4',
-    xl: 'gap-6',
-  };
+export const Col = forwardRef<HTMLDivElement, ColProps>(
+  (
+    {
+      gap = 'md',
+      align = 'start',
+      alignItems = 'start',
+      className,
+      fluid = false,
+      children,
+      ...props
+    },
+    ref,
+  ) => {
+    const cnFromGap = {
+      sm: 'gap-1',
+      md: 'gap-2',
+      lg: 'gap-4',
+      xl: 'gap-6',
+    };
 
-  const cnFromAlign = {
-    start: 'justify-start',
-    center: 'justify-center',
-    end: 'justify-end',
-    between: 'justify-between',
-    stretch: 'justify-stretch',
-  };
+    const cnFromAlign = {
+      start: 'justify-start',
+      center: 'justify-center',
+      end: 'justify-end',
+      between: 'justify-between',
+      stretch: 'justify-stretch',
+    };
 
-  const cnFromAlignItems = {
-    start: 'items-start',
-    center: 'items-center',
-    end: 'items-end',
-    between: 'items-between',
-    stretch: 'items-stretch',
-  };
+    const cnFromAlignItems = {
+      start: 'items-start',
+      center: 'items-center',
+      end: 'items-end',
+      between: 'items-between',
+      stretch: 'items-stretch',
+    };
 
-  return (
-    <div
-      className={cn(
-        'flex w-full flex-col',
-        { 'w-auto': fluid },
-        cnFromGap[gap],
-        cnFromAlign[align],
-        cnFromAlignItems[alignItems],
-        className,
-      )}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-}
+    return (
+      <div
+        className={cn(
+          'flex w-full flex-col',
+          { 'w-auto': fluid },
+          cnFromGap[gap],
+          cnFromAlign[align],
+          cnFromAlignItems[alignItems],
+          className,
+        )}
+        ref={ref}
+        {...props}
+      >
+        {children}
+      </div>
+    );
+  },
+);
+
+Col.displayName = 'Col';

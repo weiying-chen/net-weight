@@ -47,9 +47,9 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
 }) => {
   const [fields, setFields] = useState<CustomField[]>(initialFields);
 
-  const updateFields = (updatedFields: CustomField[]) => {
-    setFields(updatedFields);
-    onChange(updatedFields);
+  const updateFields = (newFields: CustomField[]) => {
+    setFields(newFields);
+    onChange(newFields);
   };
 
   const handleFieldChange = (
@@ -57,7 +57,7 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
     fieldType: 'key' | 'value' | 'type',
     value: string | number | boolean,
   ) => {
-    const updatedFields = fields.map((field, i) => {
+    const newFields = fields.map((field, i) => {
       if (i === index) {
         if (fieldType === 'type') {
           const resetValue = resetType(value as ValueType);
@@ -71,15 +71,15 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
       }
       return field;
     });
-    updateFields(updatedFields);
+    updateFields(newFields);
   };
 
   const handleAddField = () => {
-    const updatedFields = [
+    const newFields = [
       ...fields,
       { key: '', value: '', type: 'string' as ValueType },
     ];
-    updateFields(updatedFields);
+    updateFields(newFields);
   };
 
   const handleRemoveField = async (index: number) => {
@@ -92,8 +92,8 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
       }
     }
 
-    const updatedFields = fields.filter((_, i) => i !== index);
-    updateFields(updatedFields);
+    const newFields = fields.filter((_, i) => i !== index);
+    updateFields(newFields);
   };
 
   const typeOptions = [

@@ -1,62 +1,38 @@
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Input } from '@/components/Input';
-import { Textarea } from '@/components/Textarea';
 import { Button } from '@/components/Button';
 import { Col } from '@/components/Col';
 import { Steps } from '@/components/Steps';
 import { Row } from '@/components/Row';
-import { FileUpload } from '@/components/FileUpload';
+import { ColorPicker } from '@/components/ColorPicker';
 import { Heading } from '@/components/Heading';
-import { CustomLinks } from '@/components/CustomLinks';
-
-const clErrFromErr = (
-  errors: any,
-): Array<{ platform?: string; url?: string }> => {
-  if (!Array.isArray(errors)) {
-    return [];
-  }
-  return errors.map((error: any) => ({
-    platform: error?.platform?.message,
-    url: error?.url?.message,
-  }));
-};
 
 const schema = z.object({
-  title: z.string().optional(),
-  heading: z.string().optional(),
-  subheading: z.string().optional(),
-  avatar: z.array(z.instanceof(File)).optional(),
-  selfIntroTitle: z.string().optional(),
-  description: z.string().optional(),
-  phone: z
-    .string()
-    .regex(/^\+?[0-9\s\-]+$/, 'Invalid phone number')
-    .or(z.literal('')),
-  email: z.string().email('Invalid email address').or(z.literal('')),
-  website: z.string().url('Invalid URL').or(z.literal('')),
-  address: z.string().optional(),
-  socialLinks: z
-    .array(
-      z.object({
-        platform: z.string().optional(),
-        url: z.string().optional(),
-      }),
-    )
-    .optional(),
+  foregroundColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color'),
+  backgroundColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color'),
+  primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color'),
+  secondaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color'),
+  borderColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color'),
 });
 
 type FormData = z.infer<typeof schema>;
 
 export function VCard2() {
   const {
-    register,
     handleSubmit,
     setValue,
+    getValues,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
+    defaultValues: {
+      foregroundColor: '#ffffff',
+      backgroundColor: '#ffffff',
+      primaryColor: '#000000',
+      secondaryColor: '#000000',
+      borderColor: '#000000',
+    },
   });
 
   const onSubmit: SubmitHandler<FormData> = (data) => {
@@ -75,104 +51,43 @@ export function VCard2() {
     window.location.href = url;
   };
 
-  const renderBasicInfo = () => (
+  const renderColors = () => (
     <Col gap="lg">
       <Heading hasBorder isFull>
-        Basic Info
+        Colors
       </Heading>
       <Row>
-        <Input
-          label="Title"
-          {...register('title')}
-          error={errors.title?.message}
+        <ColorPicker
+          label="Foreground Color"
+          value={getValues('foregroundColor')}
+          onChange={(color) => setValue('foregroundColor', color)}
+          error={errors.foregroundColor?.message}
         />
-        <Input
-          label="Heading"
-          {...register('heading')}
-          error={errors.heading?.message}
+        <ColorPicker
+          label="Background Color"
+          value={getValues('backgroundColor')}
+          onChange={(color) => setValue('backgroundColor', color)}
+          error={errors.backgroundColor?.message}
         />
-        <Input
-          label="Subheading"
-          {...register('subheading')}
-          error={errors.subheading?.message}
+        <ColorPicker
+          label="Primary Color"
+          value={getValues('primaryColor')}
+          onChange={(color) => setValue('primaryColor', color)}
+          error={errors.primaryColor?.message}
         />
-      </Row>
-      <FileUpload
-        label="Avatar"
-        files={[]}
-        onChange={(files) => setValue('avatar', files)}
-        error={errors.avatar?.message}
-      />
-    </Col>
-  );
-
-  const renderSelfIntro = () => (
-    <Col gap="lg">
-      <Heading hasBorder isFull>
-        Self-Introduction
-      </Heading>
-      <Input
-        label="Self-Introduction Title"
-        {...register('selfIntroTitle')}
-        error={errors.selfIntroTitle?.message}
-      />
-      <Textarea
-        label="Description"
-        {...register('description')}
-        error={errors.description?.message}
-      />
-    </Col>
-  );
-
-  const renderContactInfo = () => (
-    <Col gap="lg">
-      <Heading hasBorder isFull>
-        Contact Info
-      </Heading>
-      <Row>
-        <Input
-          label="Phone"
-          {...register('phone')}
-          error={errors.phone?.message}
+        <ColorPicker
+          label="Secondary Color"
+          value={getValues('secondaryColor')}
+          onChange={(color) => setValue('secondaryColor', color)}
+          error={errors.secondaryColor?.message}
         />
-        <Input
-          label="Email"
-          {...register('email')}
-          error={errors.email?.message}
-        />
-        <Input
-          label="Website"
-          {...register('website')}
-          error={errors.website?.message}
+        <ColorPicker
+          label="Border Color"
+          value={getValues('borderColor')}
+          onChange={(color) => setValue('borderColor', color)}
+          error={errors.borderColor?.message}
         />
       </Row>
-      <Input
-        label="Address"
-        {...register('address')}
-        error={errors.address?.message}
-      />
-    </Col>
-  );
-
-  const platforms = [
-    { value: 'facebook', label: 'Facebook' },
-    { value: 'instagram', label: 'Instagram' },
-    { value: 'Line', label: 'Line' },
-    { value: 'WeChat', label: 'WeChat' },
-    { value: 'other', label: 'Other' },
-  ];
-
-  const renderCustomLinks = () => (
-    <Col gap="lg">
-      <Heading hasBorder isFull>
-        Social Links
-      </Heading>
-      <CustomLinks
-        links={[]}
-        options={platforms}
-        onChange={(links) => setValue('socialLinks', links)}
-        errors={clErrFromErr(errors.socialLinks)}
-      />
     </Col>
   );
 
@@ -186,10 +101,7 @@ export function VCard2() {
             onStepClick={handleStepClick}
           />
         </Row>
-        {renderBasicInfo()}
-        {renderSelfIntro()}
-        {renderContactInfo()}
-        {renderCustomLinks()}
+        {renderColors()}
         <Button type="submit">Submit</Button>
       </Col>
     </form>

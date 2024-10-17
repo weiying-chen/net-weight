@@ -29,10 +29,10 @@ export function FileUpload({
 }: FileUploadProps) {
   const [files, setFiles] = useState<FileData[]>(initialFiles);
 
-  const updateFiles = (updatedFiles: FileData[]) => {
-    setFiles(updatedFiles);
+  const updateFiles = (newFiles: FileData[]) => {
+    setFiles(newFiles);
     onChange(
-      updatedFiles
+      newFiles
         .map((fileData) => fileData.file)
         .filter((file) => file !== null) as File[],
     );
@@ -51,8 +51,8 @@ export function FileUpload({
   };
 
   const removeFile = (index: number) => {
-    const updatedFiles = files.filter((_, i) => i !== index);
-    updateFiles(updatedFiles);
+    const newFiles = files.filter((_, i) => i !== index);
+    updateFiles(newFiles);
   };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({

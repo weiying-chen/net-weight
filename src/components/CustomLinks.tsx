@@ -35,9 +35,9 @@ export const CustomLinks: React.FC<CustomLinksProps> = ({
 }) => {
   const [links, setLinks] = useState<Link[]>(initialLinks);
 
-  const updateLinks = (updatedLinks: Link[]) => {
-    setLinks(updatedLinks);
-    onChange(updatedLinks);
+  const updateLinks = (newLinks: Link[]) => {
+    setLinks(newLinks);
+    onChange(newLinks);
   };
 
   const handleLinkChange = (
@@ -45,23 +45,23 @@ export const CustomLinks: React.FC<CustomLinksProps> = ({
     fieldType: 'platform' | 'url',
     value: string,
   ) => {
-    const updatedLinks = links.map((link, i) => {
+    const newLinks = links.map((link, i) => {
       if (i === index) {
         return { ...link, [fieldType]: value };
       }
       return link;
     });
-    updateLinks(updatedLinks);
+    updateLinks(newLinks);
   };
 
   const handleAddLink = () => {
-    const updatedLinks = [...links, { platform: '', url: '' }];
-    updateLinks(updatedLinks);
+    const newLinks = [...links, { platform: '', url: '' }];
+    updateLinks(newLinks);
   };
 
   const handleRemoveLink = (index: number) => {
-    const updatedLinks = links.filter((_, i) => i !== index);
-    updateLinks(updatedLinks);
+    const newLinks = links.filter((_, i) => i !== index);
+    updateLinks(newLinks);
   };
 
   return (
