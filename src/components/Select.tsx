@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Col } from '@/components/Col';
 import { cn } from '@/utils';
 import { IconChevronDown } from '@tabler/icons-react';
-import { Row } from '@/components/Row';
+import { PseudoInput } from '@/components/PseudoInput';
 
 type SelectProps = {
   label?: string;
@@ -58,7 +58,7 @@ export const Select: React.FC<SelectProps> = ({
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (disabled) return; // Prevent interaction if disabled
+    if (disabled) return;
 
     if (!isOpen && event.key === 'Enter') {
       setIsOpen(true);
@@ -113,7 +113,7 @@ export const Select: React.FC<SelectProps> = ({
   }, []);
 
   const handleDropdownToggle = (event: React.MouseEvent<HTMLDivElement>) => {
-    if (disabled) return; // Prevent interaction if disabled
+    if (disabled) return;
     event.stopPropagation();
     setIsOpen((prev) => !prev);
     if (!isOpen) {
@@ -131,6 +131,8 @@ export const Select: React.FC<SelectProps> = ({
           })}
           onClick={(event) => handleOptionClick(option, event)}
           onMouseEnter={() => setFocusedIndex(index)}
+          // Prevents focus from shifting to the list item
+          onMouseDown={(e) => e.preventDefault()}
         >
           {option.label}
         </li>
@@ -143,30 +145,23 @@ export const Select: React.FC<SelectProps> = ({
       {label && <label className="text-sm font-semibold">{label}</label>}
       <div
         ref={dropdownRef}
-        tabIndex={0}
-        className={cn(
-          'relative w-full rounded outline-none ring-foreground ring-offset-2',
-          { 'focus-visible:ring-2': !isOpen },
-        )}
+        className="relative w-full"
         onKeyDown={handleKeyDown}
         onClick={handleDropdownToggle}
         {...props}
       >
-        <Row
-          align="between"
-          alignItems="center"
-          locked
-          className={cn(
-            'h-10 w-full cursor-pointer rounded border border-border bg-background px-3 py-2 text-sm shadow hover:shadow-dark',
-            {
-              'border-danger': error,
-              'cursor-not-allowed opacity-50': disabled,
-            },
-          )}
+        <PseudoInput
+          tabIndex={0}
+          error={error}
+          disabled={disabled}
+          className={cn('cursor-pointer justify-between shadow', {
+            'hover:shadow-dark': !disabled,
+            'focus-visible:ring-0 focus-visible:ring-offset-0': isOpen,
+          })}
         >
           {selected ? selected.label : placeholder || 'Select an option'}
           <IconChevronDown size={20} className="ml-2" />
-        </Row>
+        </PseudoInput>
         {isOpen && renderDropdown()}
       </div>
       {error && <span className="text-sm text-danger">{error}</span>}

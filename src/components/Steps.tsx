@@ -28,9 +28,7 @@ export function Steps({ steps, currentStep, onStepClick }: StepsProps) {
           <Button
             variant={index + 1 === currentStep ? 'primary' : 'secondary'}
             circular
-            className={`group-hover:shadow-dark ${
-              index + 1 === currentStep ? 'shadow-lg' : ''
-            }`}
+            className="group-hover:shadow-dark"
           >
             {index + 1}
           </Button>
