@@ -87,7 +87,7 @@ export function List() {
       <Row>
         <Col className="w-64">ssstw twt wtw twtwt</Col>
         <Col className="w-screen-lg w-full min-w-0">
-          <ListEditor keys={keys} onChange={handlePickedKeysChange} />
+          <ListEditor items={keys} onChange={handlePickedKeysChange} />
           <Table data={flattenedData} columns={columns} />
         </Col>
       </Row>
