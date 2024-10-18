@@ -10,6 +10,14 @@ import { Heading } from '@/components/Heading';
 import { Select } from '@/components/Select';
 import { Slider } from '@/components/Slider';
 
+const steps = [
+  { label: 'Content', url: '/vcard1' },
+  { label: 'Design', url: '/vcard2' },
+  { label: 'QRCode', url: '/vcard3' },
+];
+
+const currentStep = 2;
+
 const schema = z.object({
   foregroundColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color'),
   backgroundColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color'),
@@ -55,14 +63,6 @@ export function VCard2() {
   const onSubmit: SubmitHandler<FormData> = (data) => {
     console.log('Form submitted:', data);
   };
-
-  const steps = [
-    { label: 'Content', url: '/vcard1' },
-    { label: 'Design', url: '/vcard2' },
-    { label: 'QRCode', url: '/vcard3' },
-  ];
-
-  const currentStep = 2;
 
   const handleStepClick = (url: string) => {
     window.location.href = url;

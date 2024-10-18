@@ -49,6 +49,14 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
+const steps = [
+  { label: 'Content', url: '/vcard1' },
+  { label: 'Design', url: '/vcard2' },
+  { label: 'QRCode', url: '/vcard3' },
+];
+
+const currentStep = 1;
+
 export function VCard1() {
   const {
     register,
@@ -62,14 +70,6 @@ export function VCard1() {
   const onSubmit: SubmitHandler<FormData> = (data) => {
     console.log('Form submitted:', data);
   };
-
-  const steps = [
-    { label: 'Content', url: '/vcard1' },
-    { label: 'Design', url: '/vcard2' },
-    { label: 'QRCode', url: '/vcard3' },
-  ];
-
-  const currentStep = 1;
 
   const handleStepClick = (url: string) => {
     window.location.href = url;

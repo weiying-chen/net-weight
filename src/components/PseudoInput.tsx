@@ -1,3 +1,4 @@
+import { MouseEvent } from 'react';
 import { cn } from '@/utils';
 import { Row } from '@/components/Row';
 
@@ -7,6 +8,7 @@ type PseudoInputProps = {
   disabled?: boolean;
   className?: string;
   children: React.ReactNode;
+  onClick?: (event: MouseEvent<HTMLDivElement>) => void;
 };
 
 export const PseudoInput = ({
@@ -15,12 +17,14 @@ export const PseudoInput = ({
   disabled,
   className,
   children,
+  onClick,
 }: PseudoInputProps) => {
   return (
     <Row
       alignItems="center"
       locked={true}
       tabIndex={tabIndex}
+      onClick={onClick}
       className={cn(
         'h-10 w-full rounded border border-border bg-background px-3 py-2 text-sm outline-none ring-foreground ring-offset-2 focus-visible:ring-2',
         {
