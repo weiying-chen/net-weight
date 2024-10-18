@@ -7,6 +7,7 @@ import { Steps } from '@/components/Steps';
 import { Row } from '@/components/Row';
 import { ColorPicker } from '@/components/ColorPicker';
 import { Heading } from '@/components/Heading';
+import { Select } from '@/components/Select'; // Assuming you have this Select component
 
 const schema = z.object({
   foregroundColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color'),
@@ -14,9 +15,17 @@ const schema = z.object({
   primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color'),
   secondaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color'),
   borderColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color'),
+  fontFamily: z.string().min(1),
 });
 
 type FormData = z.infer<typeof schema>;
+
+const fontOptions = [
+  { label: 'Arial', value: 'Arial' },
+  { label: 'Times New Roman', value: 'Times New Roman' },
+  { label: 'Courier New', value: 'Courier New' },
+  { label: 'Georgia', value: 'Georgia' },
+];
 
 export function VCard2() {
   const {
@@ -32,6 +41,7 @@ export function VCard2() {
       primaryColor: '#000000',
       secondaryColor: '#000000',
       borderColor: '#000000',
+      fontFamily: 'Arial',
     },
   });
 
@@ -58,34 +68,52 @@ export function VCard2() {
       </Heading>
       <Row>
         <ColorPicker
-          label="Foreground Color"
+          label="Foreground color"
           value={getValues('foregroundColor')}
           onChange={(color) => setValue('foregroundColor', color)}
           error={errors.foregroundColor?.message}
         />
         <ColorPicker
-          label="Background Color"
+          label="Background color"
           value={getValues('backgroundColor')}
           onChange={(color) => setValue('backgroundColor', color)}
           error={errors.backgroundColor?.message}
         />
         <ColorPicker
-          label="Primary Color"
+          label="Primary color"
           value={getValues('primaryColor')}
           onChange={(color) => setValue('primaryColor', color)}
           error={errors.primaryColor?.message}
         />
         <ColorPicker
-          label="Secondary Color"
+          label="Secondary color"
           value={getValues('secondaryColor')}
           onChange={(color) => setValue('secondaryColor', color)}
           error={errors.secondaryColor?.message}
         />
         <ColorPicker
-          label="Border Color"
+          label="Border color"
           value={getValues('borderColor')}
           onChange={(color) => setValue('borderColor', color)}
           error={errors.borderColor?.message}
+        />
+      </Row>
+    </Col>
+  );
+
+  const renderFont = () => (
+    <Col gap="lg">
+      <Heading hasBorder isFull>
+        Font
+      </Heading>
+      <Row>
+        <Select
+          label="Style"
+          value={getValues('fontFamily')}
+          options={fontOptions}
+          placeholder="Select a font style"
+          error={errors.fontFamily?.message}
+          onChange={(option) => setValue('fontFamily', option.toString())}
         />
       </Row>
     </Col>
@@ -102,6 +130,7 @@ export function VCard2() {
           />
         </Row>
         {renderColors()}
+        {renderFont()}
         <Button type="submit">Submit</Button>
       </Col>
     </form>
