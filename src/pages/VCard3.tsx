@@ -11,66 +11,27 @@ const steps = [
   { label: 'QRCode', url: '/vcard3' },
 ];
 
-const currentStep = 1;
+const currentStep = 3;
 
-const qrCodeData = {
-  content: {
-    basicInfo: {
-      title: '',
-      heading: '',
-      subheading: '',
-      avatar: null,
-    },
-    selfIntro: {
-      title: '',
-      description: '',
-    },
-    contactInfo: {
-      title: '',
-      phone: '',
-      email: '',
-      website: '',
-      address: '',
-    },
-    socialLinks: [],
-  },
-  design: {
-    colors: {
-      primaryColor: '#000000',
-      secondaryColor: '#000000',
-      backgroundColor: '#ffffff',
-    },
-  },
-};
-
-// Define the dummy URL variable
-const qrCodeURL = 'https://example.com/qrcode';
+const qrCodeUrl = 'https://example.com/qrcode';
 
 export function VCard3() {
   const handleStepClick = (url: string) => {
     window.location.href = url;
   };
 
-  const renderQrCode = () => (
-    <Col gap="lg">
-      <Heading hasBorder isFull>
-        QRCode
-      </Heading>
-      <Row align="center" className="rounded bg-subtle p-4" locked>
-        <QRCodeSVG
-          value={JSON.stringify(qrCodeData)}
-          className="h-auto w-full max-w-40 border border-border"
-        />
-      </Row>
-    </Col>
-  );
-
   const renderShare = () => (
     <Col gap="lg">
       <Heading hasBorder isFull>
         Share
       </Heading>
-      <ClipCopy label="" value={qrCodeURL} />
+      <Row align="center" className="rounded bg-subtle p-4" locked>
+        <QRCodeSVG
+          value={JSON.stringify(qrCodeUrl)}
+          className="h-auto w-full max-w-40 border border-border"
+        />
+      </Row>
+      <ClipCopy value={qrCodeUrl} />
     </Col>
   );
 
@@ -83,7 +44,6 @@ export function VCard3() {
           onStepClick={handleStepClick}
         />
       </Row>
-      {renderQrCode()}
       {renderShare()}
     </Col>
   );

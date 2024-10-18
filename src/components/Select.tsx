@@ -4,15 +4,21 @@ import { cn } from '@/utils';
 import { IconChevronDown } from '@tabler/icons-react';
 import { PseudoInput } from '@/components/PseudoInput';
 
+type SelectOption = {
+  label: string;
+  value: string | number;
+  icon?: React.ReactNode; // Icon is optional
+};
+
 type SelectProps = {
   label?: string;
   value: string;
-  options: { label: string; value: string | number }[];
+  options: SelectOption[];
   placeholder?: string;
   error?: string;
   className?: string;
   onChange: (value: string | number) => void;
-  disabled?: boolean; // Add the disabled prop
+  disabled?: boolean;
 };
 
 export const Select: React.FC<SelectProps> = ({
@@ -23,13 +29,14 @@ export const Select: React.FC<SelectProps> = ({
   error,
   className,
   onChange,
-  disabled, // Destructure the disabled prop
+  disabled,
   ...props
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState<{
     value: string | number;
     label: string;
+    icon?: React.ReactNode; // Icon is part of the selected option
   } | null>(() => options.find((option) => option.value === value) || null);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
 
@@ -47,7 +54,7 @@ export const Select: React.FC<SelectProps> = ({
   };
 
   const handleOptionClick = (
-    option: { value: string | number; label: string },
+    option: SelectOption,
     event: React.MouseEvent<HTMLLIElement>,
   ) => {
     event.stopPropagation();
@@ -126,14 +133,18 @@ export const Select: React.FC<SelectProps> = ({
       {options.map((option, index) => (
         <li
           key={option.value}
-          className={cn('flex cursor-pointer items-center px-3 py-2 text-sm', {
-            'bg-subtle': focusedIndex === index,
-          })}
+          className={cn(
+            'flex cursor-pointer items-center gap-2 px-3 py-2 text-sm',
+            {
+              'bg-subtle': focusedIndex === index,
+            },
+          )}
           onClick={(event) => handleOptionClick(option, event)}
           onMouseEnter={() => setFocusedIndex(index)}
           // Prevents focus from shifting to the list item
           onMouseDown={(e) => e.preventDefault()}
         >
+          {option.icon && option.icon} {/* Show icon in dropdown */}
           {option.label}
         </li>
       ))}
@@ -159,7 +170,10 @@ export const Select: React.FC<SelectProps> = ({
             'focus-visible:ring-0 focus-visible:ring-offset-0': isOpen,
           })}
         >
-          {selected ? selected.label : placeholder || 'Select an option'}
+          <div className="flex items-center gap-2">
+            {selected?.icon && selected.icon}
+            {selected ? selected.label : placeholder || 'Select an option'}
+          </div>
           <IconChevronDown size={20} className="ml-2" />
         </PseudoInput>
         {isOpen && renderDropdown()}

@@ -14,6 +14,7 @@ type Link = {
 type PlatformOption = {
   value: string;
   label: string;
+  icon?: React.ReactNode;
 };
 
 type CustomLinksProps = {

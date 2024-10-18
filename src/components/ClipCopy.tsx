@@ -5,12 +5,11 @@ import { Button } from '@/components/Button';
 import { IconCopy } from '@tabler/icons-react';
 
 type ClipCopyProps = {
-  label?: string;
-  className?: string;
   value: string;
+  className?: string;
 };
 
-export const ClipCopy = ({ label, className, value }: ClipCopyProps) => {
+export const ClipCopy = ({ value, className }: ClipCopyProps) => {
   const [isCopied, setIsCopied] = useState(false);
 
   const handleCopy = () => {
@@ -22,7 +21,6 @@ export const ClipCopy = ({ label, className, value }: ClipCopyProps) => {
 
   return (
     <Col className={className}>
-      {label && <label className="text-sm font-semibold">{label}</label>}
       <PseudoInput tabIndex={0} className="justify-between">
         <span className="overflow-hidden text-ellipsis">{value}</span>
         <Button className="h-7 gap-1 px-2 py-1" onClick={handleCopy} locked>

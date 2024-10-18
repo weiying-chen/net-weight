@@ -10,6 +10,13 @@ import { Row } from '@/components/Row';
 import { FileUpload } from '@/components/FileUpload';
 import { Heading } from '@/components/Heading';
 import { CustomLinks } from '@/components/CustomLinks';
+import {
+  IconBrandFacebook,
+  IconBrandInstagram,
+  IconBrandLine,
+  IconBrandWechat,
+  IconSocial,
+} from '@tabler/icons-react';
 
 const clErrFromErr = (
   errors: any,
@@ -56,6 +63,22 @@ const steps = [
 ];
 
 const currentStep = 1;
+
+const platforms = [
+  {
+    value: 'facebook',
+    label: 'Facebook',
+    icon: <IconBrandFacebook size={20} />,
+  },
+  {
+    value: 'instagram',
+    label: 'Instagram',
+    icon: <IconBrandInstagram size={20} />,
+  },
+  { value: 'line', label: 'Line', icon: <IconBrandLine size={20} /> },
+  { value: 'wechat', label: 'WeChat', icon: <IconBrandWechat size={20} /> },
+  { value: 'other', label: 'Other', icon: <IconSocial size={20} /> },
+];
 
 export function VCard1() {
   const {
@@ -153,14 +176,6 @@ export function VCard1() {
       />
     </Col>
   );
-
-  const platforms = [
-    { value: 'facebook', label: 'Facebook' },
-    { value: 'instagram', label: 'Instagram' },
-    { value: 'Line', label: 'Line' },
-    { value: 'WeChat', label: 'WeChat' },
-    { value: 'other', label: 'Other' },
-  ];
 
   const renderCustomLinks = () => (
     <Col gap="lg">
