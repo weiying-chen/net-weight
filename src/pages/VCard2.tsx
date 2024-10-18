@@ -18,6 +18,8 @@ const schema = z.object({
   borderColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color'),
   fontFamily: z.string().min(1),
   fontSize: z.number().min(8).max(72),
+  cardCorner: z.number().min(0).max(50),
+  cardShadow: z.string().min(1, 'Card shadow is required'),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -45,6 +47,8 @@ export function VCard2() {
       borderColor: '#000000',
       fontFamily: 'Arial',
       fontSize: 16,
+      cardCorner: 10, // Default corner radius
+      cardShadow: '0px 4px 6px rgba(0,0,0,0.1)', // Default shadow
     },
   });
 
@@ -129,6 +133,49 @@ export function VCard2() {
     </Col>
   );
 
+  const renderCard = () => {
+    const shadowDefault = '0px 4px';
+    const shadowColor = 'rgba(0, 0, 0, 0.1)';
+
+    const getBlurRadius = (shadow: string) => {
+      const match = shadow.match(/(\d+)px \d+px (\d+)px/);
+      return match ? parseInt(match[2], 10) : 6;
+    };
+
+    return (
+      <Col gap="lg">
+        <Heading hasBorder isFull>
+          Card
+        </Heading>
+        <Slider
+          label="Corner"
+          value={getValues('cardCorner')}
+          min={0}
+          max={50}
+          step={1}
+          onChange={(value) => setValue('cardCorner', value)}
+          error={errors.cardCorner?.message}
+        />
+        <Slider
+          label="Shadow"
+          value={getBlurRadius(getValues('cardShadow'))}
+          min={0}
+          max={50}
+          step={1}
+          onChange={(value) =>
+            setValue('cardShadow', `${shadowDefault} ${value}px ${shadowColor}`)
+          }
+          error={errors.cardShadow?.message}
+        />
+        {errors.cardShadow && (
+          <span className="text-sm text-danger">
+            {errors.cardShadow.message}
+          </span>
+        )}
+      </Col>
+    );
+  };
+
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <Col gap="xl">
@@ -141,6 +188,7 @@ export function VCard2() {
         </Row>
         {renderColors()}
         {renderFont()}
+        {renderCard()}
         <Button type="submit">Submit</Button>
       </Col>
     </form>

@@ -25,12 +25,12 @@ export const Slider: React.FC<SliderProps> = ({
   className,
   error,
 }) => {
-  const [currentValue, setCurrentValue] = useState(value);
+  const [vaue, setValue] = useState(value);
   const sliderTrackRef = useRef<HTMLDivElement | null>(null);
   const thumbRef = useRef<HTMLDivElement | null>(null);
 
   const getPercentage = () => {
-    return ((currentValue - min) / (max - min)) * 100;
+    return ((vaue - min) / (max - min)) * 100;
   };
 
   const getClientX = (event: MouseEvent | TouchEvent) => {
@@ -44,6 +44,7 @@ export const Slider: React.FC<SliderProps> = ({
     if (!sliderTrackRef.current) return;
     const trackRect = sliderTrackRef.current.getBoundingClientRect();
     const clientX = getClientX(event);
+
     const newValue = Math.min(
       Math.max(
         ((clientX - trackRect.left) / trackRect.width) * (max - min) + min,
@@ -51,7 +52,8 @@ export const Slider: React.FC<SliderProps> = ({
       ),
       max,
     );
-    setCurrentValue(Math.round(newValue / step) * step);
+
+    setValue(Math.round(newValue / step) * step);
     onChange(Math.round(newValue / step) * step);
 
     // Focus the thumb after the value is set when clicking on the track
@@ -83,22 +85,22 @@ export const Slider: React.FC<SliderProps> = ({
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (disabled) return;
 
-    let newValue = currentValue;
+    let newValue = vaue;
 
     switch (event.key) {
       case 'ArrowLeft':
       case 'ArrowDown':
-        newValue = Math.max(currentValue - step, min);
+        newValue = Math.max(vaue - step, min);
         break;
       case 'ArrowRight':
       case 'ArrowUp':
-        newValue = Math.min(currentValue + step, max);
+        newValue = Math.min(vaue + step, max);
         break;
       default:
         return;
     }
 
-    setCurrentValue(newValue);
+    setValue(newValue);
     onChange(newValue);
   };
 
@@ -122,21 +124,21 @@ export const Slider: React.FC<SliderProps> = ({
           />
           {/* Thumb */}
           <div
-            ref={thumbRef} // Add ref to the thumb
-            tabIndex={0} // Make thumb focusable
+            ref={thumbRef}
+            tabIndex={0}
             role="slider"
             aria-valuemin={min}
             aria-valuemax={max}
-            aria-valuenow={currentValue}
+            aria-valuenow={vaue}
             aria-label={label}
             className={cn(
-              'absolute top-1/2 h-4 w-4 -translate-y-1/2 cursor-pointer rounded-full border border-border bg-background shadow outline-none ring-foreground ring-offset-2 transition-colors focus-visible:ring-2',
+              'absolute top-1/2 h-5 w-5 -translate-y-1/2 cursor-pointer rounded-full border border-border bg-background shadow outline-none ring-foreground ring-offset-2 transition-colors focus-visible:ring-2',
               disabled && 'cursor-not-allowed opacity-50',
             )}
             style={{
-              left: `calc(${getPercentage()}% - 8px)`,
+              left: `calc(${getPercentage()}% - 10px)`, // Updated offset to match the larger size
             }}
-            onKeyDown={handleKeyDown} // Attach keyboard handler
+            onKeyDown={handleKeyDown}
           />
         </div>
       </div>
