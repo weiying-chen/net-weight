@@ -7,7 +7,8 @@ import { Steps } from '@/components/Steps';
 import { Row } from '@/components/Row';
 import { ColorPicker } from '@/components/ColorPicker';
 import { Heading } from '@/components/Heading';
-import { Select } from '@/components/Select'; // Assuming you have this Select component
+import { Select } from '@/components/Select';
+import { Slider } from '@/components/Slider';
 
 const schema = z.object({
   foregroundColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color'),
@@ -16,6 +17,7 @@ const schema = z.object({
   secondaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color'),
   borderColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color'),
   fontFamily: z.string().min(1),
+  fontSize: z.number().min(8).max(72),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -42,6 +44,7 @@ export function VCard2() {
       secondaryColor: '#000000',
       borderColor: '#000000',
       fontFamily: 'Arial',
+      fontSize: 16,
     },
   });
 
@@ -106,16 +109,23 @@ export function VCard2() {
       <Heading hasBorder isFull>
         Font
       </Heading>
-      <Row>
-        <Select
-          label="Style"
-          value={getValues('fontFamily')}
-          options={fontOptions}
-          placeholder="Select a font style"
-          error={errors.fontFamily?.message}
-          onChange={(option) => setValue('fontFamily', option.toString())}
-        />
-      </Row>
+      <Select
+        label="Style"
+        value={getValues('fontFamily')}
+        options={fontOptions}
+        placeholder="Select a font style"
+        error={errors.fontFamily?.message}
+        onChange={(option) => setValue('fontFamily', option.toString())}
+      />
+      <Slider
+        label="Font Size"
+        value={getValues('fontSize')}
+        min={8}
+        max={72}
+        step={1}
+        onChange={(value) => setValue('fontSize', value)}
+        error={errors.fontSize?.message}
+      />
     </Col>
   );
 
