@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { cn } from '@/utils';
 import { Col } from '@/components/Col';
+import { Row } from '@/components/Row';
 
 type SliderProps = {
   label?: string;
@@ -8,6 +9,7 @@ type SliderProps = {
   min?: number;
   max?: number;
   step?: number;
+  unit?: string;
   onChange: (value: number) => void;
   disabled?: boolean;
   className?: string;
@@ -16,21 +18,22 @@ type SliderProps = {
 
 export const Slider: React.FC<SliderProps> = ({
   label,
-  value = 0,
+  value: initialValue = 0,
   min = 0,
   max = 100,
   step = 1,
+  unit = 'px',
   onChange,
   disabled = false,
   className,
   error,
 }) => {
-  const [vaue, setValue] = useState(value);
+  const [value, setValue] = useState(initialValue);
   const sliderTrackRef = useRef<HTMLDivElement | null>(null);
   const thumbRef = useRef<HTMLDivElement | null>(null);
 
   const getPercentage = () => {
-    return ((vaue - min) / (max - min)) * 100;
+    return ((value - min) / (max - min)) * 100;
   };
 
   const getClientX = (event: MouseEvent | TouchEvent) => {
@@ -85,16 +88,16 @@ export const Slider: React.FC<SliderProps> = ({
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (disabled) return;
 
-    let newValue = vaue;
+    let newValue = value;
 
     switch (event.key) {
       case 'ArrowLeft':
       case 'ArrowDown':
-        newValue = Math.max(vaue - step, min);
+        newValue = Math.max(value - step, min);
         break;
       case 'ArrowRight':
       case 'ArrowUp':
-        newValue = Math.min(vaue + step, max);
+        newValue = Math.min(value + step, max);
         break;
       default:
         return;
@@ -106,7 +109,13 @@ export const Slider: React.FC<SliderProps> = ({
 
   return (
     <Col className={className}>
-      {label && <label className="text-sm font-semibold">{label}</label>}
+      <Row align="between">
+        {label && <label className="text-sm font-semibold">{label}</label>}
+        <span className="text-sm">
+          {value}
+          {unit} {/* Display the unit */}
+        </span>
+      </Row>
       <div className={cn('relative w-full')}>
         <div
           ref={sliderTrackRef}
@@ -129,14 +138,14 @@ export const Slider: React.FC<SliderProps> = ({
             role="slider"
             aria-valuemin={min}
             aria-valuemax={max}
-            aria-valuenow={vaue}
+            aria-valuenow={value}
             aria-label={label}
             className={cn(
               'absolute top-1/2 h-5 w-5 -translate-y-1/2 cursor-pointer rounded-full border border-border bg-background shadow outline-none ring-foreground ring-offset-2 transition-colors focus-visible:ring-2',
               disabled && 'cursor-not-allowed opacity-50',
             )}
             style={{
-              left: `calc(${getPercentage()}% - 10px)`, // Updated offset to match the larger size
+              left: `calc(${getPercentage()}% - 10px)`,
             }}
             onKeyDown={handleKeyDown}
           />
