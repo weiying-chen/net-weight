@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef } from 'react';
 import { cn } from '@/utils';
 import { Col } from '@/components/Col';
 
@@ -27,10 +27,11 @@ export const Slider: React.FC<SliderProps> = ({
 }) => {
   const [currentValue, setCurrentValue] = useState(value);
   const sliderTrackRef = useRef<HTMLDivElement | null>(null);
+  const thumbRef = useRef<HTMLDivElement | null>(null);
 
-  const getPercentage = useCallback(() => {
+  const getPercentage = () => {
     return ((currentValue - min) / (max - min)) * 100;
-  }, [currentValue, min, max]);
+  };
 
   const getClientX = (event: MouseEvent | TouchEvent) => {
     if ('touches' in event) {
@@ -39,42 +40,67 @@ export const Slider: React.FC<SliderProps> = ({
     return event.clientX;
   };
 
-  const handleMove = useCallback(
-    (event: MouseEvent | TouchEvent) => {
-      if (!sliderTrackRef.current) return;
-      const trackRect = sliderTrackRef.current.getBoundingClientRect();
-      const clientX = getClientX(event);
-      const newValue = Math.min(
-        Math.max(
-          ((clientX - trackRect.left) / trackRect.width) * (max - min) + min,
-          min,
-        ),
-        max,
-      );
-      setCurrentValue(Math.round(newValue / step) * step);
-      onChange(Math.round(newValue / step) * step);
-    },
-    [min, max, step, onChange],
-  );
+  const handleMove = (event: MouseEvent | TouchEvent) => {
+    if (!sliderTrackRef.current) return;
+    const trackRect = sliderTrackRef.current.getBoundingClientRect();
+    const clientX = getClientX(event);
+    const newValue = Math.min(
+      Math.max(
+        ((clientX - trackRect.left) / trackRect.width) * (max - min) + min,
+        min,
+      ),
+      max,
+    );
+    setCurrentValue(Math.round(newValue / step) * step);
+    onChange(Math.round(newValue / step) * step);
 
-  const handleStart = useCallback(
-    (event: React.MouseEvent | React.TouchEvent) => {
+    // Focus the thumb after the value is set when clicking on the track
+    setTimeout(() => thumbRef.current?.focus(), 0);
+  };
+
+  const handleStart = (event: React.MouseEvent | React.TouchEvent) => {
+    const target = event.target as HTMLElement;
+
+    // If clicking on the track (not the thumb), move the thumb and focus it
+    if (target !== thumbRef.current) {
       handleMove(event.nativeEvent as MouseEvent | TouchEvent);
+    }
 
-      document.addEventListener('mousemove', handleMove);
-      document.addEventListener('mouseup', handleEnd);
-      document.addEventListener('touchmove', handleMove);
-      document.addEventListener('touchend', handleEnd);
-    },
-    [handleMove],
-  );
+    // Add event listeners for drag
+    document.addEventListener('mousemove', handleMove);
+    document.addEventListener('mouseup', handleEnd);
+    document.addEventListener('touchmove', handleMove);
+    document.addEventListener('touchend', handleEnd);
+  };
 
-  const handleEnd = useCallback(() => {
+  const handleEnd = () => {
     document.removeEventListener('mousemove', handleMove);
     document.removeEventListener('mouseup', handleEnd);
     document.removeEventListener('touchmove', handleMove);
     document.removeEventListener('touchend', handleEnd);
-  }, [handleMove]);
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (disabled) return;
+
+    let newValue = currentValue;
+
+    switch (event.key) {
+      case 'ArrowLeft':
+      case 'ArrowDown':
+        newValue = Math.max(currentValue - step, min);
+        break;
+      case 'ArrowRight':
+      case 'ArrowUp':
+        newValue = Math.min(currentValue + step, max);
+        break;
+      default:
+        return;
+    }
+
+    setCurrentValue(newValue);
+    onChange(newValue);
+  };
 
   return (
     <Col className={className}>
@@ -96,15 +122,21 @@ export const Slider: React.FC<SliderProps> = ({
           />
           {/* Thumb */}
           <div
+            ref={thumbRef} // Add ref to the thumb
+            tabIndex={0} // Make thumb focusable
+            role="slider"
+            aria-valuemin={min}
+            aria-valuemax={max}
+            aria-valuenow={currentValue}
+            aria-label={label}
             className={cn(
-              'absolute top-1/2 h-4 w-4 -translate-y-1/2 cursor-pointer rounded-full border border-border bg-background shadow',
+              'absolute top-1/2 h-4 w-4 -translate-y-1/2 cursor-pointer rounded-full border border-border bg-background shadow outline-none ring-foreground ring-offset-2 transition-colors focus-visible:ring-2',
               disabled && 'cursor-not-allowed opacity-50',
             )}
             style={{
               left: `calc(${getPercentage()}% - 8px)`,
             }}
-            onMouseDown={handleStart}
-            onTouchStart={handleStart}
+            onKeyDown={handleKeyDown} // Attach keyboard handler
           />
         </div>
       </div>
