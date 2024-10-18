@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { cn } from '@/utils'; // Assuming you have a utility for class names
-import { Col } from '@/components/Col'; // Assuming you have a Col component for layout
+import { cn } from '@/utils';
+import { Col } from '@/components/Col';
 
 type SliderProps = {
   label?: string;
@@ -32,12 +32,18 @@ export const Slider: React.FC<SliderProps> = ({
     return ((currentValue - min) / (max - min)) * 100;
   }, [currentValue, min, max]);
 
+  const getClientX = (event: MouseEvent | TouchEvent) => {
+    if ('touches' in event) {
+      return event.touches[0].clientX;
+    }
+    return event.clientX;
+  };
+
   const handleMove = useCallback(
     (event: MouseEvent | TouchEvent) => {
       if (!sliderTrackRef.current) return;
       const trackRect = sliderTrackRef.current.getBoundingClientRect();
-      const clientX =
-        'touches' in event ? event.touches[0].clientX : event.clientX;
+      const clientX = getClientX(event);
       const newValue = Math.min(
         Math.max(
           ((clientX - trackRect.left) / trackRect.width) * (max - min) + min,
@@ -51,12 +57,17 @@ export const Slider: React.FC<SliderProps> = ({
     [min, max, step, onChange],
   );
 
-  const handleStart = useCallback(() => {
-    document.addEventListener('mousemove', handleMove);
-    document.addEventListener('mouseup', handleEnd);
-    document.addEventListener('touchmove', handleMove);
-    document.addEventListener('touchend', handleEnd);
-  }, [handleMove]);
+  const handleStart = useCallback(
+    (event: React.MouseEvent | React.TouchEvent) => {
+      handleMove(event.nativeEvent as MouseEvent | TouchEvent);
+
+      document.addEventListener('mousemove', handleMove);
+      document.addEventListener('mouseup', handleEnd);
+      document.addEventListener('touchmove', handleMove);
+      document.addEventListener('touchend', handleEnd);
+    },
+    [handleMove],
+  );
 
   const handleEnd = useCallback(() => {
     document.removeEventListener('mousemove', handleMove);
