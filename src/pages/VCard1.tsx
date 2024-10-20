@@ -268,45 +268,57 @@ export function VCard1() {
       <Heading size="sm" hasBorder isFull>
         Preview
       </Heading>
-      <Avatar
-        size="lg"
-        src="https://via.placeholder.com/150"
-        alt="User Avatar"
-      />
-      <Col alignItems="center">
-        <Heading size="lg">Title</Heading>
-        <Heading>Heading</Heading>
-        <Heading size="sm">Subheading</Heading>
-      </Col>
-      {previewSelfIntro()}
-      {previewContactInfo()}
-      {previewCustomLinks()}
+      <div className="relative h-[583px] overflow-y-scroll rounded-[2rem] border-8 border-border scrollbar-hide">
+        <div className="sticky left-1/2 top-0 h-3 w-32 -translate-x-1/2 transform rounded-b-full bg-border"></div>
+        <Col gap="lg" className="p-6">
+          <Col alignItems="center">
+            <Avatar
+              size="lg"
+              src="https://via.placeholder.com/150"
+              alt="User Avatar"
+            />
+            <Heading size="lg">Title</Heading>
+            <Heading>Heading</Heading>
+            <Heading size="sm">Subheading</Heading>
+          </Col>
+          {previewSelfIntro()}
+          {previewContactInfo()}
+          {previewCustomLinks()}
+        </Col>
+      </div>
     </Col>
   );
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <Col gap="xl">
-        <Row align="center" locked>
-          <Steps
-            steps={steps}
-            currentStep={currentStep}
-            onStepClick={handleStepClick}
-          />
-        </Row>
-        <Row gap="xl">
-          <Card>
-            <Col gap="xl">
-              {renderBasicInfo()}
-              {renderSelfIntro()}
-              {renderContactInfo()}
-              {renderCustomLinks()}
-            </Col>
-          </Card>
-          <Card>{renderPreview()}</Card>
-        </Row>
-        <Button type="submit">Submit</Button>
-      </Col>
-    </form>
+    <Col alignItems="center">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="w-full max-w-screen-lg"
+      >
+        <Col gap="xl">
+          <Row align="center" locked>
+            <Steps
+              steps={steps}
+              currentStep={currentStep}
+              onStepClick={handleStepClick}
+            />
+          </Row>
+          <Row gap="xl">
+            <Card className="flex-grow-2 basis-2/3">
+              <Col gap="xl">
+                {renderBasicInfo()}
+                {renderSelfIntro()}
+                {renderContactInfo()}
+                {renderCustomLinks()}
+              </Col>
+            </Card>
+            <Card className="flex-grow basis-1/3">{renderPreview()}</Card>
+          </Row>
+          <Row align="end">
+            <Button type="submit">Submit</Button>
+          </Row>
+        </Col>
+      </form>
+    </Col>
   );
 }
