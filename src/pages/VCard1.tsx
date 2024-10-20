@@ -10,13 +10,19 @@ import { Row } from '@/components/Row';
 import { FileUpload } from '@/components/FileUpload';
 import { Heading } from '@/components/Heading';
 import { CustomLinks } from '@/components/CustomLinks';
+import { Avatar } from '@/components/Avatar';
 import {
   IconBrandFacebook,
   IconBrandInstagram,
   IconBrandLine,
   IconBrandWechat,
+  IconHome,
+  IconMail,
+  IconMapPin,
+  IconPhone,
   IconSocial,
 } from '@tabler/icons-react';
+import { Card } from '@/components/Card';
 
 const clErrFromErr = (
   errors: any,
@@ -100,7 +106,7 @@ export function VCard1() {
 
   const renderBasicInfo = () => (
     <Col gap="lg">
-      <Heading hasBorder isFull>
+      <Heading size="sm" hasBorder isFull>
         Basic Info
       </Heading>
       <Row>
@@ -131,7 +137,7 @@ export function VCard1() {
 
   const renderSelfIntro = () => (
     <Col gap="lg">
-      <Heading hasBorder isFull>
+      <Heading size="sm" hasBorder isFull>
         Self-Introduction
       </Heading>
       <Input
@@ -149,7 +155,7 @@ export function VCard1() {
 
   const renderContactInfo = () => (
     <Col gap="lg">
-      <Heading hasBorder isFull>
+      <Heading size="sm" hasBorder isFull>
         Contact Info
       </Heading>
       <Row>
@@ -179,7 +185,7 @@ export function VCard1() {
 
   const renderCustomLinks = () => (
     <Col gap="lg">
-      <Heading hasBorder isFull>
+      <Heading size="sm" hasBorder isFull>
         Social Links
       </Heading>
       <CustomLinks
@@ -188,6 +194,93 @@ export function VCard1() {
         onChange={(links) => setValue('socialLinks', links)}
         errors={clErrFromErr(errors.socialLinks)}
       />
+    </Col>
+  );
+
+  const previewSelfIntro = () => (
+    <Card>
+      <Col gap="lg">
+        <Heading size="sm" hasBorder isFull>
+          Self-introduction
+        </Heading>
+        <p>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+          eiusmod tempor incididunt ut labore et dolore magna aliqua.
+        </p>
+      </Col>
+    </Card>
+  );
+
+  const previewContactInfo = () => (
+    <Card>
+      <Col gap="lg">
+        <Heading size="sm" hasBorder isFull>
+          Contact Info
+        </Heading>
+        <Row alignItems="center">
+          <IconPhone />
+          +1 (123) 456-7890
+        </Row>
+        <Row alignItems="center">
+          <IconMail />
+          example@example.com
+        </Row>
+        <Row alignItems="center">
+          <IconMapPin />
+          www.example.com
+        </Row>
+        <Row alignItems="center">
+          <IconHome />
+          1234 Main St, Springfield, USA
+        </Row>
+      </Col>
+    </Card>
+  );
+
+  const previewCustomLinks = () => (
+    <Card>
+      <Col gap="lg">
+        <Heading size="sm" hasBorder isFull>
+          Social Links
+        </Heading>
+        <Row alignItems="center">
+          <IconBrandFacebook size={20} />
+          <a href="#">facebook.com/example</a>
+        </Row>
+        <Row alignItems="center">
+          <IconBrandInstagram size={20} />
+          <a href="#">instagram.com/example</a>
+        </Row>
+        <Row alignItems="center">
+          <IconBrandLine size={20} />
+          example_line
+        </Row>
+        <Row alignItems="center">
+          <IconBrandWechat size={20} />
+          example_wechat
+        </Row>
+      </Col>
+    </Card>
+  );
+
+  const renderPreview = () => (
+    <Col gap="lg" alignItems="center">
+      <Heading size="sm" hasBorder isFull>
+        Preview
+      </Heading>
+      <Avatar
+        size="lg"
+        src="https://via.placeholder.com/150"
+        alt="User Avatar"
+      />
+      <Col alignItems="center">
+        <Heading size="lg">Title</Heading>
+        <Heading>Heading</Heading>
+        <Heading size="sm">Subheading</Heading>
+      </Col>
+      {previewSelfIntro()}
+      {previewContactInfo()}
+      {previewCustomLinks()}
     </Col>
   );
 
@@ -201,10 +294,17 @@ export function VCard1() {
             onStepClick={handleStepClick}
           />
         </Row>
-        {renderBasicInfo()}
-        {renderSelfIntro()}
-        {renderContactInfo()}
-        {renderCustomLinks()}
+        <Row gap="xl">
+          <Card>
+            <Col gap="xl">
+              {renderBasicInfo()}
+              {renderSelfIntro()}
+              {renderContactInfo()}
+              {renderCustomLinks()}
+            </Col>
+          </Card>
+          <Card>{renderPreview()}</Card>
+        </Row>
         <Button type="submit">Submit</Button>
       </Col>
     </form>
