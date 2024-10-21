@@ -64,7 +64,7 @@ export const ColorPicker = ({
   }, [isPickerOpen]);
 
   return (
-    <Col className="relative min-w-0" ref={pickerRef}>
+    <Col className="relative" ref={pickerRef}>
       {label && <label className="text-sm font-semibold">{label}</label>}
       <PseudoInput tabIndex={0} error={error} disabled={disabled}>
         <div
@@ -76,7 +76,7 @@ export const ColorPicker = ({
           type="text"
           value={color}
           onChange={handleInputChange}
-          className="min-w-0 flex-grow bg-background text-sm outline-none"
+          className="w-full bg-background text-sm outline-none"
           maxLength={7}
         />
       </PseudoInput>

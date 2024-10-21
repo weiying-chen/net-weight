@@ -9,6 +9,8 @@ import { ColorPicker } from '@/components/ColorPicker';
 import { Heading } from '@/components/Heading';
 import { Select } from '@/components/Select';
 import { Slider } from '@/components/Slider';
+import { VCardPreview } from '@/pages/VCardPreview'; // Import VCardPreview
+import { Card } from '@/components/Card';
 
 const steps = [
   { label: 'Content', url: '/vcard1' },
@@ -22,7 +24,7 @@ const schema = z.object({
   foregroundColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color'),
   backgroundColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color'),
   primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color'),
-  secondaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color'),
+  // secondaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color'),
   borderColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color'),
   fontFamily: z.string().min(1),
   fontSize: z.number().min(8).max(72),
@@ -51,7 +53,7 @@ export function VCard2() {
       foregroundColor: '#ffffff',
       backgroundColor: '#ffffff',
       primaryColor: '#000000',
-      secondaryColor: '#000000',
+      // secondaryColor: '#000000',
       borderColor: '#000000',
       fontFamily: 'Arial',
       fontSize: 16,
@@ -68,9 +70,9 @@ export function VCard2() {
     window.location.href = url;
   };
 
-  const renderColors = () => (
+  const renderBasicInfo = () => (
     <Col gap="lg">
-      <Heading hasBorder isFull>
+      <Heading size="sm" hasBorder isFull>
         Colors
       </Heading>
       <Row>
@@ -86,17 +88,21 @@ export function VCard2() {
           onChange={(color) => setValue('backgroundColor', color)}
           error={errors.backgroundColor?.message}
         />
-        <ColorPicker
-          label="Primary color"
-          value={getValues('primaryColor')}
-          onChange={(color) => setValue('primaryColor', color)}
-          error={errors.primaryColor?.message}
-        />
+      </Row>
+      <Row>
+        {/*
         <ColorPicker
           label="Secondary color"
           value={getValues('secondaryColor')}
           onChange={(color) => setValue('secondaryColor', color)}
           error={errors.secondaryColor?.message}
+        />
+      */}
+        <ColorPicker
+          label="Primary color"
+          value={getValues('primaryColor')}
+          onChange={(color) => setValue('primaryColor', color)}
+          error={errors.primaryColor?.message}
         />
         <ColorPicker
           label="Border color"
@@ -108,9 +114,9 @@ export function VCard2() {
     </Col>
   );
 
-  const renderFont = () => (
+  const renderSelfIntro = () => (
     <Col gap="lg">
-      <Heading hasBorder isFull>
+      <Heading size="sm" hasBorder isFull>
         Font
       </Heading>
       <Select
@@ -133,7 +139,7 @@ export function VCard2() {
     </Col>
   );
 
-  const renderCard = () => {
+  const renderContactInfo = () => {
     const shadowDefault = '0px 4px';
     const shadowColor = 'rgba(0, 0, 0, 0.1)';
 
@@ -144,7 +150,7 @@ export function VCard2() {
 
     return (
       <Col gap="lg">
-        <Heading hasBorder isFull>
+        <Heading size="sm" hasBorder isFull>
           Card
         </Heading>
         <Slider
@@ -177,20 +183,36 @@ export function VCard2() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <Col gap="xl">
-        <Row align="center" locked>
-          <Steps
-            steps={steps}
-            currentStep={currentStep}
-            onStepClick={handleStepClick}
-          />
-        </Row>
-        {renderColors()}
-        {renderFont()}
-        {renderCard()}
-        <Button type="submit">Submit</Button>
-      </Col>
-    </form>
+    <Col alignItems="center">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="w-full max-w-screen-lg"
+      >
+        <Col gap="xl">
+          <Row align="center" locked>
+            <Steps
+              steps={steps}
+              currentStep={currentStep}
+              onStepClick={handleStepClick}
+            />
+          </Row>
+          <Row gap="xl">
+            <Card className="flex-grow-2 basis-2/3">
+              <Col gap="xl">
+                {renderBasicInfo()}
+                {renderSelfIntro()}
+                {renderContactInfo()}
+              </Col>
+            </Card>
+            <Card className="flex-grow basis-1/3">
+              <VCardPreview />
+            </Card>
+          </Row>
+          <Row align="end">
+            <Button type="submit">Submit</Button>
+          </Row>
+        </Col>
+      </form>
+    </Col>
   );
 }
