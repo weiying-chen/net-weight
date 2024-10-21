@@ -1,6 +1,7 @@
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/Input';
 import { Textarea } from '@/components/Textarea';
 import { Col } from '@/components/Col';
@@ -79,6 +80,12 @@ const platforms = [
 ];
 
 export function VCard1() {
+  const navigate = useNavigate();
+
+  const handleStepClick = (url: string) => {
+    navigate(url);
+  };
+
   const {
     register,
     handleSubmit,
@@ -189,6 +196,7 @@ export function VCard1() {
     <VCardForm
       currentStep={currentStep}
       steps={steps}
+      onStepClick={handleStepClick}
       onSubmit={handleSubmit(onSubmit)}
     >
       {renderBasicInfo()}

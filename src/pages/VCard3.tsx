@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { Col } from '@/components/Col';
 import { Heading } from '@/components/Heading';
 import { QRCodeSVG } from 'qrcode.react';
@@ -15,6 +16,12 @@ const currentStep = 3;
 const qrCodeUrl = 'https://example.com/qrcode';
 
 export function VCard3() {
+  const navigate = useNavigate();
+
+  const handleStepClick = (url: string) => {
+    navigate(url);
+  };
+
   const renderShare = () => (
     <Col gap="lg">
       <Heading hasBorder isFull>
@@ -31,7 +38,11 @@ export function VCard3() {
   );
 
   return (
-    <VCardForm currentStep={currentStep} steps={steps}>
+    <VCardForm
+      currentStep={currentStep}
+      steps={steps}
+      onStepClick={handleStepClick}
+    >
       {renderShare()}
     </VCardForm>
   );

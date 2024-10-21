@@ -1,6 +1,7 @@
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useNavigate } from 'react-router-dom';
 import { Col } from '@/components/Col';
 import { ColorPicker } from '@/components/ColorPicker';
 import { Heading } from '@/components/Heading';
@@ -17,7 +18,6 @@ const steps = [
 ];
 
 const currentStep = 2;
-
 const schema = z.object({
   foregroundColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color'),
   backgroundColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color'),
@@ -39,6 +39,12 @@ const fontOptions = [
 ];
 
 export function VCard2() {
+  const navigate = useNavigate();
+
+  const handleStepClick = (url: string) => {
+    navigate(url);
+  };
+
   const {
     handleSubmit,
     setValue,
@@ -170,6 +176,7 @@ export function VCard2() {
     <VCardForm
       currentStep={currentStep}
       steps={steps}
+      onStepClick={handleStepClick}
       onSubmit={handleSubmit(onSubmit)}
     >
       {renderBasicInfo()}

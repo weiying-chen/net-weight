@@ -10,6 +10,7 @@ type VCardFormProps = {
   currentStep: number;
   steps: { label: string; url: string }[];
   onSubmit?: (event: React.FormEvent) => void;
+  onStepClick: (url: string) => void;
 };
 
 export function VCardForm({
@@ -17,11 +18,8 @@ export function VCardForm({
   currentStep,
   steps,
   onSubmit,
+  onStepClick,
 }: VCardFormProps) {
-  const handleStepClick = (url: string) => {
-    window.location.href = url;
-  };
-
   return (
     <Col alignItems="center">
       <form
@@ -33,7 +31,7 @@ export function VCardForm({
             <Steps
               steps={steps}
               currentStep={currentStep}
-              onStepClick={handleStepClick}
+              onStepClick={onStepClick}
             />
           </Row>
           <Row gap="xl">
