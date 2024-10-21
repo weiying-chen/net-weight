@@ -9,14 +9,15 @@ interface Plant {
 }
 
 const items: Plant[] = [
-  { name: 'Lithop (medium)', date: '2024-10-20T00:00:00' },
-  { name: 'Lithop (small)', date: '2024-10-20T00:00:00' },
-  { name: 'Haworthia', date: '2024-10-20T200:00:00' },
-  { name: 'Portulaca (small)', date: '2024-10-20T00:00:00' },
-  { name: 'Portulaca (medium)', date: '2024-10-20T00:00:00' },
-  { name: 'Portulaca (large)', date: '2024-10-20T00:00:00' },
-  { name: 'Lophophora (tall)', date: '2024-10-20T00:00:00' },
-  { name: 'Adenium', date: '2024-10-20T00:00:00' },
+  { name: 'Lithops (medium)', date: '2024-10-20T00:00:00' },
+  { name: 'Lithops (small)', date: '2024-10-20T00:00:00' },
+  { name: 'Haworthia cooperi', date: '2024-10-20T200:00:00' },
+  { name: 'Portulaca molokiniensis (small)', date: '2024-10-20T00:00:00' },
+  { name: 'Portulaca molokiniensis (medium)', date: '2024-10-20T00:00:00' },
+  { name: 'Portulaca molokiniensis (large)', date: '2024-10-20T00:00:00' },
+  { name: 'Lophophora williamsii (tall)', date: '2024-10-20T00:00:00' },
+  { name: 'Adenium obesum', date: '2024-10-20T00:00:00' },
+  { name: 'Phyllanthus mirabilis', date: '' },
 ];
 
 const timeAgo = (dateString: string): string => {

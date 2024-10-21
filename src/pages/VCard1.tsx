@@ -23,6 +23,8 @@ import {
   IconSocial,
 } from '@tabler/icons-react';
 import { Card } from '@/components/Card';
+import { useEffect, useRef, useState } from 'react';
+import { PhonePreview } from '@/components/PhonePreview';
 
 const clErrFromErr = (
   errors: any,
@@ -263,31 +265,32 @@ export function VCard1() {
     </Card>
   );
 
-  const renderPreview = () => (
-    <Col gap="lg" alignItems="center">
-      <Heading size="sm" hasBorder isFull>
-        Preview
-      </Heading>
-      <div className="relative h-[583px] overflow-y-scroll rounded-[2rem] border-8 border-border scrollbar-hide">
-        <div className="sticky left-1/2 top-0 h-3 w-32 -translate-x-1/2 transform rounded-b-full bg-border"></div>
-        <Col gap="lg" className="p-6">
-          <Col alignItems="center">
-            <Avatar
-              size="lg"
-              src="https://via.placeholder.com/150"
-              alt="User Avatar"
-            />
-            <Heading size="lg">Title</Heading>
-            <Heading>Heading</Heading>
-            <Heading size="sm">Subheading</Heading>
+  const renderPreview = () => {
+    return (
+      <Col gap="lg" alignItems="center">
+        <Heading size="sm" hasBorder isFull>
+          Preview
+        </Heading>
+        <PhonePreview>
+          <Col gap="lg" className="p-6">
+            <Col alignItems="center">
+              <Avatar
+                size="lg"
+                src="https://via.placeholder.com/150"
+                alt="User Avatar"
+              />
+              <Heading size="lg">Title</Heading>
+              <Heading>Heading</Heading>
+              <Heading size="sm">Subheading</Heading>
+            </Col>
+            {previewSelfIntro()}
+            {previewContactInfo()}
+            {previewCustomLinks()}
           </Col>
-          {previewSelfIntro()}
-          {previewContactInfo()}
-          {previewCustomLinks()}
-        </Col>
-      </div>
-    </Col>
-  );
+        </PhonePreview>
+      </Col>
+    );
+  };
 
   return (
     <Col alignItems="center">
