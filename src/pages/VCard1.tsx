@@ -86,6 +86,10 @@ export function VCard1() {
     navigate(url);
   };
 
+  const handleCancel = () => {
+    navigate('/vcard4');
+  };
+
   const {
     register,
     handleSubmit,
@@ -198,6 +202,7 @@ export function VCard1() {
       steps={steps}
       onStepClick={handleStepClick}
       onSubmit={handleSubmit(onSubmit)}
+      onCancel={handleCancel}
     >
       {renderBasicInfo()}
       {renderSelfIntro()}

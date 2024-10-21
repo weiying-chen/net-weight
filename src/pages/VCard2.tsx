@@ -9,8 +9,6 @@ import { Select } from '@/components/Select';
 import { Slider } from '@/components/Slider';
 import { VCardForm } from '@/pages/VCardForm';
 
-// TODO: turn this into a constant
-
 const steps = [
   { label: 'Content', url: '/vcard1' },
   { label: 'Design', url: '/vcard2' },
@@ -18,6 +16,7 @@ const steps = [
 ];
 
 const currentStep = 2;
+
 const schema = z.object({
   foregroundColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color'),
   backgroundColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color'),
@@ -45,6 +44,10 @@ export function VCard2() {
     navigate(url);
   };
 
+  const handleCancel = () => {
+    navigate('/vcard4');
+  };
+
   const {
     handleSubmit,
     setValue,
@@ -59,8 +62,8 @@ export function VCard2() {
       borderColor: '#000000',
       fontFamily: 'Arial',
       fontSize: 16,
-      cardCorner: 10, // Default corner radius
-      cardShadow: '0px 4px 6px rgba(0,0,0,0.1)', // Default shadow
+      cardCorner: 10,
+      cardShadow: '0px 4px 6px rgba(0,0,0,0.1)',
     },
   });
 
@@ -178,6 +181,7 @@ export function VCard2() {
       steps={steps}
       onStepClick={handleStepClick}
       onSubmit={handleSubmit(onSubmit)}
+      onCancel={handleCancel}
     >
       {renderBasicInfo()}
       {renderSelfIntro()}

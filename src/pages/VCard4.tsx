@@ -1,49 +1,28 @@
-import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/Button';
 import { Col } from '@/components/Col';
-import { Heading } from '@/components/Heading';
-import { QRCodeSVG } from 'qrcode.react';
-import { ClipCopy } from '@/components/ClipCopy';
-import { VCardForm } from '@/pages/VCardForm';
-
-const steps = [
-  { label: 'Content', url: '/vcard1' },
-  { label: 'Design', url: '/vcard2' },
-  { label: 'QRCode', url: '/vcard3' },
-];
-
-const currentStep = 3;
-
-const qrCodeUrl = 'https://example.com/qrcode';
+import { PhoneFrame } from '@/components/PhoneFrame';
+import { Row } from '@/components/Row';
+import { VCardPreview } from '@/pages/VCardPreview';
+import { useNavigate } from 'react-router-dom';
 
 export function VCard4() {
   const navigate = useNavigate();
 
-  const handleStepClick = (url: string) => {
-    navigate(url);
+  // TODO: the URL should be set with a constant
+  const handleEditClick = () => {
+    navigate('/vcard1');
   };
 
-  const renderShare = () => (
-    <Col gap="lg">
-      <Heading hasBorder isFull>
-        Share
-      </Heading>
-      <Col alignItems="center" className="rounded bg-subtle p-4">
-        <QRCodeSVG
-          value={JSON.stringify(qrCodeUrl)}
-          className="h-auto w-full max-w-40 border border-border"
-        />
-      </Col>
-      <ClipCopy value={qrCodeUrl} />
-    </Col>
-  );
-
   return (
-    <VCardForm
-      currentStep={currentStep}
-      steps={steps}
-      onStepClick={handleStepClick}
-    >
-      {renderShare()}
-    </VCardForm>
+    <Col gap="xl">
+      <PhoneFrame>
+        <VCardPreview />
+      </PhoneFrame>
+      <Row align="center">
+        <Button variant="primary" onClick={handleEditClick}>
+          Edit
+        </Button>
+      </Row>
+    </Col>
   );
 }

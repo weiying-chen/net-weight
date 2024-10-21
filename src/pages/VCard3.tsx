@@ -22,6 +22,10 @@ export function VCard3() {
     navigate(url);
   };
 
+  const handleCancel = () => {
+    navigate('/vcard4');
+  };
+
   const renderShare = () => (
     <Col gap="lg">
       <Heading hasBorder isFull>
@@ -42,6 +46,7 @@ export function VCard3() {
       currentStep={currentStep}
       steps={steps}
       onStepClick={handleStepClick}
+      onCancel={handleCancel}
     >
       {renderShare()}
     </VCardForm>
