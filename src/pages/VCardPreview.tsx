@@ -17,11 +17,41 @@ import { Row } from '@/components/Row';
 import { Button } from '@/components/Button';
 import { useNavigate } from 'react-router-dom';
 
+export const downloadVcf = (vcf: string) => {
+  const nameMatch = vcf.match(/FN:(.*)/);
+  const fullName = nameMatch ? nameMatch[1].trim() : 'contact';
+  const fileName = `${fullName.replace(/\s+/g, '_').toLowerCase()}.vcf`;
+  const blob = new Blob([vcf], { type: 'text/vcard' });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  link.click();
+
+  URL.revokeObjectURL(url);
+};
+
 export const VCardPreview = () => {
   const navigate = useNavigate();
 
   const handleOutputVcf = () => {
-    console.log('Contact added');
+    const vcf = `
+      BEGIN:VCARD
+      VERSION:3.0
+      N:Bradford;Theresa;;;
+      FN:Theresa Bradford
+      ORG:FintechConsult
+      TITLE:Finance Consultant
+      TEL;WORK;VOICE:+1 (123) 456-7890
+      EMAIL;WORK:example@example.com
+      URL:www.example.com
+      ADR:;;1234 Main St;Springfield;;USA
+      END:VCARD
+    `;
+
+    downloadVcf(vcf);
+
     navigate('/vcard4');
   };
 
