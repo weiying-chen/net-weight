@@ -40,7 +40,7 @@ export function Button({
         {
           'w-full md:w-auto': !locked,
           'w-full md:w-full': isFull,
-          'w-10 rounded-full md:w-10': circular,
+          'w-10 rounded-full px-0 py-0 md:w-10': circular,
           'pointer-events-none cursor-not-allowed opacity-50':
             props.disabled || isLoading,
         },

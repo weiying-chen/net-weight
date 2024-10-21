@@ -11,7 +11,7 @@ interface Step {
 interface StepsProps {
   steps: Step[];
   currentStep: number;
-  onStepClick: (url: string, index: number) => void;
+  onStepClick: (url: string) => void;
 }
 
 export function Steps({ steps, currentStep, onStepClick }: StepsProps) {
@@ -23,7 +23,7 @@ export function Steps({ steps, currentStep, onStepClick }: StepsProps) {
           alignItems="center"
           locked
           className="group w-auto cursor-pointer"
-          onClick={() => onStepClick(step.url, index)}
+          onClick={() => onStepClick(step.url)}
         >
           <Button
             variant={index + 1 === currentStep ? 'primary' : 'secondary'}

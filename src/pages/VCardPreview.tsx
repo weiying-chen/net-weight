@@ -1,5 +1,4 @@
 import { Avatar } from '@/components/Avatar';
-import { PhonePreview } from '@/components/PhonePreview';
 import { Col } from '@/components/Col';
 import { Heading } from '@/components/Heading';
 import { Card } from '@/components/Card';
@@ -12,8 +11,10 @@ import {
   IconMapPin,
   IconPhone,
   IconHome,
+  IconPlus,
 } from '@tabler/icons-react';
 import { Row } from '@/components/Row';
+import { Button } from '@/components/Button';
 
 export const VCardPreview = () => {
   const previewSelfIntro = () => (
@@ -37,19 +38,19 @@ export const VCardPreview = () => {
           Contact Info
         </Heading>
         <Row alignItems="center">
-          <IconPhone />
+          <IconPhone size={20} />
           +1 (123) 456-7890
         </Row>
         <Row alignItems="center">
-          <IconMail />
+          <IconMail size={20} />
           example@example.com
         </Row>
         <Row alignItems="center">
-          <IconMapPin />
+          <IconMapPin size={20} />
           www.example.com
         </Row>
-        <Row alignItems="center">
-          <IconHome />
+        <Row alignItems="start">
+          <IconHome size={20} />
           1234 Main St, Springfield, USA
         </Row>
       </Col>
@@ -83,27 +84,26 @@ export const VCardPreview = () => {
   );
 
   return (
-    <Col gap="lg" alignItems="center">
-      <Heading size="sm" hasBorder isFull>
-        Preview
-      </Heading>
-      <PhonePreview>
-        <Col gap="lg" className="p-6">
-          <Col alignItems="center">
-            <Avatar
-              size="lg"
-              src="https://via.placeholder.com/150"
-              alt="User Avatar"
-            />
-            <Heading size="lg">Title</Heading>
-            <Heading>Heading</Heading>
-            <Heading size="sm">Subheading</Heading>
-          </Col>
-          {previewSelfIntro()}
-          {previewContactInfo()}
-          {previewCustomLinks()}
-        </Col>
-      </PhonePreview>
+    <Col gap="lg" className="p-6">
+      <Col alignItems="center">
+        <Avatar
+          size="lg"
+          src="https://via.placeholder.com/150"
+          alt="User Avatar"
+        />
+        <Heading size="lg">Title</Heading>
+        <Heading>Heading</Heading>
+        <Heading size="sm">Subheading</Heading>
+        <Row align="center">
+          <Button>
+            <IconPlus size={20} />
+            Add contact
+          </Button>
+        </Row>
+      </Col>
+      {previewSelfIntro()}
+      {previewContactInfo()}
+      {previewCustomLinks()}
     </Col>
   );
 };

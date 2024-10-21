@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 
-export const PhonePreview = ({ children }: { children: React.ReactNode }) => {
+export const PhoneFrame = ({ children }: { children: React.ReactNode }) => {
   const [scrollbarHeight, setScrollbarHeight] = useState(0);
   const [scrollbarTop, setScrollbarTop] = useState(0);
   const [isScrolling, setIsScrolling] = useState(false);

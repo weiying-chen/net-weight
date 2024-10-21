@@ -4,6 +4,7 @@ import { Form } from '@/pages/Form';
 import { VCard1 } from '@/pages/VCard1';
 import { VCard2 } from '@/pages/VCard2';
 import { VCard3 } from '@/pages/VCard3';
+import { VCard4 } from '@/pages/VCard4';
 import { Misc } from '@/pages/Misc';
 import { List } from '@/pages/List';
 import { Route, Routes } from 'react-router-dom';
@@ -18,6 +19,7 @@ export default function App() {
         <Route path="/vcard1" element={<VCard1 />} />
         <Route path="/vcard2" element={<VCard2 />} />
         <Route path="/vcard3" element={<VCard3 />} />
+        <Route path="/vcard4" element={<VCard4 />} />
         <Route path="/misc" element={<Misc />} />
         <Route path="/list" element={<List />} />
       </Routes>
