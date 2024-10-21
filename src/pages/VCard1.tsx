@@ -3,14 +3,10 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/components/Input';
 import { Textarea } from '@/components/Textarea';
-import { Button } from '@/components/Button';
 import { Col } from '@/components/Col';
-import { Steps } from '@/components/Steps';
-import { Row } from '@/components/Row';
 import { FileUpload } from '@/components/FileUpload';
 import { Heading } from '@/components/Heading';
 import { CustomLinks } from '@/components/CustomLinks';
-
 import {
   IconBrandFacebook,
   IconBrandInstagram,
@@ -18,9 +14,18 @@ import {
   IconBrandWechat,
   IconSocial,
 } from '@tabler/icons-react';
+import { VCardForm } from '@/pages/VCardForm';
+import { Row } from '@/components/Row';
 
-import { Card } from '@/components/Card';
-import { VCardPreview } from '@/pages/VCardPreview';
+// TODO: turn this into a constant
+
+const steps = [
+  { label: 'Content', url: '/vcard1' },
+  { label: 'Design', url: '/vcard2' },
+  { label: 'QRCode', url: '/vcard3' },
+];
+
+const currentStep = 1;
 
 const clErrFromErr = (
   errors: any,
@@ -50,23 +55,12 @@ const schema = z.object({
   address: z.string().optional(),
   socialLinks: z
     .array(
-      z.object({
-        platform: z.string().optional(),
-        url: z.string().optional(),
-      }),
+      z.object({ platform: z.string().optional(), url: z.string().optional() }),
     )
     .optional(),
 });
 
 type FormData = z.infer<typeof schema>;
-
-const steps = [
-  { label: 'Content', url: '/vcard1' },
-  { label: 'Design', url: '/vcard2' },
-  { label: 'QRCode', url: '/vcard3' },
-];
-
-const currentStep = 1;
 
 const platforms = [
   {
@@ -96,10 +90,6 @@ export function VCard1() {
 
   const onSubmit: SubmitHandler<FormData> = (data) => {
     console.log('Form submitted:', data);
-  };
-
-  const handleStepClick = (url: string) => {
-    window.location.href = url;
   };
 
   const renderBasicInfo = () => (
@@ -196,37 +186,15 @@ export function VCard1() {
   );
 
   return (
-    <Col alignItems="center">
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="w-full max-w-screen-lg"
-      >
-        <Col gap="xl">
-          <Row align="center" locked>
-            <Steps
-              steps={steps}
-              currentStep={currentStep}
-              onStepClick={handleStepClick}
-            />
-          </Row>
-          <Row gap="xl">
-            <Card className="flex-grow-2 basis-2/3">
-              <Col gap="xl">
-                {renderBasicInfo()}
-                {renderSelfIntro()}
-                {renderContactInfo()}
-                {renderCustomLinks()}
-              </Col>
-            </Card>
-            <Card className="flex-grow basis-1/3">
-              <VCardPreview />
-            </Card>
-          </Row>
-          <Row align="end">
-            <Button type="submit">Submit</Button>
-          </Row>
-        </Col>
-      </form>
-    </Col>
+    <VCardForm
+      currentStep={currentStep}
+      steps={steps}
+      onSubmit={handleSubmit(onSubmit)}
+    >
+      {renderBasicInfo()}
+      {renderSelfIntro()}
+      {renderContactInfo()}
+      {renderCustomLinks()}
+    </VCardForm>
   );
 }
