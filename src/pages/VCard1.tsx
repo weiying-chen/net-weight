@@ -1,7 +1,6 @@
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/Input';
 import { Textarea } from '@/components/Textarea';
 import { Col } from '@/components/Col';
@@ -17,16 +16,6 @@ import {
 } from '@tabler/icons-react';
 import { VCardForm } from '@/pages/VCardForm';
 import { Row } from '@/components/Row';
-
-// TODO: turn this into a constant
-
-const steps = [
-  { label: 'Content', url: '/vcard1' },
-  { label: 'Design', url: '/vcard2' },
-  { label: 'QRCode', url: '/vcard3' },
-];
-
-const currentStep = 1;
 
 const clErrFromErr = (
   errors: any,
@@ -80,16 +69,6 @@ const platforms = [
 ];
 
 export function VCard1() {
-  const navigate = useNavigate();
-
-  const handleStepClick = (url: string) => {
-    navigate(url);
-  };
-
-  const handleCancel = () => {
-    navigate('/vcard4');
-  };
-
   const {
     register,
     handleSubmit,
@@ -197,13 +176,7 @@ export function VCard1() {
   );
 
   return (
-    <VCardForm
-      currentStep={currentStep}
-      steps={steps}
-      onStepClick={handleStepClick}
-      onSubmit={handleSubmit(onSubmit)}
-      onCancel={handleCancel}
-    >
+    <VCardForm onSubmit={handleSubmit(onSubmit)}>
       {renderBasicInfo()}
       {renderSelfIntro()}
       {renderContactInfo()}

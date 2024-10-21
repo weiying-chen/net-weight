@@ -7,37 +7,44 @@ import { VCardPreview } from '@/pages/VCardPreview';
 import { IconArrowLeft, IconArrowRight } from '@tabler/icons-react';
 import { Heading } from '@/components/Heading';
 import { PhoneFrame } from '@/components/PhoneFrame';
+import { useNavigate } from 'react-router-dom';
 
 type VCardFormProps = {
   children: React.ReactNode;
-  currentStep: number;
-  steps: { label: string; url: string }[];
   onSubmit?: (event: React.FormEvent) => void;
-  onCancel?: () => void;
-  onStepClick: (url: string) => void;
 };
 
-export function VCardForm({
-  children,
-  currentStep,
-  steps,
-  onSubmit,
-  onCancel,
-  onStepClick,
-}: VCardFormProps) {
+const steps = [
+  { label: 'Content', url: '/vcard1' },
+  { label: 'Design', url: '/vcard2' },
+  { label: 'QRCode', url: '/vcard3' },
+];
+
+const currentStep = 1;
+
+export function VCardForm({ children, onSubmit }: VCardFormProps) {
   const isFirstStep = currentStep === 1;
   const isLastStep = currentStep === steps.length;
+  const navigate = useNavigate();
+
+  const handleStepClick = (url: string) => {
+    navigate(url);
+  };
 
   const handlePrevClick = () => {
     if (!isFirstStep) {
-      onStepClick(steps[currentStep - 2].url);
+      handleStepClick(steps[currentStep - 2].url);
     }
   };
 
   const handleNextClick = () => {
     if (!isLastStep) {
-      onStepClick(steps[currentStep].url);
+      handleStepClick(steps[currentStep].url);
     }
+  };
+
+  const handleCancel = () => {
+    navigate('/vcard4');
   };
 
   return (
@@ -50,7 +57,7 @@ export function VCardForm({
           <Steps
             steps={steps}
             currentStep={currentStep}
-            onStepClick={onStepClick}
+            onStepClick={handleStepClick}
           />
         </Row>
         <Row gap="xl">
@@ -84,11 +91,9 @@ export function VCardForm({
             )}
           </Row>
           <Row align="end">
-            {onCancel && (
-              <Button variant="secondary" onClick={onCancel}>
-                Cancel
-              </Button>
-            )}
+            <Button variant="secondary" onClick={handleCancel}>
+              Cancel
+            </Button>
             {onSubmit && <Button type="submit">Save</Button>}
           </Row>
         </Row>

@@ -15,8 +15,16 @@ import {
 } from '@tabler/icons-react';
 import { Row } from '@/components/Row';
 import { Button } from '@/components/Button';
+import { useNavigate } from 'react-router-dom';
 
 export const VCardPreview = () => {
+  const navigate = useNavigate();
+
+  const handleOutputVcf = () => {
+    console.log('Contact added');
+    navigate('/vcard4');
+  };
+
   const previewSelfIntro = () => (
     <Card>
       <Col gap="lg">
@@ -95,7 +103,7 @@ export const VCardPreview = () => {
         <Heading>Heading</Heading>
         <Heading size="sm">Subheading</Heading>
         <Row align="center">
-          <Button>
+          <Button onClick={handleOutputVcf}>
             <IconPlus size={20} />
             Add contact
           </Button>

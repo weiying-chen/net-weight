@@ -1,21 +1,12 @@
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate } from 'react-router-dom';
 import { Col } from '@/components/Col';
 import { ColorPicker } from '@/components/ColorPicker';
 import { Heading } from '@/components/Heading';
 import { Select } from '@/components/Select';
 import { Slider } from '@/components/Slider';
 import { VCardForm } from '@/pages/VCardForm';
-
-const steps = [
-  { label: 'Content', url: '/vcard1' },
-  { label: 'Design', url: '/vcard2' },
-  { label: 'QRCode', url: '/vcard3' },
-];
-
-const currentStep = 2;
 
 const schema = z.object({
   foregroundColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color'),
@@ -38,16 +29,6 @@ const fontOptions = [
 ];
 
 export function VCard2() {
-  const navigate = useNavigate();
-
-  const handleStepClick = (url: string) => {
-    navigate(url);
-  };
-
-  const handleCancel = () => {
-    navigate('/vcard4');
-  };
-
   const {
     handleSubmit,
     setValue,
@@ -176,13 +157,7 @@ export function VCard2() {
   };
 
   return (
-    <VCardForm
-      currentStep={currentStep}
-      steps={steps}
-      onStepClick={handleStepClick}
-      onSubmit={handleSubmit(onSubmit)}
-      onCancel={handleCancel}
-    >
+    <VCardForm onSubmit={handleSubmit(onSubmit)}>
       {renderBasicInfo()}
       {renderSelfIntro()}
       {renderContactInfo()}

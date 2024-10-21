@@ -18,6 +18,16 @@ interface Plant {
 
 const items: Plant[] = [
   {
+    name: 'Adenium obesum',
+    lastWatered: '2024-10-20T00:00:00',
+    dormancy: { start: '12', end: '03' }, // December to March
+  },
+  {
+    name: 'Senecio mweroensis',
+    lastWatered: '',
+    dormancy: { start: '', end: '' },
+  },
+  {
     name: 'Lithops (medium)',
     lastWatered: '2024-10-20T00:00:00',
     dormancy: { start: '12', end: '03' }, // December to March
@@ -51,11 +61,6 @@ const items: Plant[] = [
     name: 'Lophophora williamsii (tall)',
     lastWatered: '2024-10-20T00:00:00',
     dormancy: { start: '11', end: '02' }, // November to February
-  },
-  {
-    name: 'Adenium obesum',
-    lastWatered: '2024-10-20T00:00:00',
-    dormancy: { start: '12', end: '03' }, // December to March
   },
   {
     name: 'Phyllanthus mirabilis',
