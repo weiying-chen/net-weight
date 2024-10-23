@@ -39,6 +39,9 @@ export const TagInput: React.FC<TagInputProps> = ({
       if (inputValue.trim()) {
         addTag();
       }
+    } else if (e.key === 'Backspace' && inputValue === '' && tags.length > 0) {
+      e.preventDefault();
+      removeLastTag();
     }
   };
 
@@ -48,6 +51,11 @@ export const TagInput: React.FC<TagInputProps> = ({
       updateTags([...tags, newTag]);
       setInputValue('');
     }
+  };
+
+  const removeLastTag = () => {
+    const newTags = tags.slice(0, -1);
+    updateTags(newTags);
   };
 
   const handleRemoveTag = (tagToRemove: string) => {
