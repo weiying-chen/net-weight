@@ -28,7 +28,7 @@ export function Steps({ steps, currentStep, onStepClick }: StepsProps) {
           <Button
             variant={index + 1 === currentStep ? 'primary' : 'secondary'}
             circular
-            className="group-hover:shadow-dark"
+            className="h-7 w-7 text-xs group-hover:shadow-dark md:w-7"
           >
             {index + 1}
           </Button>

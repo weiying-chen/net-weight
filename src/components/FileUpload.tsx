@@ -11,6 +11,8 @@ type FileUploadProps = {
   className?: string;
   onChange: (files: File[]) => void;
   files?: { url: string; name: string; file: File | null }[];
+  maxSize?: number;
+  multiple?: boolean;
 };
 
 type FileData = {
@@ -26,6 +28,8 @@ export function FileUpload({
   className,
   onChange,
   files: initialFiles = [],
+  maxSize = Infinity,
+  multiple = true,
 }: FileUploadProps) {
   const [files, setFiles] = useState<FileData[]>(initialFiles);
 
@@ -63,6 +67,8 @@ export function FileUpload({
       'image/svg+xml': ['.svg'],
       'application/pdf': ['.pdf'],
     },
+    maxSize,
+    multiple,
   });
 
   useEffect(() => {
