@@ -263,6 +263,7 @@ export function Form() {
               <FileUpload
                 label="Upload Images"
                 files={uploadedFiles}
+                multiple={true}
                 onChange={(files) => setValue('files', files)}
                 error={errors.files?.message}
               />

@@ -23,7 +23,7 @@ type FileData = {
 
 export function FileUpload({
   label,
-  placeholder = 'Drag & drop or click to upload images',
+  placeholder = 'Drag & drop or click to upload',
   error,
   className,
   onChange,
@@ -54,7 +54,7 @@ export function FileUpload({
     updateFiles([...files, ...newFiles]);
   };
 
-  const removeFile = (index: number) => {
+  const handleRemoveFile = (index: number) => {
     const newFiles = files.filter((_, i) => i !== index);
     updateFiles(newFiles);
   };
@@ -98,7 +98,11 @@ export function FileUpload({
         </p>
       </div>
       {files.length > 0 && (
-        <FilePreviews files={files} removeFile={removeFile} />
+        <FilePreviews
+          files={files}
+          multiple={multiple}
+          onRemoveFile={handleRemoveFile}
+        />
       )}
       {error && <span className="text-sm text-danger">{error}</span>}
     </Col>
