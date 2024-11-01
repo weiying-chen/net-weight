@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Col } from '@/components/Col';
 import { Row } from '@/components/Row';
 import { Button } from '@/components/Button';
@@ -6,9 +6,9 @@ import { Input } from '@/components/Input';
 import { Select } from '@/components/Select';
 import { IconTrash } from '@tabler/icons-react';
 
-type Link = {
-  platform: string;
-  url: string;
+export type CustomLink = {
+  platform?: string;
+  url?: string;
 };
 
 type PlatformOption = {
@@ -19,11 +19,11 @@ type PlatformOption = {
 
 type CustomLinksProps = {
   label?: string;
-  links: Link[];
+  links: CustomLink[];
   options: PlatformOption[];
   className?: string;
   errors?: Array<{ platform?: string; url?: string }>;
-  onChange: (links: Link[]) => void;
+  onChange: (links: CustomLink[]) => void;
 };
 
 export const CustomLinks: React.FC<CustomLinksProps> = ({
@@ -31,12 +31,12 @@ export const CustomLinks: React.FC<CustomLinksProps> = ({
   links: initialLinks,
   options,
   className,
-  errors,
+  errors = [],
   onChange,
 }) => {
-  const [links, setLinks] = useState<Link[]>(initialLinks);
+  const [links, setLinks] = useState<CustomLink[]>(initialLinks);
 
-  const updateLinks = (newLinks: Link[]) => {
+  const updateLinks = (newLinks: CustomLink[]) => {
     setLinks(newLinks);
     onChange(newLinks);
   };
@@ -72,11 +72,12 @@ export const CustomLinks: React.FC<CustomLinksProps> = ({
         <Row alignItems="start" key={index}>
           <Select
             label="Platform"
-            value={link.platform}
+            value={link.platform || ''}
             options={options}
             onChange={(value) =>
               handleLinkChange(index, 'platform', value as string)
             }
+            error={errors?.[index]?.platform}
           />
           <Input
             label="URL"

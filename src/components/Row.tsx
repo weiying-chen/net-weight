@@ -1,4 +1,4 @@
-import { ReactNode, HTMLAttributes, forwardRef } from 'react';
+import { HTMLAttributes, forwardRef } from 'react';
 import { cn } from '@/utils';
 
 type RowProps = HTMLAttributes<HTMLDivElement> & {
@@ -6,8 +6,6 @@ type RowProps = HTMLAttributes<HTMLDivElement> & {
   align?: 'start' | 'center' | 'end' | 'between' | 'stretch';
   alignItems?: 'start' | 'center' | 'end' | 'between' | 'stretch';
   locked?: boolean;
-  className?: string;
-  children: ReactNode;
 };
 
 export const Row = forwardRef<HTMLDivElement, RowProps>(

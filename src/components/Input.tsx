@@ -1,9 +1,9 @@
-import { forwardRef, InputHTMLAttributes } from 'react';
+import { forwardRef, InputHTMLAttributes, ReactNode } from 'react';
 import { Col } from '@/components/Col';
 import { cn } from '@/utils';
 
 type InputProps = InputHTMLAttributes<HTMLInputElement> & {
-  label?: string;
+  label?: ReactNode;
   error?: string;
 };
 
@@ -13,7 +13,12 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
 ) {
   return (
     <Col className={className}>
-      {label && <label className="text-sm font-semibold">{label}</label>}
+      {label &&
+        (typeof label === 'string' ? (
+          <label className="text-sm font-semibold">{label}</label>
+        ) : (
+          label // If label is a React node, render it as-is
+        ))}
       <input
         ref={ref}
         disabled={disabled}

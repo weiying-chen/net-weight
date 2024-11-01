@@ -71,7 +71,7 @@ export function FilePreviews({
               className={cn(
                 'w-full',
                 { 'h-full object-contain': multiple },
-                { 'max-h-32': !multiple },
+                { 'max-h-24': !multiple },
               )}
             />
           ) : (

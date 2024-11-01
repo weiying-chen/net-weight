@@ -1,9 +1,9 @@
-import { forwardRef, TextareaHTMLAttributes } from 'react';
+import { forwardRef, TextareaHTMLAttributes, ReactNode } from 'react';
 import { Col } from '@/components/Col';
 import { cn } from '@/utils';
 
 type TextareaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & {
-  label?: string;
+  label?: ReactNode;
   error?: string;
 };
 
@@ -11,7 +11,12 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
   function Textarea({ label, className, error, ...props }, ref) {
     return (
       <Col className={className}>
-        {label && <label className="text-sm font-semibold">{label}</label>}
+        {label &&
+          (typeof label === 'string' ? (
+            <label className="text-sm font-semibold">{label}</label>
+          ) : (
+            label // If label is a React node, render it as-is
+          ))}
         <textarea
           ref={ref}
           className={cn(

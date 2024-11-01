@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ReactNode } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Col } from '@/components/Col';
 import { cn } from '@/utils';
-import { FilePreviews } from './FilePreviews';
+import { FilePreviews } from '@/components/FilePreviews';
 
 type FileUploadProps = {
-  label?: string;
+  label?: ReactNode;
   placeholder?: string;
   error?: string;
   className?: string;
@@ -51,7 +51,9 @@ export function FileUpload({
         file,
       };
     });
-    updateFiles([...files, ...newFiles]);
+
+    // If multiple is false, replace the existing files with the new ones
+    updateFiles(multiple ? [...files, ...newFiles] : newFiles);
   };
 
   const handleRemoveFile = (index: number) => {
@@ -83,7 +85,12 @@ export function FileUpload({
 
   return (
     <Col className={className}>
-      {label && <label className="text-sm font-semibold">{label}</label>}
+      {label &&
+        (typeof label === 'string' ? (
+          <label className="text-sm font-semibold">{label}</label>
+        ) : (
+          label // Render label as-is if it's a ReactNode
+        ))}
       <div
         tabIndex={0}
         {...getRootProps()}

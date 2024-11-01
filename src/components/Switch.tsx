@@ -3,12 +3,13 @@ import { cn } from '@/utils';
 import { Col } from '@/components/Col';
 import { IconCheck, IconX } from '@tabler/icons-react';
 
-type SwitchProps = {
+export type SwitchProps = {
   label?: string;
   checked: boolean;
   onChange?: (checked: boolean) => void;
   disabled?: boolean;
-  // fluid?: boolean;
+  small?: boolean;
+  fluid?: boolean;
   className?: string;
   error?: string;
 };
@@ -18,7 +19,8 @@ export const Switch: React.FC<SwitchProps> = ({
   checked,
   onChange,
   disabled,
-  // fluid = false,
+  small = false,
+  fluid = false,
   className,
   error,
 }) => {
@@ -32,15 +34,15 @@ export const Switch: React.FC<SwitchProps> = ({
   };
 
   return (
-    // <Col className={cn({ 'w-auto': fluid }, className)}>
-    <Col className={className}>
+    <Col className={cn({ 'w-auto': fluid }, className)}>
       {label && <label className="text-sm font-semibold">{label}</label>}
       <button
         type="button"
         onClick={handleToggle}
         disabled={disabled}
         className={cn(
-          'relative inline-flex h-10 w-20 shrink-0 cursor-pointer items-center justify-between rounded border border-transparent bg-subtle outline-none ring-foreground ring-offset-2 transition-colors focus-visible:ring-2',
+          'relative inline-flex shrink-0 cursor-pointer items-center justify-between rounded border border-transparent outline-none ring-foreground ring-offset-2 transition-colors focus-visible:ring-2',
+          small ? 'h-4 w-8 bg-subtle text-xs' : 'h-10 w-20 bg-subtle text-sm',
           {
             'border-danger': error,
             'cursor-not-allowed opacity-50': disabled,
@@ -48,17 +50,31 @@ export const Switch: React.FC<SwitchProps> = ({
         )}
       >
         {!isChecked && (
-          <IconX size={20} className="absolute right-[10px] text-muted" />
+          <IconX
+            size={small ? 10 : 20}
+            className={cn(
+              'absolute text-muted',
+              small ? 'right-[3px]' : 'right-[10px]',
+            )}
+          />
         )}
         {isChecked && (
-          <IconCheck size={20} className="absolute left-[10px] text-success" />
+          <IconCheck
+            size={small ? 10 : 20}
+            className={cn(
+              'absolute text-success',
+              small ? 'left-[3px]' : 'left-[10px]',
+            )}
+          />
         )}
         <span
           className={cn(
-            'block h-10 w-10 rounded border border-border bg-background shadow ring-0 transition-transform hover:shadow-dark',
+            'block rounded border border-border bg-background shadow ring-0 transition-transform hover:shadow-dark',
+            small ? 'h-4 w-4 translate-x-4' : 'h-10 w-10 translate-x-10',
             {
-              'translate-x-10': isChecked,
               'translate-x-0': !isChecked,
+              'translate-x-10': isChecked && !small,
+              'translate-x-4': isChecked && small,
             },
           )}
         />

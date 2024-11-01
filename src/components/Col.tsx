@@ -1,4 +1,4 @@
-import { ReactNode, HTMLAttributes, forwardRef } from 'react';
+import { HTMLAttributes, forwardRef } from 'react';
 import { cn } from '@/utils';
 
 type ColProps = HTMLAttributes<HTMLDivElement> & {
@@ -6,7 +6,6 @@ type ColProps = HTMLAttributes<HTMLDivElement> & {
   align?: 'start' | 'center' | 'end' | 'between' | 'stretch';
   alignItems?: 'start' | 'center' | 'end' | 'between' | 'stretch';
   fluid?: boolean;
-  children: ReactNode;
 };
 
 export const Col = forwardRef<HTMLDivElement, ColProps>(

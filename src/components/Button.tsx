@@ -1,4 +1,4 @@
-import { ReactNode, ButtonHTMLAttributes } from 'react';
+import { ButtonHTMLAttributes } from 'react';
 import { IconLoader2 } from '@tabler/icons-react';
 import { cn } from '@/utils';
 
@@ -8,8 +8,6 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   locked?: boolean;
   isFull?: boolean;
   circular?: boolean;
-  className?: string;
-  children: ReactNode;
 };
 
 export function Button({
