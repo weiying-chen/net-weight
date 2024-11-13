@@ -18,6 +18,11 @@ interface Plant {
 
 const items: Plant[] = [
   {
+    name: 'Aloe marlothii',
+    lastWatered: '2024-10-20T00:00:00',
+    dormancy: { start: '10', end: '03' }, // October to March
+  },
+  {
     name: 'Adenium obesum',
     lastWatered: '2024-10-20T00:00:00',
     dormancy: { start: '10', end: '03' }, // October to March
@@ -40,7 +45,7 @@ const items: Plant[] = [
   {
     name: 'Haworthia cooperi',
     lastWatered: '2024-10-20T00:00:00',
-    dormancy: { start: '05', end: '08' }, // May to August (Summer dormancy)
+    dormancy: { start: '05', end: '08' }, // May to August
   },
   {
     name: 'Portulaca molokiniensis (small)',

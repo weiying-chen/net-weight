@@ -4,21 +4,23 @@ import { Col } from '@/components/Col';
 import { cn } from '@/utils';
 import { FilePreviews } from '@/components/FilePreviews';
 
+export type FileData = {
+  url?: string;
+  name: string;
+  file?: File;
+  [key: string]: any;
+};
+
 type FileUploadProps = {
   label?: ReactNode;
   placeholder?: string;
   error?: string;
   className?: string;
-  onChange: (files: File[]) => void;
-  files?: { url: string; name: string; file: File | null }[];
+  onChange: (files: FileData[]) => void;
+  files?: { url?: string; name: string; file?: File }[];
   maxSize?: number;
   multiple?: boolean;
-};
-
-type FileData = {
-  url: string | null;
-  name: string;
-  file: File | null;
+  accept?: { [key: string]: string[] };
 };
 
 export function FileUpload({
@@ -30,29 +32,30 @@ export function FileUpload({
   files: initialFiles = [],
   maxSize = Infinity,
   multiple = true,
+  accept = {
+    'image/jpeg': ['.jpeg', '.jpg'],
+    'image/png': ['.png'],
+    'image/svg+xml': ['.svg'],
+    'application/pdf': ['.pdf'],
+  },
 }: FileUploadProps) {
   const [files, setFiles] = useState<FileData[]>(initialFiles);
 
   const updateFiles = (newFiles: FileData[]) => {
     setFiles(newFiles);
-    onChange(
-      newFiles
-        .map((fileData) => fileData.file)
-        .filter((file) => file !== null) as File[],
-    );
+    onChange(newFiles);
   };
 
   const onDrop = (acceptedFiles: File[]) => {
     const newFiles = acceptedFiles.map((file) => {
       const isImage = file.type.startsWith('image/');
       return {
-        url: isImage ? URL.createObjectURL(file) : null,
+        url: isImage ? URL.createObjectURL(file) : undefined,
         name: file.name,
         file,
       };
     });
 
-    // If multiple is false, replace the existing files with the new ones
     updateFiles(multiple ? [...files, ...newFiles] : newFiles);
   };
 
@@ -63,12 +66,7 @@ export function FileUpload({
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: {
-      'image/jpeg': ['.jpeg', '.jpg'],
-      'image/png': ['.png'],
-      'image/svg+xml': ['.svg'],
-      'application/pdf': ['.pdf'],
-    },
+    accept,
     maxSize,
     multiple,
   });
@@ -83,13 +81,28 @@ export function FileUpload({
     };
   }, [files]);
 
+  const formatNames = {
+    '.jpeg': 'JPEG',
+    '.jpg': 'JPEG',
+    '.png': 'PNG',
+    '.svg': 'SVG',
+    '.pdf': 'PDF',
+    '.mib': 'MIB',
+  };
+
+  const acceptedFileTypes = Object.values(accept)
+    .flat()
+    .map((ext) => formatNames[ext as keyof typeof formatNames] || ext)
+    .filter((v, i, a) => a.indexOf(v) === i)
+    .join(', ');
+
   return (
     <Col className={className}>
       {label &&
         (typeof label === 'string' ? (
           <label className="text-sm font-semibold">{label}</label>
         ) : (
-          label // Render label as-is if it's a ReactNode
+          label
         ))}
       <div
         tabIndex={0}
@@ -100,9 +113,12 @@ export function FileUpload({
         )}
       >
         <input {...getInputProps()} />
-        <p className="text-center">
-          {isDragActive ? 'Drop the images here...' : placeholder}
-        </p>
+        <Col gap="sm" alignItems="center">
+          <p>{isDragActive ? 'Drop the files here...' : placeholder}</p>
+          <p className="text-xs text-muted">
+            Accepted file type(s): {acceptedFileTypes}
+          </p>
+        </Col>
       </div>
       {files.length > 0 && (
         <FilePreviews

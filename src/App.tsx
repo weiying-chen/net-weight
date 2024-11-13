@@ -7,6 +7,7 @@ import { VCard3 } from '@/pages/VCard3';
 import { VCard4 } from '@/pages/VCard4';
 import { Misc } from '@/pages/Misc';
 import { List } from '@/pages/List';
+import { Vcf } from '@/pages/Vcf';
 import { Route, Routes } from 'react-router-dom';
 
 export default function App() {
@@ -22,6 +23,7 @@ export default function App() {
         <Route path="/vcard4" element={<VCard4 />} />
         <Route path="/misc" element={<Misc />} />
         <Route path="/list" element={<List />} />
+        <Route path="/vcf" element={<Vcf />} />
       </Routes>
     </div>
   );

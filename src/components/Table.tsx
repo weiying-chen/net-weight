@@ -1,23 +1,19 @@
 import { useState } from 'react';
 import { IconArrowUp, IconArrowDown } from '@tabler/icons-react';
 
-type Column<T> = {
+type Cols<T> = {
   header: string;
   render: (item: T) => React.ReactNode;
 };
 
-// function isObject(value: any): boolean {
-//   return value !== null && typeof value === 'object' && !Array.isArray(value);
-// }
-
 export function Table<T>({
   data,
-  columns,
+  cols,
   onRowClick,
 }: {
   data: T[];
-  columns: Column<T>[];
-  onRowClick?: (item: T) => void;
+  cols: Cols<T>[];
+  onRowClick?: (e: React.MouseEvent<Element>, item: T) => void;
 }) {
   const [sortConfig, setSortConfig] = useState<{
     index: number;
@@ -25,10 +21,10 @@ export function Table<T>({
   } | null>(null);
 
   const sortedData = [...data].sort((a, b) => {
-    if (sortConfig && sortConfig.index < columns.length) {
+    if (sortConfig && sortConfig.index < cols.length) {
       const { index, direction } = sortConfig;
-      const aValue = columns[index].render(a);
-      const bValue = columns[index].render(b);
+      const aValue = cols[index].render(a);
+      const bValue = cols[index].render(b);
 
       const aStr =
         aValue !== null && aValue !== undefined ? String(aValue) : '';
@@ -47,7 +43,7 @@ export function Table<T>({
   });
 
   const handleSort = (index: number) => {
-    const sampleValue = columns[index].render(data[0]);
+    const sampleValue = cols[index].render(data[0]);
 
     if (typeof sampleValue === 'object' && sampleValue !== null) {
       return;
@@ -67,7 +63,7 @@ export function Table<T>({
       <table className="min-w-full">
         <thead className="bg-subtle">
           <tr>
-            {columns.map((column, index) => (
+            {cols.map((column, index) => (
               <th
                 key={index}
                 className="cursor-pointer px-4 py-2 text-left"
@@ -91,9 +87,9 @@ export function Table<T>({
             <tr
               key={rowIndex}
               className="cursor-pointer hover:bg-subtle"
-              onClick={() => onRowClick?.(item)}
+              onClick={(e) => onRowClick?.(e, item)}
             >
-              {columns.map((column, colIndex) => (
+              {cols.map((column, colIndex) => (
                 <td key={colIndex} className="px-4 py-2 text-sm">
                   {column.render(item)}
                 </td>

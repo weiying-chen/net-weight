@@ -11,7 +11,7 @@ export const LabelToggle: React.FC<LabelToggleProps> = ({
   ...switchProps
 }) => {
   return (
-    <Row alignItems="center" className={className}>
+    <Row alignItems="center" className={className} locked>
       <label className="text-sm font-semibold">{label}</label>
       <Switch small fluid {...switchProps} />
     </Row>

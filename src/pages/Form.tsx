@@ -218,7 +218,7 @@ export function Form() {
   };
 
   return (
-    <>
+    <Col>
       <Button
         type="button"
         onClick={() => setIsEdit((prevShowForm) => !prevShowForm)}
@@ -264,7 +264,15 @@ export function Form() {
                 label="Upload Images"
                 files={uploadedFiles}
                 multiple={true}
-                onChange={(files) => setValue('files', files)}
+                onChange={(files) => {
+                  // Map and filter to extract only non-null `File` objects
+                  console.log(files);
+                  const validFiles = files
+                    .map((fileData) => fileData.file) // Extract `file` from each `FileData`
+                    .filter((file): file is File => file !== null); // Filter out any `null` entries
+
+                  setValue('files', validFiles); // Update form state with `File[]`
+                }}
                 error={errors.files?.message}
               />
             </Col>
@@ -367,6 +375,6 @@ export function Form() {
         <Button onClick={handleOkClick}>OK</Button>
         <Button onClick={handleCloseClick}>Close</Button>
       </Modal>
-    </>
+    </Col>
   );
 }

@@ -15,6 +15,7 @@ export const HeadingToggle: React.FC<HeadingToggleProps> = ({
     <Row
       alignItems="center"
       className={`border-b border-border pb-2 ${className}`}
+      locked
     >
       <Heading size="sm">{text}</Heading>
       <Switch small fluid {...switchProps} />

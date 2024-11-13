@@ -13,14 +13,14 @@ import { cn } from '@/utils';
 
 type ListEditorProps = {
   items: string[];
-  initialItems?: string[]; // Optional
+  activeItems?: string[]; // Optional
   className?: string;
   onChange: (initialItems: string[]) => void;
 };
 
 export function ListEditor({
   items,
-  initialItems = [], // Default to an empty array if not provided
+  activeItems: initialItems = [], // Default to an empty array if not provided
   className,
   onChange,
 }: ListEditorProps) {

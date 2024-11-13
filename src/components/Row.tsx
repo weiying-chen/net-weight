@@ -6,6 +6,7 @@ type RowProps = HTMLAttributes<HTMLDivElement> & {
   align?: 'start' | 'center' | 'end' | 'between' | 'stretch';
   alignItems?: 'start' | 'center' | 'end' | 'between' | 'stretch';
   locked?: boolean;
+  fluid?: boolean;
 };
 
 export const Row = forwardRef<HTMLDivElement, RowProps>(
@@ -15,6 +16,7 @@ export const Row = forwardRef<HTMLDivElement, RowProps>(
       align = 'start',
       alignItems = 'start',
       locked = false,
+      fluid = false,
       className,
       children,
       ...props
@@ -48,10 +50,11 @@ export const Row = forwardRef<HTMLDivElement, RowProps>(
       <div
         className={cn(
           'flex w-full',
+          { 'md:w-auto': fluid },
+          { 'flex-col md:flex-row': !locked },
           cnFromGap[gap],
           cnFromAlign[align],
           cnFromAlignItems[alignItems],
-          { 'flex-col md:flex-row': !locked },
           className,
         )}
         ref={ref}
