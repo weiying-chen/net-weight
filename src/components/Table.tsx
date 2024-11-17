@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { IconArrowUp, IconArrowDown } from '@tabler/icons-react';
 
 type Cols<T> = {
@@ -135,9 +135,14 @@ export function Table<T>({
     };
   }, []);
 
+  const totalWidth = Object.values(widths).reduce(
+    (acc, width) => acc + width,
+    0,
+  );
+
   return (
     <div className="relative w-full overflow-x-auto">
-      <div>
+      <div style={{ minWidth: `${totalWidth}px` }}>
         {/* Header */}
         <div className="flex border-b border-gray-300 bg-subtle">
           {cols.map((column, index) => (

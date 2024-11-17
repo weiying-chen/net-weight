@@ -1,3 +1,5 @@
+import { Col } from '@/components/Col';
+import { Row } from '@/components/Row';
 import { Table } from '@/components/Table';
 import { Table2 } from '@/components/Table2';
 // import { Table2 } from '@/components/Table2';
@@ -21,10 +23,10 @@ export const List = () => {
   ];
 
   return (
-    <div className="container mx-auto mt-8">
-      <h1 className="mb-4 text-xl font-bold">User Table</h1>
-      <Table2 data={data} cols={columns} />
-      {/* <Table data={data} cols={columns} /> */}
-    </div>
+    <Col gap="lg">
+      <Row gap="xl">
+        <Table data={data} cols={columns} />
+      </Row>
+    </Col>
   );
 };
