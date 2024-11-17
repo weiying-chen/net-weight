@@ -1,5 +1,6 @@
 import { Home } from '@/pages/Home';
 import { Home2 } from '@/pages/Home2';
+import { Succs } from '@/pages/Succs';
 import { Form } from '@/pages/Form';
 import { VCard1 } from '@/pages/VCard1';
 import { VCard2 } from '@/pages/VCard2';
@@ -16,6 +17,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/home2" element={<Home2 />} />
+        <Route path="/succs" element={<Succs />} />
         <Route path="/form" element={<Form />} />
         <Route path="/vcard1" element={<VCard1 />} />
         <Route path="/vcard2" element={<VCard2 />} />

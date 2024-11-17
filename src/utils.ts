@@ -46,3 +46,54 @@ export function toCamelCase(
 
   return data;
 }
+
+export const timeAgo = (lastWateredString: string): string => {
+  const now = new Date();
+  const wateredLastWatered = new Date(lastWateredString);
+  const diffInMs = now.getTime() - wateredLastWatered.getTime();
+
+  const seconds = Math.floor(diffInMs / 1000);
+  const minutes = Math.floor(diffInMs / (1000 * 60));
+  const hours = Math.floor(diffInMs / (1000 * 60 * 60));
+  const days = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+  const weeks = Math.floor(diffInMs / (1000 * 60 * 60 * 24 * 7));
+  const months = Math.floor(diffInMs / (1000 * 60 * 60 * 24 * 30));
+  const years = Math.floor(diffInMs / (1000 * 60 * 60 * 24 * 365));
+
+  if (years > 0) return `${years}y`;
+  if (months > 0) return `${months}m`;
+  if (weeks > 0) return `${weeks}w`;
+  if (days > 0) return `${days}d`;
+  if (hours > 0) return `${hours}h`;
+  if (minutes > 0) return `${minutes}n`;
+  return `${seconds}s`; // Return seconds if less than a minute
+};
+
+export const isInDormancy = (dormancy?: 'Summer' | 'Winter'): boolean => {
+  if (!dormancy) return false; // If dormancy is undefined, return false
+
+  const now = new Date();
+  const month = now.getMonth() + 1; // January = 0, so add 1
+
+  // Summer: June (6) to August (8)
+  const isSummer = month >= 6 && month <= 8;
+
+  // Winter: December (12) to February (2)
+  const isWinter = month === 12 || month <= 2;
+
+  if (dormancy === 'Summer') return isSummer;
+  if (dormancy === 'Winter') return isWinter;
+
+  return false; // Default to false for invalid values
+};
+
+// Helper to map month to season in Taiwan
+export const getSeason = (month: string): string => {
+  const currentYear = new Date().getFullYear(); // Use current year
+  const monthIndex = new Date(`${currentYear}-${month}-01`).getMonth() + 1;
+
+  if (monthIndex >= 3 && monthIndex <= 5) return 'Spring';
+  if (monthIndex >= 6 && monthIndex <= 8) return 'Summer';
+  if (monthIndex >= 9 && monthIndex <= 11) return 'Fall';
+  return 'Winter';
+};
