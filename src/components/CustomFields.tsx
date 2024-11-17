@@ -21,6 +21,7 @@ type CustomFieldsProps = {
   keysOnly?: boolean;
   errors?: Array<{ key?: string; value?: string }>;
   className?: string;
+  lockedFields?: string[];
   onChange: (fields: CustomField[]) => void;
   onBeforeRemove?: (field: CustomField) => Promise<boolean> | boolean;
 };
@@ -42,6 +43,7 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
   keysOnly = false,
   className,
   errors,
+  lockedFields = [],
   onChange,
   onBeforeRemove,
 }) => {
@@ -88,7 +90,7 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
     if (onBeforeRemove) {
       const canRemove = await onBeforeRemove(fieldToRemove);
       if (!canRemove) {
-        return; // Do not proceed with removal if the user rejects
+        return;
       }
     }
 
@@ -141,38 +143,40 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
   return (
     <Col className={className}>
       {label && <label className="text-sm font-semibold">{label}</label>}
-      {fields.map((field, index) => (
-        <Row alignItems="start" key={index}>
-          <Input
-            label="Key"
-            value={field.key}
-            onChange={(e) => handleFieldChange(index, 'key', e.target.value)}
-            error={errors?.[index]?.key}
-          />
-          {!keysOnly && (
-            <>
-              <Select
-                label="Type"
-                value={field.type}
-                options={typeOptions}
-                onChange={(value) =>
-                  handleFieldChange(index, 'type', value as ValueType)
-                }
-              />
-              {renderValueInput(field, index)}
-            </>
-          )}
-          <Button
-            type="button"
-            variant="secondary"
-            className="md:mt-7"
-            locked
-            onClick={() => handleRemoveField(index)}
-          >
-            <IconTrash size={20} />
-          </Button>
-        </Row>
-      ))}
+      {fields.map((field, index) => {
+        const isLocked = lockedFields.includes(field.key);
+
+        return (
+          <Row alignItems="start" key={index}>
+            <Input
+              label="Name"
+              value={field.key}
+              onChange={(e) => handleFieldChange(index, 'key', e.target.value)}
+              error={errors?.[index]?.key}
+              disabled={isLocked}
+            />
+            <Select
+              label="Type"
+              value={field.type}
+              options={typeOptions}
+              onChange={(value) =>
+                handleFieldChange(index, 'type', value as ValueType)
+              }
+              disabled={isLocked}
+            />
+            {!keysOnly && renderValueInput(field, index)}
+            <Button
+              type="button"
+              variant="secondary"
+              className="md:mt-7"
+              disabled={isLocked}
+              onClick={() => handleRemoveField(index)}
+            >
+              <IconTrash size={20} />
+            </Button>
+          </Row>
+        );
+      })}
       <Button type="button" onClick={handleAddField} className="self-start">
         Add Field
       </Button>

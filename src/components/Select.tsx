@@ -166,8 +166,8 @@ export const Select: React.FC<SelectProps> = ({
           error={error}
           disabled={disabled}
           className={cn('cursor-pointer justify-between shadow', {
-            'hover:shadow-dark': !disabled,
             'focus-visible:ring-0 focus-visible:ring-offset-0': isOpen,
+            'hover:shadow-dark': !disabled,
           })}
         >
           <div className="flex items-center gap-2">

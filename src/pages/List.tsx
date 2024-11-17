@@ -1,96 +1,30 @@
-import { useState } from 'react';
 import { Table } from '@/components/Table';
-import { ListEditor } from '@/components/ListEditor';
-import { Col } from '@/components/Col';
-import { Row } from '@/components/Row';
+import { Table2 } from '@/components/Table2';
+// import { Table2 } from '@/components/Table2';
 
-function flattenAttrs(
-  data: { [key: string]: any; attributes: Record<string, any> }[],
-) {
-  return data.map(({ attributes, ...rest }) => ({
-    ...attributes,
-    ...rest,
-  }));
-}
+type User = {
+  name: string;
+  age: number;
+  address: string;
+};
 
-const data = [
-  {
-    name: 'aaa',
-    attributes: {
-      attr1: 'string',
-      attr2: 0,
-      attr3: true,
-    },
-    tags: ['tag 1', 'tag 2'],
-    tags1: ['tag 1', 'tag 2'],
-    tags2: ['tag 1', 'tag 2'],
-    tags3: ['tag 1', 'tag 2'],
-    tags4: ['tag 1', 'tag 2'],
-    tags5: ['tag 1', 'tag 2'],
-    tags6: ['tag 1', 'tag 2'],
-    tags7: ['tag 1', 'tag 2'],
-    tags8sssssssss: ['tag 1', 'tag 2'],
-  },
-  {
-    name: 'bbb',
-    attributes: {
-      attr1: 'another string',
-      attr2: 42,
-      attr3: false,
-    },
-    tags: ['tag 3', 'tag 4'],
-    tags1: ['tag 1', 'tag 2'],
-    tags2: ['tag 1', 'tag 2'],
-    tags3: ['tag 1', 'tag 2'],
-    tags4: ['tag 1', 'tag 2'],
-    tags5: ['tag 1', 'tag 2'],
-    tags6: ['tag 1', 'tag 2'],
-    tags7: ['tag 1', 'tag 2'],
-    tags8: ['tag 1', 'tag 2'],
-  },
-];
+export const List = () => {
+  const columns = [
+    { header: 'Name', render: (item: User) => item.name },
+    { header: 'Age', render: (item: User) => item.age },
+    { header: 'Address', render: (item: User) => item.address },
+  ];
 
-const flattenedData = flattenAttrs(data);
-
-const keys = Object.keys(flattenedData[0]);
-
-function colsFromKeys<T>(
-  pickedKeys: string[],
-): { header: string; render: (item: T) => React.ReactNode }[] {
-  return pickedKeys.map((key) => ({
-    header: key,
-    render: (item: T) => {
-      const value = item[key as keyof T];
-      if (Array.isArray(value)) {
-        return value.join(', ');
-      } else if (typeof value === 'boolean') {
-        return value ? 'True' : 'False';
-      } else if (value === null || value === undefined) {
-        return '';
-      }
-      return String(value);
-    },
-  }));
-}
-
-export function List() {
-  const [pickedKeys, setPickedKeys] = useState<string[]>(keys);
-
-  const handlePickedKeysChange = (newPickedKeys: string[]) => {
-    setPickedKeys(newPickedKeys);
-  };
-
-  const columns = colsFromKeys<(typeof flattenedData)[0]>(pickedKeys);
+  const data = [
+    { name: 'Alice', age: 25, address: '123 Main St' },
+    { name: 'Bob', age: 30, address: '456 Elm St' },
+  ];
 
   return (
-    <Col gap="lg">
-      <Row>
-        <Col className="w-64">ssstw twt wtw twtwt</Col>
-        <Col className="w-screen-lg w-full min-w-0">
-          <ListEditor items={keys} onChange={handlePickedKeysChange} />
-          <Table data={flattenedData} cols={columns} />
-        </Col>
-      </Row>
-    </Col>
+    <div className="container mx-auto mt-8">
+      <h1 className="mb-4 text-xl font-bold">User Table</h1>
+      <Table2 data={data} cols={columns} />
+      {/* <Table data={data} cols={columns} /> */}
+    </div>
   );
-}
+};

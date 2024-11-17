@@ -1,32 +1,34 @@
-import React, { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { IconArrowUp, IconArrowDown } from '@tabler/icons-react';
 
 type Cols<T> = {
   header: string;
   render: (item: T) => React.ReactNode;
-  width?: number;
 };
 
 export function Table<T>({
   data,
   cols,
+  onRowHover,
   onRowClick,
 }: {
   data: T[];
   cols: Cols<T>[];
+  onRowHover?: (item: T) => React.ReactNode;
   onRowClick?: (e: React.MouseEvent<Element>, item: T) => void;
 }) {
   const [sortConfig, setSortConfig] = useState<{
     index: number;
     direction: 'asc' | 'desc';
   } | null>(null);
-  const [columnWidths, setColumnWidths] = useState(
-    cols.map((col) => col.width || 150),
-  );
 
-  const resizingIndicator = useRef<HTMLDivElement>(null);
-  const startXRef = useRef(0);
-  const startWidthsRef = useRef<number[]>([]);
+  const [hoveredRow, setHoveredRow] = useState<number | null>(null);
+  const [hoverPosition, setHoverPosition] = useState<number | null>(null);
+  const hideTimeout = useRef<number | null>(null);
+
+  const [widths, setWidths] = useState<{ [index: number]: number }>(
+    () => Object.fromEntries(cols.map((_, index) => [index, 150])), // Default widths
+  );
 
   const sortedData = [...data].sort((a, b) => {
     if (sortConfig && sortConfig.index < cols.length) {
@@ -66,108 +68,144 @@ export function Table<T>({
     setSortConfig({ index, direction });
   };
 
-  const handleResizeStart = (index: number, startX: number) => {
-    document.body.classList.add('select-none');
-    startXRef.current = startX;
-    startWidthsRef.current = [...columnWidths];
+  const handleMouseEnterRow = (rowIndex: number, event: React.MouseEvent) => {
+    if (hideTimeout.current) {
+      window.clearTimeout(hideTimeout.current);
+    }
 
-    // if (resizingIndicator.current) {
-    //   resizingIndicator.current.style.display = 'block';
-    //   resizingIndicator.current.style.left = `${startX}px`;
-    // }
+    setHoveredRow(rowIndex);
 
-    const handleMouseMove = (event: MouseEvent) => {
-      const deltaX = event.clientX - startXRef.current;
-      const newWidth = Math.max(50, startWidthsRef.current[index] + deltaX);
-
-      setColumnWidths((prevWidths) => {
-        const updatedWidths = [...prevWidths];
-        updatedWidths[index] = newWidth;
-        return updatedWidths;
-      });
-
-      // if (resizingIndicator.current) {
-      //   resizingIndicator.current.style.left = `${event.clientX}px`;
-      // }
-    };
-
-    const handleMouseUp = () => {
-      document.body.classList.remove('select-none');
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-
-      // if (resizingIndicator.current) {
-      //   resizingIndicator.current.style.display = 'none';
-      // }
-    };
-
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+    const rowElement = event.currentTarget as HTMLDivElement;
+    const rowTop = rowElement.getBoundingClientRect().top;
+    const rowHeight = rowElement.getBoundingClientRect().height;
+    setHoverPosition(rowTop + rowHeight / 2);
   };
+
+  const handleMouseLeaveRow = () => {
+    hideTimeout.current = window.setTimeout(() => {
+      setHoveredRow(null);
+    }, 100);
+  };
+
+  const handleMouseEnterHoverContent = () => {
+    if (hideTimeout.current) {
+      window.clearTimeout(hideTimeout.current);
+    }
+  };
+
+  const handleMouseLeaveHoverContent = () => {
+    hideTimeout.current = window.setTimeout(() => {
+      setHoveredRow(null);
+    }, 100);
+  };
+
+  const startResizing = (index: number, event: React.MouseEvent) => {
+    event.preventDefault();
+
+    const startX = event.clientX;
+    const startWidth = widths[index] || 150;
+
+    const onMouseMove = (e: MouseEvent) => {
+      const deltaX = e.clientX - startX;
+      setWidths((prevWidths) => {
+        const newWidths = { ...prevWidths };
+        const newWidth = Math.max(startWidth + deltaX, 50); // Minimum width is 50px
+        newWidths[index] = newWidth;
+        return newWidths;
+      });
+    };
+
+    const onMouseUp = () => {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setHoveredRow(null);
+    };
+
+    window.addEventListener('scroll', handleScroll, true);
+    return () => {
+      window.removeEventListener('scroll', handleScroll, true);
+    };
+  }, []);
 
   return (
     <div className="relative w-full overflow-x-auto">
-      <div className="min-w-full">
-        <table className="min-w-full" style={{ borderCollapse: 'separate' }}>
-          <thead className="bg-subtle">
-            <tr>
-              {cols.map((column, index) => (
-                <th
-                  key={index}
-                  className="relative px-4 py-2 text-left"
-                  style={{ width: columnWidths[index], position: 'relative' }}
-                >
-                  <div
-                    className="flex items-center gap-2 text-sm font-semibold"
-                    onClick={() => handleSort(index)}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    {column.header}
-                    {sortConfig?.index === index &&
-                      (sortConfig.direction === 'asc' ? (
-                        <IconArrowUp size={16} />
-                      ) : (
-                        <IconArrowDown size={16} />
-                      ))}
-                  </div>
-                  <div
-                    className="absolute right-0 top-0 h-full w-2 cursor-col-resize"
-                    onMouseDown={(e) => handleResizeStart(index, e.clientX)}
-                    style={{ touchAction: 'none' }}
-                  />
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-subtle">
-            {sortedData.map((item, rowIndex) => (
-              <tr
-                key={rowIndex}
-                className="hover:bg-subtle"
-                onClick={(e) => onRowClick?.(e, item)}
-                style={{ cursor: onRowClick ? 'pointer' : 'default' }}
+      <div>
+        {/* Header */}
+        <div className="flex border-b border-gray-300 bg-subtle">
+          {cols.map((column, index) => (
+            <div
+              key={index}
+              className="relative flex-shrink-0 border-r border-gray-300 px-4 py-2 text-left"
+              style={{ width: `${widths[index] || 150}px` }}
+            >
+              <div
+                className="flex cursor-pointer items-center gap-2 text-sm font-semibold"
+                onClick={() => handleSort(index)}
               >
-                {cols.map((column, colIndex) => (
-                  <td
-                    key={colIndex}
-                    className="px-4 py-2 text-sm"
-                    style={{ width: columnWidths[colIndex] }}
-                  >
-                    {column.render(item)}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                {column.header}
+                {sortConfig?.index === index &&
+                  (sortConfig.direction === 'asc' ? (
+                    <IconArrowUp size={16} />
+                  ) : (
+                    <IconArrowDown size={16} />
+                  ))}
+              </div>
+              {index < cols.length - 1 && (
+                <div
+                  className="absolute right-0 top-0 h-full w-2 cursor-col-resize bg-gray-400 hover:bg-gray-600"
+                  onMouseDown={(e) => startResizing(index, e)}
+                />
+              )}
+            </div>
+          ))}
+        </div>
+        {/* Body */}
+        <div>
+          {sortedData.map((item, rowIndex) => (
+            <div
+              key={rowIndex}
+              className={`flex cursor-pointer border-b border-gray-300 ${
+                hoveredRow === rowIndex ? 'bg-subtle' : ''
+              }`}
+              onClick={(e) => onRowClick?.(e, item)}
+              onMouseEnter={(e) => handleMouseEnterRow(rowIndex, e)}
+              onMouseLeave={handleMouseLeaveRow}
+            >
+              {cols.map((column, colIndex) => (
+                <div
+                  key={colIndex}
+                  className="flex-shrink-0 px-4 py-2 text-sm"
+                  style={{ width: `${widths[colIndex] || 150}px` }}
+                >
+                  {column.render(item)}
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
       </div>
-      {/*
-      <div
-        ref={resizingIndicator}
-        className="pointer-events-none absolute bottom-0 top-0 w-0.5 bg-blue-500"
-        style={{ display: 'none', position: 'fixed' }}
-      />
-    */}
+      {hoveredRow !== null && onRowHover && hoverPosition !== null && (
+        <div
+          className="fixed z-10"
+          style={{
+            top: `${hoverPosition}px`,
+            right: '24px',
+            transform: 'translateY(-50%)',
+          }}
+          onMouseEnter={handleMouseEnterHoverContent}
+          onMouseLeave={handleMouseLeaveHoverContent}
+        >
+          {onRowHover(sortedData[hoveredRow])}
+        </div>
+      )}
     </div>
   );
 }
