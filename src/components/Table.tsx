@@ -6,6 +6,8 @@ type Cols<T> = {
   render: (item: T) => React.ReactNode;
 };
 
+const DEFAULT_COL_WIDTH = 150;
+
 export function Table<T>({
   data,
   cols,
@@ -88,7 +90,7 @@ export function Table<T>({
     event.preventDefault();
 
     const startX = event.clientX;
-    const startWidth = widths[index] || 150;
+    const startWidth = widths[index] || DEFAULT_COL_WIDTH;
 
     const onMouseMove = (e: MouseEvent) => {
       const deltaX = e.clientX - startX;
@@ -110,7 +112,9 @@ export function Table<T>({
   };
 
   useEffect(() => {
-    setWidths(Object.fromEntries(cols.map((_, index) => [index, 150])));
+    setWidths(
+      Object.fromEntries(cols.map((_, index) => [index, DEFAULT_COL_WIDTH])),
+    );
   }, [cols]);
 
   useEffect(() => {
@@ -129,19 +133,21 @@ export function Table<T>({
       {cols.map((column, index) => (
         <div
           key={index}
-          className="relative flex-shrink-0 px-4 py-2 text-left"
-          style={{ width: `${widths[index] || 150}px` }}
+          className="relative px-4 py-2 text-left"
+          style={{ width: `${widths[index] || DEFAULT_COL_WIDTH}px` }}
         >
           <div
             className="flex cursor-pointer items-center gap-2 text-sm font-semibold"
             onClick={() => handleSort(index)}
           >
-            {column.header}
+            <span className="overflow-hidden text-ellipsis whitespace-nowrap">
+              {column.header}
+            </span>
             {sortConfig?.index === index &&
               (sortConfig.direction === 'asc' ? (
-                <IconArrowUp size={16} />
+                <IconArrowUp size={16} className="shrink-0" />
               ) : (
-                <IconArrowDown size={16} />
+                <IconArrowDown size={16} className="shrink-0" />
               ))}
           </div>
           <div
@@ -170,8 +176,8 @@ export function Table<T>({
           {cols.map((column, colIndex) => (
             <div
               key={colIndex}
-              className="flex-shrink-0 px-4 py-2 text-sm"
-              style={{ width: `${widths[colIndex] || 150}px` }}
+              className="overflow-hidden text-ellipsis whitespace-nowrap px-4 py-2 text-sm"
+              style={{ width: `${widths[colIndex] || DEFAULT_COL_WIDTH}px` }}
             >
               {column.render(item)}
             </div>
