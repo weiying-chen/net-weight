@@ -1,43 +1,8 @@
 import { useState, useEffect } from 'react';
-import { DataTable } from '@/components/DataTable';
+import { Column, DataTable } from '@/components/DataTable';
 import { isInDormancy, timeAgo } from '@/utils';
 import { Button } from '@/components/Button';
-
-interface Plant {
-  id: number;
-  name: string;
-  lastWatered: string;
-  dormancy?: 'Summer' | 'Winter'; // Dormancy period
-  lightLevel: 'High' | 'Low'; // Light requirements
-  waterNeeds: 'High' | 'Low'; // Watering needs
-}
-
-const initialData: Plant[] = [
-  {
-    id: 1,
-    name: 'Aloe marlothii',
-    lastWatered: '2024-10-20T00:00:00',
-    dormancy: 'Winter',
-    lightLevel: 'High', // High light requirements
-    waterNeeds: 'Low', // Low water needs
-  },
-  {
-    id: 2,
-    name: 'Adenium obesum',
-    lastWatered: '2024-10-20T00:00:00',
-    dormancy: 'Winter',
-    lightLevel: 'High', // High light requirements
-    waterNeeds: 'High', // High water needs
-  },
-  {
-    id: 3,
-    name: 'Haworthia cooperi',
-    lastWatered: '2024-10-18T00:00:00',
-    dormancy: 'Summer',
-    lightLevel: 'Low', // Low light requirements
-    waterNeeds: 'Low', // Low water needs
-  },
-];
+import { data as initialData, Plant } from '@/data';
 
 export function Succs(): JSX.Element {
   const [plants, setPlants] = useState<Plant[]>(() => {
@@ -58,34 +23,56 @@ export function Succs(): JSX.Element {
     );
   };
 
-  const columns = [
+  const columns: Column<Plant>[] = [
     {
       header: 'Plant',
+      sortKey: 'name',
       accessor: (item: Plant) => item.name,
     },
     {
+      header: 'Variant',
+      sortKey: 'variant',
+      accessor: (item: Plant) => item.variant || 'N/A',
+    },
+    {
+      header: 'Size',
+      sortKey: 'size',
+      accessor: (item: Plant) => item.size,
+    },
+    {
       header: 'Last Watered',
-      accessor: (item: Plant) => (
-        <div className="flex items-center space-x-2">
-          <span>
-            {item.lastWatered ? timeAgo(item.lastWatered) : 'Never watered'}
-          </span>
-          <Button
-            onClick={() => markAsWatered(item.id)}
-            className="h-auto px-2 py-1 text-xs"
-          >
-            Water Now
-          </Button>
-        </div>
-      ),
+      sortKey: 'lastWatered',
+      accessor: (item: Plant) => {
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+        const wasWateredAWeekAgo = item.lastWatered
+          ? new Date(item.lastWatered) < oneWeekAgo
+          : false;
+
+        return (
+          <div className="flex items-center space-x-2">
+            <span className={wasWateredAWeekAgo ? 'text-primary' : ''}>
+              {item.lastWatered ? timeAgo(item.lastWatered) : 'Never watered'}
+            </span>
+            <Button
+              variant="secondary"
+              className="h-auto px-2 py-1 text-xs"
+              onClick={() => markAsWatered(item.id)}
+            >
+              Water now
+            </Button>
+          </div>
+        );
+      },
     },
     {
       header: 'Dormancy',
+      sortKey: 'dormancy',
       accessor: (item: Plant) => {
         const isDormant = item.dormancy ? isInDormancy(item.dormancy) : false;
-
         return item.dormancy ? (
-          <span className={`${isDormant ? 'text-success' : ''}`}>
+          <span className={`${isDormant ? 'text-primary' : ''}`}>
             {item.dormancy}
           </span>
         ) : (
@@ -95,6 +82,7 @@ export function Succs(): JSX.Element {
     },
     {
       header: 'Light Level',
+      sortKey: 'lightLevel',
       accessor: (item: Plant) => (
         <span className={`${item.lightLevel === 'High' ? 'text-primary' : ''}`}>
           {item.lightLevel}
@@ -103,6 +91,7 @@ export function Succs(): JSX.Element {
     },
     {
       header: 'Water Needs',
+      sortKey: 'waterNeeds',
       accessor: (item: Plant) => (
         <span className={`${item.waterNeeds === 'High' ? 'text-primary' : ''}`}>
           {item.waterNeeds}

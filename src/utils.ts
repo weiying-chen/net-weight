@@ -65,7 +65,7 @@ export const timeAgo = (lastWateredString: string): string => {
   if (weeks > 0) return `${weeks}w`;
   if (days > 0) return `${days}d`;
   if (hours > 0) return `${hours}h`;
-  if (minutes > 0) return `${minutes}n`;
+  if (minutes > 0) return `${minutes}min`;
   return `${seconds}s`; // Return seconds if less than a minute
 };
 

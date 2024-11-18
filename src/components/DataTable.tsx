@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { IconChevronUp, IconChevronDown } from '@tabler/icons-react';
+import { IconArrowUp, IconArrowDown } from '@tabler/icons-react';
 
-interface Column<T> {
-  header: React.ReactNode; // Header can be a React element or a string
-  accessor: (item: T) => React.ReactNode; // Accessor must return a React element or string
-  sortKey?: keyof T; // Key used for sorting
+export interface Column<T> {
+  header: React.ReactNode;
+  accessor: (item: T) => React.ReactNode;
+  sortKey?: keyof T; // SortKey must be a keyof T
 }
 
 interface DataTableProps<T> {
@@ -60,9 +60,9 @@ export function DataTable<T>({
                   {column.sortKey &&
                     sortConfig?.key === column.sortKey &&
                     (sortConfig.direction === 'asc' ? (
-                      <IconChevronUp size={16} />
+                      <IconArrowUp size={16} />
                     ) : (
-                      <IconChevronDown size={16} />
+                      <IconArrowDown size={16} />
                     ))}
                 </div>
               </th>

@@ -25,10 +25,7 @@ export function Table<T>({
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
   const [hoverPosition, setHoverPosition] = useState<number | null>(null);
   const hideTimeout = useRef<number | null>(null);
-
-  const [widths, setWidths] = useState<{ [index: number]: number }>(
-    () => Object.fromEntries(cols.map((_, index) => [index, 150])), // Default widths
-  );
+  const [widths, setWidths] = useState<{ [index: number]: number }>({});
 
   const sortedData = [...data].sort((a, b) => {
     if (sortConfig && sortConfig.index < cols.length) {
@@ -123,6 +120,11 @@ export function Table<T>({
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
   };
+
+  // This re-sets column widths if `cols` wasn't ready, avoiding rendering issues.
+  useEffect(() => {
+    setWidths(Object.fromEntries(cols.map((_, index) => [index, 150])));
+  }, [cols]);
 
   useEffect(() => {
     const handleScroll = () => {
