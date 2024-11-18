@@ -84,18 +84,6 @@ export function Table<T>({
     }, 100);
   };
 
-  const handleMouseEnterHoverContent = () => {
-    if (hideTimeout.current) {
-      window.clearTimeout(hideTimeout.current);
-    }
-  };
-
-  const handleMouseLeaveHoverContent = () => {
-    hideTimeout.current = window.setTimeout(() => {
-      setHoveredRow(null);
-    }, 100);
-  };
-
   const startResizing = (index: number, event: React.MouseEvent) => {
     event.preventDefault();
 
@@ -106,7 +94,7 @@ export function Table<T>({
       const deltaX = e.clientX - startX;
       setWidths((prevWidths) => {
         const newWidths = { ...prevWidths };
-        const newWidth = Math.max(startWidth + deltaX, 50); // Minimum width is 50px
+        const newWidth = Math.max(startWidth + deltaX, 50);
         newWidths[index] = newWidth;
         return newWidths;
       });
@@ -121,7 +109,6 @@ export function Table<T>({
     document.addEventListener('mouseup', onMouseUp);
   };
 
-  // This re-sets column widths if `cols` wasn't ready, avoiding rendering issues.
   useEffect(() => {
     setWidths(Object.fromEntries(cols.map((_, index) => [index, 150])));
   }, [cols]);
@@ -137,6 +124,85 @@ export function Table<T>({
     };
   }, []);
 
+  const renderHeader = () => (
+    <div className="flex bg-subtle">
+      {cols.map((column, index) => (
+        <div
+          key={index}
+          className="relative flex-shrink-0 px-4 py-2 text-left"
+          style={{ width: `${widths[index] || 150}px` }}
+        >
+          <div
+            className="flex cursor-pointer items-center gap-2 text-sm font-semibold"
+            onClick={() => handleSort(index)}
+          >
+            {column.header}
+            {sortConfig?.index === index &&
+              (sortConfig.direction === 'asc' ? (
+                <IconArrowUp size={16} />
+              ) : (
+                <IconArrowDown size={16} />
+              ))}
+          </div>
+          <div
+            className="absolute right-0 top-0 flex h-full w-2 cursor-col-resize items-center justify-center"
+            onMouseDown={(e) => startResizing(index, e)}
+          >
+            <div className="h-full w-[2px] bg-background"></div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  const renderBody = () => (
+    <div>
+      {sortedData.map((item, rowIndex) => (
+        <div
+          key={rowIndex}
+          className={`flex cursor-pointer border-b border-subtle ${
+            hoveredRow === rowIndex ? 'bg-subtle' : ''
+          }`}
+          onClick={(e) => onRowClick?.(e, item)}
+          onMouseEnter={(e) => handleMouseEnterRow(rowIndex, e)}
+          onMouseLeave={handleMouseLeaveRow}
+        >
+          {cols.map((column, colIndex) => (
+            <div
+              key={colIndex}
+              className="flex-shrink-0 px-4 py-2 text-sm"
+              style={{ width: `${widths[colIndex] || 150}px` }}
+            >
+              {column.render(item)}
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+
+  const renderHover = () => {
+    if (hoveredRow === null || hoverPosition === null || !onRowHover)
+      return null;
+
+    return (
+      <div
+        className="fixed z-10"
+        style={{
+          top: `${hoverPosition}px`,
+          right: '24px',
+          transform: 'translateY(-50%)',
+        }}
+        onMouseEnter={() => {
+          if (hideTimeout.current) window.clearTimeout(hideTimeout.current);
+        }}
+        onMouseLeave={handleMouseLeaveRow}
+      >
+        {onRowHover(sortedData[hoveredRow])}
+      </div>
+    );
+  };
+
   const totalWidth = Object.values(widths).reduce(
     (acc, width) => acc + width,
     0,
@@ -145,76 +211,10 @@ export function Table<T>({
   return (
     <div className="relative w-full overflow-x-auto">
       <div style={{ minWidth: `${totalWidth}px` }}>
-        {/* Header */}
-        <div className="flex bg-subtle">
-          {cols.map((column, index) => (
-            <div
-              key={index}
-              className="relative flex-shrink-0 px-4 py-2 text-left"
-              style={{ width: `${widths[index] || 150}px` }}
-            >
-              <div
-                className="flex cursor-pointer items-center gap-2 text-sm font-semibold"
-                onClick={() => handleSort(index)}
-              >
-                {column.header}
-                {sortConfig?.index === index &&
-                  (sortConfig.direction === 'asc' ? (
-                    <IconArrowUp size={16} />
-                  ) : (
-                    <IconArrowDown size={16} />
-                  ))}
-              </div>
-              {index < cols.length - 1 && (
-                <div
-                  className="absolute right-0 top-0 flex h-full w-2 cursor-col-resize items-center justify-center"
-                  onMouseDown={(e) => startResizing(index, e)}
-                >
-                  <div className="h-full w-[2px] bg-background"></div>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-        {/* Body */}
-        <div>
-          {sortedData.map((item, rowIndex) => (
-            <div
-              key={rowIndex}
-              className={`flex cursor-pointer border-b border-subtle ${
-                hoveredRow === rowIndex ? 'bg-subtle' : ''
-              }`}
-              onClick={(e) => onRowClick?.(e, item)}
-              onMouseEnter={(e) => handleMouseEnterRow(rowIndex, e)}
-              onMouseLeave={handleMouseLeaveRow}
-            >
-              {cols.map((column, colIndex) => (
-                <div
-                  key={colIndex}
-                  className="flex-shrink-0 px-4 py-2 text-sm"
-                  style={{ width: `${widths[colIndex] || 150}px` }}
-                >
-                  {column.render(item)}
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
+        {renderHeader()}
+        {renderBody()}
       </div>
-      {hoveredRow !== null && onRowHover && hoverPosition !== null && (
-        <div
-          className="fixed z-10"
-          style={{
-            top: `${hoverPosition}px`,
-            right: '24px',
-            transform: 'translateY(-50%)',
-          }}
-          onMouseEnter={handleMouseEnterHoverContent}
-          onMouseLeave={handleMouseLeaveHoverContent}
-        >
-          {onRowHover(sortedData[hoveredRow])}
-        </div>
-      )}
+      {renderHover()}
     </div>
   );
 }
