@@ -146,11 +146,11 @@ export function Table<T>({
     <div className="relative w-full overflow-x-auto">
       <div style={{ minWidth: `${totalWidth}px` }}>
         {/* Header */}
-        <div className="flex border-b border-gray-300 bg-subtle">
+        <div className="flex bg-subtle">
           {cols.map((column, index) => (
             <div
               key={index}
-              className="relative flex-shrink-0 border-r border-gray-300 px-4 py-2 text-left"
+              className="relative flex-shrink-0 px-4 py-2 text-left"
               style={{ width: `${widths[index] || 150}px` }}
             >
               <div
@@ -167,9 +167,11 @@ export function Table<T>({
               </div>
               {index < cols.length - 1 && (
                 <div
-                  className="absolute right-0 top-0 h-full w-2 cursor-col-resize bg-gray-400 hover:bg-gray-600"
+                  className="absolute right-0 top-0 flex h-full w-2 cursor-col-resize items-center justify-center"
                   onMouseDown={(e) => startResizing(index, e)}
-                />
+                >
+                  <div className="h-full w-[2px] bg-background"></div>
+                </div>
               )}
             </div>
           ))}
@@ -179,7 +181,7 @@ export function Table<T>({
           {sortedData.map((item, rowIndex) => (
             <div
               key={rowIndex}
-              className={`flex cursor-pointer border-b border-gray-300 ${
+              className={`flex cursor-pointer border-b border-subtle ${
                 hoveredRow === rowIndex ? 'bg-subtle' : ''
               }`}
               onClick={(e) => onRowClick?.(e, item)}
