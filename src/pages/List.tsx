@@ -50,34 +50,79 @@ export const List = () => {
     'createDateTime',
     'lastUpdateDateTime',
     'createUserName',
+    'status',
+    'priority',
+    'category',
+    'assignedTo',
+    'description',
+    'location', // New column
+    'comments', // New column
+    'deadline', // New column
+    'budget', // New column
+    'approvalStatus', // New column
   ];
 
-  const data = [
-    {
-      name: 'WFH ISP Device',
-      createDateTime: '2024-11-11 10:14:29',
-      lastUpdateDateTime: '2024-11-17 14:55:09',
-      createUserName: 'admin',
-    },
-    {
-      name: 'ee',
-      createDateTime: '2024-11-15 09:39:10',
-      lastUpdateDateTime: '2024-11-15 10:15:31',
-      createUserName: 'admin',
-    },
-  ];
-
-  const [columns, setColumns] = useState<TableCol<(typeof data)[0]>[]>([]);
+  const [data, setData] = useState<typeof initialData | []>([]);
+  const [columns, setColumns] = useState<TableCol<(typeof initialData)[0]>[]>(
+    [],
+  );
 
   useEffect(() => {
     const cols = colsFromKeys(pickedKeys);
     setColumns(cols);
   }, []);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setData(initialData);
+    }, 0); // Simulate 2-second delay
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  const initialData = [
+    {
+      name: 'WFH ISP Device',
+      createDateTime: 'WFH ISP Device',
+      lastUpdateDateTime: 'WFH ISP Device',
+      createUserName: 'admin',
+      status: 'Active',
+      priority: 'High',
+      category: 'IT Equipment',
+      assignedTo: 'John Doe',
+      description: 'Device for setup',
+      location: 'New York',
+      comments: 'Delivered successfully',
+      deadline: 'New York',
+      budget: 'New York',
+      approvalStatus: 'Delivered successfully',
+    },
+    {
+      name: 'ee',
+      createDateTime: 'WFH ISP Device',
+      lastUpdateDateTime: 'WFH ISP Device',
+      createUserName: 'admin',
+      status: 'Inactive',
+      priority: 'Low',
+      category: 'Miscellaneous',
+      assignedTo: 'Jane Smith',
+      description: 'Unused item in inventory',
+      location: 'San Francisco',
+      comments: 'Needs review',
+      deadline: 'New York',
+      budget: 'New York',
+      approvalStatus: 'Pending',
+    },
+  ];
+
+  // if (loading) {
+  //   return <div>Loading...</div>; // Show a loading indicator
+  // }
+
   return (
     <Col gap="lg">
       <Row gap="xl">
-        <Table data={data} cols={columns} />
+        <Table data={data} cols={columns.slice(0, 13)} />
       </Row>
     </Col>
   );

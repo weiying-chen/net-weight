@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { IconArrowUp, IconArrowDown } from '@tabler/icons-react';
 
 type Cols<T> = {
@@ -6,7 +6,7 @@ type Cols<T> = {
   render: (item: T) => React.ReactNode;
 };
 
-const DEFAULT_COL_WIDTH = 150;
+const MIN_COL_WIDTH = 50;
 
 export function Table<T>({
   data,
@@ -28,6 +28,10 @@ export function Table<T>({
   const [hoverPosition, setHoverPosition] = useState<number | null>(null);
   const hideTimeout = useRef<number | null>(null);
   const [widths, setWidths] = useState<{ [index: number]: number }>({});
+
+  // Refs for measuring header and body cells
+  const headerRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const bodyRefs = useRef<(HTMLDivElement | null)[][]>([]);
 
   const sortedData = [...data].sort((a, b) => {
     if (sortConfig && sortConfig.index < cols.length) {
@@ -90,13 +94,13 @@ export function Table<T>({
     event.preventDefault();
 
     const startX = event.clientX;
-    const startWidth = widths[index] || DEFAULT_COL_WIDTH;
+    const startWidth = widths[index];
 
     const onMouseMove = (e: MouseEvent) => {
       const deltaX = e.clientX - startX;
       setWidths((prevWidths) => {
         const newWidths = { ...prevWidths };
-        const newWidth = Math.max(startWidth + deltaX, 50);
+        const newWidth = Math.max(startWidth + deltaX, MIN_COL_WIDTH);
         newWidths[index] = newWidth;
         return newWidths;
       });
@@ -112,10 +116,32 @@ export function Table<T>({
   };
 
   useEffect(() => {
-    setWidths(
-      Object.fromEntries(cols.map((_, index) => [index, DEFAULT_COL_WIDTH])),
-    );
-  }, [cols]);
+    if (data.length === 0) return; // Skip if data is not ready
+
+    const calculateWidths = () => {
+      const newWidths: { [index: number]: number } = {};
+
+      cols.forEach((_, colIndex) => {
+        const headerWidth =
+          headerRefs.current[colIndex]?.getBoundingClientRect().width || 0;
+
+        const bodyWidths = bodyRefs.current.map((row) =>
+          row[colIndex] ? row[colIndex].getBoundingClientRect().width : 0,
+        );
+
+        const maxBodyWidth = Math.max(...bodyWidths, 0);
+        newWidths[colIndex] = Math.max(
+          headerWidth,
+          maxBodyWidth,
+          MIN_COL_WIDTH,
+        );
+      });
+
+      setWidths(newWidths);
+    };
+
+    calculateWidths();
+  }, [data, cols]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -134,7 +160,8 @@ export function Table<T>({
         <div
           key={index}
           className="relative px-4 py-2 text-left"
-          style={{ width: `${widths[index] || DEFAULT_COL_WIDTH}px` }}
+          style={{ width: `${widths[index]}px` }}
+          ref={(el) => (headerRefs.current[index] = el)}
         >
           <div
             className="flex cursor-pointer items-center gap-2 text-sm font-semibold"
@@ -177,7 +204,13 @@ export function Table<T>({
             <div
               key={colIndex}
               className="overflow-hidden text-ellipsis whitespace-nowrap px-4 py-2 text-sm"
-              style={{ width: `${widths[colIndex] || DEFAULT_COL_WIDTH}px` }}
+              style={{ width: `${widths[colIndex]}px` }}
+              ref={(el) => {
+                if (!bodyRefs.current[rowIndex]) {
+                  bodyRefs.current[rowIndex] = [];
+                }
+                bodyRefs.current[rowIndex][colIndex] = el;
+              }}
             >
               {column.render(item)}
             </div>
@@ -209,14 +242,14 @@ export function Table<T>({
     );
   };
 
-  const totalWidth = Object.values(widths).reduce(
-    (acc, width) => acc + width,
-    0,
-  );
+  // const totalWidth = Object.values(widths).reduce(
+  //   (acc, width) => acc + width,
+  //   0,
+  // );
 
   return (
-    <div className="relative w-full overflow-x-auto">
-      <div style={{ minWidth: `${totalWidth}px` }}>
+    <div className="relative overflow-x-auto">
+      <div style={{ minWidth: 'max-content' }}>
         {renderHeader()}
         {renderBody()}
       </div>
