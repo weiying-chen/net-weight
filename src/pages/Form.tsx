@@ -65,12 +65,10 @@ const uploadedFiles = [
   {
     url: 'https://via.placeholder.com/150',
     name: 'placeholder1.jpg',
-    file: null,
   },
   {
     url: 'https://via.placeholder.com/200',
     name: 'placeholder2.png',
-    file: null,
   },
 ];
 

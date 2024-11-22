@@ -17,7 +17,7 @@ export function Table<T>({
   data: T[];
   cols: Cols<T>[];
   onRowHover?: (item: T) => React.ReactNode;
-  onRowClick?: (item: T) => void;
+  onRowClick?: (e: React.MouseEvent<Element>, item: T) => void;
 }) {
   const [sortConfig, setSortConfig] = useState<{
     index: number;
@@ -196,7 +196,7 @@ export function Table<T>({
           className={`flex cursor-pointer border-b border-subtle ${
             hoveredRow === rowIndex ? 'bg-subtle' : ''
           }`}
-          onClick={() => onRowClick?.(item)}
+          onClick={(e) => onRowClick?.(e, item)}
           onMouseEnter={(e) => handleMouseEnterRow(rowIndex, e)}
           onMouseLeave={handleMouseLeaveRow}
         >
