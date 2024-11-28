@@ -22,6 +22,7 @@ type CustomFieldsProps = {
   errors?: Array<{ key?: string; value?: string }>;
   className?: string;
   lockedFields?: string[];
+  fillOnceFields?: string[];
   onChange: (fields: CustomField[]) => void;
   onBeforeRemove?: (field: CustomField) => Promise<boolean> | boolean;
 };
@@ -44,6 +45,7 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
   className,
   errors,
   lockedFields = [],
+  fillOnceFields = [],
   onChange,
   onBeforeRemove,
 }) => {
@@ -105,6 +107,8 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
   ];
 
   const renderValueInput = (field: CustomField, index: number) => {
+    const isFillOnce = fillOnceFields.includes(field.key) && !!field.value;
+
     switch (field.type) {
       case 'number':
         return (
@@ -116,6 +120,7 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
               handleFieldChange(index, 'value', Number(e.target.value))
             }
             error={errors?.[index]?.value}
+            disabled={isFillOnce}
           />
         );
       case 'boolean':
@@ -125,6 +130,7 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
               checked={Boolean(field.value)}
               onChange={(checked) => handleFieldChange(index, 'value', checked)}
               label="Value"
+              disabled={isFillOnce}
             />
           </Row>
         );
@@ -135,6 +141,7 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
             value={String(field.value)}
             onChange={(e) => handleFieldChange(index, 'value', e.target.value)}
             error={errors?.[index]?.value}
+            disabled={isFillOnce}
           />
         );
     }

@@ -7,6 +7,7 @@ export interface Plant {
   dormancy?: 'Summer' | 'Winter';
   lightLevel: 'High' | 'Low';
   waterNeeds: 'High' | 'Low';
+  substrate?: string[];
 }
 
 export const data: Plant[] = [
@@ -18,6 +19,7 @@ export const data: Plant[] = [
     dormancy: 'Summer',
     lightLevel: 'High',
     waterNeeds: 'Low',
+    substrate: ['golden maifan', 'black lava rock', 'red lava rock', 'zeolite'],
   },
   {
     id: 2,

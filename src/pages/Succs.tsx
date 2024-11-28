@@ -98,6 +98,14 @@ export function Succs(): JSX.Element {
         </span>
       ),
     },
+    {
+      header: 'Substrate',
+      sortKey: 'substrate',
+      accessor: (item: Plant) =>
+        item.substrate && item.substrate.length > 0
+          ? item.substrate.join(', ')
+          : 'Unknown',
+    },
   ];
 
   return <DataTable data={plants} columns={columns} />;
