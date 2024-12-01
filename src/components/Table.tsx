@@ -13,15 +13,13 @@ export function Table<T>({
   cols,
   onRowHover,
   onRowClick,
-  selectedRows = new Set<number>(), // Added
-  onRowSelect, // Added
+  onRowSelect,
 }: {
   data: T[];
   cols: Cols<T>[];
   onRowHover?: (item: T) => React.ReactNode;
   onRowClick?: (e: React.MouseEvent<Element>, item: T) => void;
-  selectedRows?: Set<number>; // Added: Tracks selected rows
-  onRowSelect?: (rowIndex: number) => void; // Added: Callback for row selection
+  onRowSelect?: (selectedRows: Set<number>) => void;
 }) {
   const [sortConfig, setSortConfig] = useState<{
     index: number;
@@ -36,6 +34,16 @@ export function Table<T>({
   // Refs for measuring header and body cells
   const headerRefs = useRef<(HTMLDivElement | null)[]>([]);
   const bodyRefs = useRef<(HTMLDivElement | null)[][]>([]);
+
+  // Moved selectedRows state into Table component
+  const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
+
+  // Modify useEffect to depend only on selectedRows
+  useEffect(() => {
+    // Notify parent component when selectedRows changes
+    onRowSelect?.(selectedRows);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedRows]); // Excluded onRowSelect from dependencies
 
   const sortedData = [...data].sort((a, b) => {
     if (sortConfig && sortConfig.index < cols.length) {
@@ -158,21 +166,38 @@ export function Table<T>({
     };
   }, []);
 
+  // Moved handleRowSelect into Table component
+  const handleRowSelect = (rowIndex: number) => {
+    setSelectedRows((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(rowIndex)) {
+        newSet.delete(rowIndex);
+      } else {
+        newSet.add(rowIndex);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAll = () => {
+    setSelectedRows((prev) => {
+      let newSet: Set<number>;
+      if (prev.size === data.length) {
+        newSet = new Set();
+      } else {
+        newSet = new Set(data.map((_, index) => index));
+      }
+      return newSet;
+    });
+  };
+
   const renderHeader = () => (
     <div className="flex bg-subtle">
       <div className="w-8 px-4 py-2">
         <input
           type="checkbox"
           checked={data.length > 0 && selectedRows.size === data.length}
-          onChange={() => {
-            if (onRowSelect) {
-              if (selectedRows.size === data.length) {
-                data.forEach((_, index) => onRowSelect(index)); // Deselect all
-              } else {
-                data.forEach((_, index) => onRowSelect(index)); // Select all
-              }
-            }
-          }}
+          onChange={handleSelectAll}
         />
       </div>
       {cols.map((column, index) => (
@@ -223,7 +248,7 @@ export function Table<T>({
             <input
               type="checkbox"
               checked={selectedRows.has(rowIndex)}
-              onChange={() => onRowSelect?.(rowIndex)}
+              onChange={() => handleRowSelect(rowIndex)}
             />
           </div>
           {cols.map((column, colIndex) => (
