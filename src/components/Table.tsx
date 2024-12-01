@@ -13,11 +13,15 @@ export function Table<T>({
   cols,
   onRowHover,
   onRowClick,
+  selectedRows = new Set<number>(), // Added
+  onRowSelect, // Added
 }: {
   data: T[];
   cols: Cols<T>[];
   onRowHover?: (item: T) => React.ReactNode;
   onRowClick?: (e: React.MouseEvent<Element>, item: T) => void;
+  selectedRows?: Set<number>; // Added: Tracks selected rows
+  onRowSelect?: (rowIndex: number) => void; // Added: Callback for row selection
 }) {
   const [sortConfig, setSortConfig] = useState<{
     index: number;
@@ -156,6 +160,21 @@ export function Table<T>({
 
   const renderHeader = () => (
     <div className="flex bg-subtle">
+      <div className="w-8 px-4 py-2">
+        <input
+          type="checkbox"
+          checked={data.length > 0 && selectedRows.size === data.length}
+          onChange={() => {
+            if (onRowSelect) {
+              if (selectedRows.size === data.length) {
+                data.forEach((_, index) => onRowSelect(index)); // Deselect all
+              } else {
+                data.forEach((_, index) => onRowSelect(index)); // Select all
+              }
+            }
+          }}
+        />
+      </div>
       {cols.map((column, index) => (
         <div
           key={index}
@@ -200,6 +219,13 @@ export function Table<T>({
           onMouseEnter={(e) => handleMouseEnterRow(rowIndex, e)}
           onMouseLeave={handleMouseLeaveRow}
         >
+          <div className="w-8 px-4 py-2">
+            <input
+              type="checkbox"
+              checked={selectedRows.has(rowIndex)}
+              onChange={() => onRowSelect?.(rowIndex)}
+            />
+          </div>
           {cols.map((column, colIndex) => (
             <div
               key={colIndex}
@@ -241,11 +267,6 @@ export function Table<T>({
       </div>
     );
   };
-
-  // const totalWidth = Object.values(widths).reduce(
-  //   (acc, width) => acc + width,
-  //   0,
-  // );
 
   return (
     <div className="relative overflow-x-auto">

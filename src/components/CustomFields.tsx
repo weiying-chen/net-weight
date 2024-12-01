@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Col } from '@/components/Col';
 import { Row } from '@/components/Row';
 import { Button } from '@/components/Button';
@@ -49,6 +49,7 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
   onChange,
   onBeforeRemove,
 }) => {
+  const prevFields = useRef([...initialFields]);
   const [fields, setFields] = useState<CustomField[]>(initialFields);
 
   const updateFields = (newFields: CustomField[]) => {
@@ -107,7 +108,8 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
   ];
 
   const renderValueInput = (field: CustomField, index: number) => {
-    const isFillOnce = fillOnceFields.includes(field.key) && !!field.value;
+    const isFillOnce =
+      fillOnceFields.includes(field.key) && !!prevFields.current[index]?.value;
 
     switch (field.type) {
       case 'number':

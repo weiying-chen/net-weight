@@ -55,17 +55,20 @@ export const List = () => {
     'category',
     'assignedTo',
     'description',
-    'location', // New column
-    'comments', // New column
-    'deadline', // New column
-    'budget', // New column
-    'approvalStatus', // New column
+    'location',
+    'comments',
+    'deadline',
+    'budget',
+    'approvalStatus',
   ];
 
   const [data, setData] = useState<typeof initialData | []>([]);
   const [columns, setColumns] = useState<TableCol<(typeof initialData)[0]>[]>(
     [],
   );
+
+  // Added: Track selected rows
+  const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     const cols = colsFromKeys(pickedKeys);
@@ -80,11 +83,24 @@ export const List = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  // Added: Handle row selection
+  const handleRowSelect = (rowIndex: number) => {
+    setSelectedRows((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(rowIndex)) {
+        newSet.delete(rowIndex);
+      } else {
+        newSet.add(rowIndex);
+      }
+      return newSet;
+    });
+  };
+
   const initialData = [
     {
       name: 'WFH ISP Device',
-      createDateTime: 'WFH ISP Device',
-      lastUpdateDateTime: 'WFH ISP Device',
+      createDateTime: '2023-11-01',
+      lastUpdateDateTime: '2023-11-01',
       createUserName: 'admin',
       status: 'Active',
       priority: 'High',
@@ -93,14 +109,14 @@ export const List = () => {
       description: 'Device for setup',
       location: 'New York',
       comments: 'Delivered successfully',
-      deadline: 'New York',
-      budget: 'New York',
-      approvalStatus: 'Delivered successfully',
+      deadline: '2023-12-01',
+      budget: '$500',
+      approvalStatus: 'Approved',
     },
     {
       name: 'ee',
-      createDateTime: 'WFH ISP Device',
-      lastUpdateDateTime: 'WFH ISP Device',
+      createDateTime: '2023-11-02',
+      lastUpdateDateTime: '2023-11-02',
       createUserName: 'admin',
       status: 'Inactive',
       priority: 'Low',
@@ -109,21 +125,32 @@ export const List = () => {
       description: 'Unused item in inventory',
       location: 'San Francisco',
       comments: 'Needs review',
-      deadline: 'New York',
-      budget: 'New York',
+      deadline: '2023-12-10',
+      budget: '$200',
       approvalStatus: 'Pending',
     },
   ];
 
-  // if (loading) {
-  //   return <div>Loading...</div>; // Show a loading indicator
-  // }
-
   return (
     <Col gap="lg">
       <Row gap="xl">
-        <Table data={data} cols={columns.slice(0, 13)} />
+        <Table
+          data={data}
+          cols={columns.slice(0, 13)}
+          selectedRows={selectedRows} // Pass selected rows
+          onRowSelect={handleRowSelect} // Pass selection handler
+        />
       </Row>
+      <div>
+        <strong>Selected Rows:</strong>
+        <pre>
+          {JSON.stringify(
+            Array.from(selectedRows).map((index) => data[index]),
+            null,
+            2,
+          )}
+        </pre>
+      </div>
     </Col>
   );
 };
