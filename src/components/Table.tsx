@@ -194,12 +194,12 @@ export function Table<T>({
       {cols.map((column, index) => (
         <div
           key={index}
-          className="relative px-4 py-2 text-left"
+          className="relative flex items-center px-4 py-2 text-left"
           style={{ width: `${widths[index]}px` }}
           ref={(el) => (headerRefs.current[index] = el)}
         >
           <div
-            className="flex cursor-pointer items-center gap-2 text-sm font-semibold"
+            className="flex min-w-0 cursor-pointer items-center gap-2 text-sm font-semibold"
             onClick={() => handleSort(index)}
           >
             <span className="overflow-hidden text-ellipsis whitespace-nowrap">
@@ -284,7 +284,8 @@ export function Table<T>({
   };
 
   return (
-    <div className="relative overflow-x-auto">
+    // `w-full` ensures the table stretches to fill the available width if columns are too narrow.
+    <div className="relative w-full overflow-x-auto">
       <div className="min-w-max">
         {renderHeader()}
         {renderBody()}
