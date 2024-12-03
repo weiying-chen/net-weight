@@ -122,9 +122,22 @@ export const List = () => {
       <Row gap="xl">
         <Table
           data={data}
-          cols={columns.slice(0, 13)}
+          cols={columns.slice(0, 5)}
           selectedItems={selectedItems}
           onRowSelect={(updatedSelection) => setSelectedItems(updatedSelection)}
+          onRowHover={() => (
+            <div
+              style={{
+                padding: '8px',
+                backgroundColor: '#f9f9f9',
+                borderRadius: '4px',
+              }}
+            >
+              <p>
+                <strong>Name:</strong>
+              </p>
+            </div>
+          )}
         />
       </Row>
       <div>

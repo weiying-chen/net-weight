@@ -285,7 +285,7 @@ export function Table<T>({
 
   return (
     <div className="relative overflow-x-auto">
-      <div style={{ minWidth: 'max-content' }}>
+      <div className="min-w-max">
         {renderHeader()}
         {renderBody()}
       </div>
