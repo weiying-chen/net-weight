@@ -10,16 +10,18 @@ const MIN_COL_WIDTH = 50;
 
 export function Table<T>({
   data,
+  selectedItems,
   cols,
   onRowHover,
   onRowClick,
   onRowSelect,
 }: {
   data: T[];
+  selectedItems: T[];
   cols: Cols<T>[];
   onRowHover?: (item: T) => React.ReactNode;
   onRowClick?: (e: React.MouseEvent<Element>, item: T) => void;
-  onRowSelect?: (selectedRows: Set<number>) => void;
+  onRowSelect?: (selectedItems: T[]) => void;
 }) {
   const [sortConfig, setSortConfig] = useState<{
     index: number;
@@ -30,20 +32,8 @@ export function Table<T>({
   const [hoverPosition, setHoverPosition] = useState<number | null>(null);
   const hideTimeout = useRef<number | null>(null);
   const [widths, setWidths] = useState<{ [index: number]: number }>({});
-
-  // Refs for measuring header and body cells
   const headerRefs = useRef<(HTMLDivElement | null)[]>([]);
   const bodyRefs = useRef<(HTMLDivElement | null)[][]>([]);
-
-  // Moved selectedRows state into Table component
-  const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
-
-  // Modify useEffect to depend only on selectedRows
-  useEffect(() => {
-    // Notify parent component when selectedRows changes
-    onRowSelect?.(selectedRows);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedRows]); // Excluded onRowSelect from dependencies
 
   const sortedData = [...data].sort((a, b) => {
     if (sortConfig && sortConfig.index < cols.length) {
@@ -128,7 +118,7 @@ export function Table<T>({
   };
 
   useEffect(() => {
-    if (data.length === 0) return; // Skip if data is not ready
+    if (data.length === 0) return;
 
     const calculateWidths = () => {
       const newWidths: { [index: number]: number } = {};
@@ -166,40 +156,41 @@ export function Table<T>({
     };
   }, []);
 
-  // Moved handleRowSelect into Table component
   const handleRowSelect = (rowIndex: number) => {
-    setSelectedRows((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(rowIndex)) {
-        newSet.delete(rowIndex);
-      } else {
-        newSet.add(rowIndex);
-      }
-      return newSet;
-    });
+    const selectedItem = data[rowIndex];
+    const isSelected = selectedItems.some((item) => item === selectedItem);
+
+    const newSelection = isSelected
+      ? selectedItems.filter((item) => item !== selectedItem)
+      : [...selectedItems, selectedItem];
+
+    onRowSelect?.(newSelection);
+  };
+
+  const setIndeterminateState = (el: HTMLInputElement | null) => {
+    if (el) {
+      el.indeterminate =
+        selectedItems.length > 0 && selectedItems.length < data.length;
+    }
   };
 
   const handleSelectAll = () => {
-    setSelectedRows((prev) => {
-      let newSet: Set<number>;
-      if (prev.size === data.length) {
-        newSet = new Set();
-      } else {
-        newSet = new Set(data.map((_, index) => index));
-      }
-      return newSet;
-    });
+    const newSelection = selectedItems.length === data.length ? [] : [...data];
+    onRowSelect?.(newSelection);
   };
 
   const renderHeader = () => (
     <div className="flex bg-subtle">
-      <div className="w-8 px-4 py-2">
-        <input
-          type="checkbox"
-          checked={data.length > 0 && selectedRows.size === data.length}
-          onChange={handleSelectAll}
-        />
-      </div>
+      {onRowSelect && (
+        <div className="w-8 px-4 py-2">
+          <input
+            ref={setIndeterminateState}
+            type="checkbox"
+            checked={data.length > 0 && selectedItems.length === data.length}
+            onChange={handleSelectAll}
+          />
+        </div>
+      )}
       {cols.map((column, index) => (
         <div
           key={index}
@@ -244,13 +235,16 @@ export function Table<T>({
           onMouseEnter={(e) => handleMouseEnterRow(rowIndex, e)}
           onMouseLeave={handleMouseLeaveRow}
         >
-          <div className="w-8 px-4 py-2">
-            <input
-              type="checkbox"
-              checked={selectedRows.has(rowIndex)}
-              onChange={() => handleRowSelect(rowIndex)}
-            />
-          </div>
+          {onRowSelect && (
+            <div className="w-8 px-4 py-2">
+              <input
+                type="checkbox"
+                checked={selectedItems.some((selected) => selected === item)}
+                onClick={(e) => e.stopPropagation()}
+                onChange={() => handleRowSelect(rowIndex)}
+              />
+            </div>
+          )}
           {cols.map((column, colIndex) => (
             <div
               key={colIndex}
@@ -277,12 +271,8 @@ export function Table<T>({
 
     return (
       <div
-        className="fixed z-10"
-        style={{
-          top: `${hoverPosition}px`,
-          right: '24px',
-          transform: 'translateY(-50%)',
-        }}
+        className="fixed right-6 z-10 -translate-y-1/2 transform bg-subtle"
+        style={{ top: `${hoverPosition}px` }}
         onMouseEnter={() => {
           if (hideTimeout.current) window.clearTimeout(hideTimeout.current);
         }}

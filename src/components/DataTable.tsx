@@ -38,8 +38,9 @@ export function DataTable<T>({
       if (prevConfig?.key === key) {
         return prevConfig.direction === 'asc'
           ? { key, direction: 'desc' }
-          : null;
+          : { key, direction: 'asc' };
       }
+
       return { key, direction: 'asc' };
     });
   };

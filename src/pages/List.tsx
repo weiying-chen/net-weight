@@ -67,8 +67,7 @@ export const List = () => {
     [],
   );
 
-  // New state to store selected data items
-  const [selectedData, setSelectedData] = useState<typeof initialData>([]);
+  const [selectedItems, setSelectedItems] = useState<typeof initialData>([]);
 
   useEffect(() => {
     const cols = colsFromKeys(pickedKeys);
@@ -78,7 +77,7 @@ export const List = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setData(initialData);
-    }, 0); // Simulate delay
+    }, 0);
 
     return () => clearTimeout(timer);
   }, []);
@@ -124,17 +123,13 @@ export const List = () => {
         <Table
           data={data}
           cols={columns.slice(0, 13)}
-          onRowSelect={(selectedRows) => {
-            const selectedItems = Array.from(selectedRows).map(
-              (index) => data[index],
-            );
-            setSelectedData(selectedItems);
-          }}
+          selectedItems={selectedItems}
+          onRowSelect={(updatedSelection) => setSelectedItems(updatedSelection)}
         />
       </Row>
       <div>
         <strong>Selected Rows:</strong>
-        <pre>{JSON.stringify(selectedData, null, 2)}</pre>
+        <pre>{JSON.stringify(selectedItems, null, 2)}</pre>
       </div>
     </Col>
   );

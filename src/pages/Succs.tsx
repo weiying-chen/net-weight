@@ -25,7 +25,7 @@ export function Succs(): JSX.Element {
 
   const columns: Column<Plant>[] = [
     {
-      header: 'Plant',
+      header: 'Name',
       sortKey: 'name',
       accessor: (item: Plant) => item.name,
     },
@@ -60,7 +60,7 @@ export function Succs(): JSX.Element {
               className="h-auto px-2 py-1 text-xs"
               onClick={() => markAsWatered(item.id)}
             >
-              Water now
+              Set now
             </Button>
           </div>
         );
