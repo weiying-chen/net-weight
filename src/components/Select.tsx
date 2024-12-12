@@ -7,7 +7,7 @@ import { PseudoInput } from '@/components/PseudoInput';
 type SelectOption = {
   label: string;
   value: string | number;
-  icon?: React.ReactNode; // Icon is optional
+  icon?: React.ReactNode;
 };
 
 type SelectProps = {
@@ -18,6 +18,8 @@ type SelectProps = {
   error?: string;
   className?: string;
   onChange: (value: string | number) => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
   disabled?: boolean;
 };
 
@@ -29,6 +31,8 @@ export const Select: React.FC<SelectProps> = ({
   error,
   className,
   onChange,
+  onFocus,
+  onBlur,
   disabled,
   ...props
 }) => {
@@ -36,7 +40,7 @@ export const Select: React.FC<SelectProps> = ({
   const [selected, setSelected] = useState<{
     value: string | number;
     label: string;
-    icon?: React.ReactNode; // Icon is part of the selected option
+    icon?: React.ReactNode;
   } | null>(() => options.find((option) => option.value === value) || null);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
 
@@ -110,6 +114,7 @@ export const Select: React.FC<SelectProps> = ({
       ) {
         setIsOpen(false);
         setFocusedIndex(null);
+        onBlur?.();
       }
     };
 
@@ -117,7 +122,7 @@ export const Select: React.FC<SelectProps> = ({
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, []);
+  }, [onBlur]);
 
   const handleDropdownToggle = (event: React.MouseEvent<HTMLDivElement>) => {
     if (disabled) return;
@@ -125,6 +130,9 @@ export const Select: React.FC<SelectProps> = ({
     setIsOpen((prev) => !prev);
     if (!isOpen) {
       setInitialFocusedIndex();
+      onFocus?.();
+    } else {
+      onBlur?.();
     }
   };
 
@@ -141,10 +149,9 @@ export const Select: React.FC<SelectProps> = ({
           )}
           onClick={(event) => handleOptionClick(option, event)}
           onMouseEnter={() => setFocusedIndex(index)}
-          // Prevents focus from shifting to the list item
           onMouseDown={(e) => e.preventDefault()}
         >
-          {option.icon && option.icon} {/* Show icon in dropdown */}
+          {option.icon && option.icon}
           {option.label}
         </li>
       ))}
@@ -159,10 +166,13 @@ export const Select: React.FC<SelectProps> = ({
         className="relative w-full"
         onKeyDown={handleKeyDown}
         onClick={handleDropdownToggle}
+        tabIndex={0}
+        onFocus={onFocus}
+        onBlur={onBlur}
         {...props}
       >
         <PseudoInput
-          tabIndex={0}
+          tabIndex={-1}
           error={error}
           disabled={disabled}
           className={cn('cursor-pointer justify-between shadow', {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Col } from '@/components/Col';
 import { Row } from '@/components/Row';
 import { Button } from '@/components/Button';
@@ -7,8 +7,8 @@ import { Select } from '@/components/Select';
 import { IconTrash } from '@tabler/icons-react';
 
 export type CustomLink = {
-  platform?: string;
-  url?: string;
+  type: string;
+  value: string;
 };
 
 type PlatformOption = {
@@ -22,8 +22,9 @@ type CustomLinksProps = {
   links: CustomLink[];
   options: PlatformOption[];
   className?: string;
-  errors?: Array<{ platform?: string; url?: string }>;
+  errors?: Array<{ type?: string; value?: string }>;
   onChange: (links: CustomLink[]) => void;
+  onFocus?: (field: string | null) => void;
 };
 
 export const CustomLinks: React.FC<CustomLinksProps> = ({
@@ -33,6 +34,7 @@ export const CustomLinks: React.FC<CustomLinksProps> = ({
   className,
   errors = [],
   onChange,
+  onFocus,
 }) => {
   const [links, setLinks] = useState<CustomLink[]>(initialLinks);
 
@@ -43,7 +45,7 @@ export const CustomLinks: React.FC<CustomLinksProps> = ({
 
   const handleLinkChange = (
     index: number,
-    fieldType: 'platform' | 'url',
+    fieldType: 'type' | 'value',
     value: string,
   ) => {
     const newLinks = links.map((link, i) => {
@@ -56,7 +58,7 @@ export const CustomLinks: React.FC<CustomLinksProps> = ({
   };
 
   const handleAddLink = () => {
-    const newLinks = [...links, { platform: '', url: '' }];
+    const newLinks = [...links, { type: '', value: '' }];
     updateLinks(newLinks);
   };
 
@@ -71,19 +73,23 @@ export const CustomLinks: React.FC<CustomLinksProps> = ({
       {links.map((link, index) => (
         <Row alignItems="start" key={index}>
           <Select
-            label="Platform"
-            value={link.platform || ''}
+            label="Type"
+            value={link.type}
             options={options}
             onChange={(value) =>
-              handleLinkChange(index, 'platform', value as string)
+              handleLinkChange(index, 'type', value as string)
             }
-            error={errors?.[index]?.platform}
+            onFocus={() => onFocus?.(`content.socialLinks.${index}.type`)}
+            onBlur={() => onFocus?.(null)}
+            error={errors?.[index]?.type}
           />
           <Input
-            label="URL"
-            value={link.url}
-            onChange={(e) => handleLinkChange(index, 'url', e.target.value)}
-            error={errors?.[index]?.url}
+            label="Value"
+            value={link.value}
+            onChange={(e) => handleLinkChange(index, 'value', e.target.value)}
+            onFocus={() => onFocus?.(`content.socialLinks.${index}.value`)}
+            onBlur={() => onFocus?.(null)}
+            error={errors?.[index]?.value}
           />
           <Button
             type="button"

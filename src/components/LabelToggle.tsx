@@ -2,7 +2,7 @@ import { Row } from '@/components/Row';
 import { Switch, SwitchProps } from '@/components/Switch';
 
 type LabelToggleProps = SwitchProps & {
-  label: string;
+  label?: string;
 };
 
 export const LabelToggle: React.FC<LabelToggleProps> = ({
@@ -12,7 +12,7 @@ export const LabelToggle: React.FC<LabelToggleProps> = ({
 }) => {
   return (
     <Row alignItems="center" className={className} locked>
-      <label className="text-sm font-semibold">{label}</label>
+      {label && <label className="text-sm font-semibold">{label}</label>}
       <Switch small fluid {...switchProps} />
     </Row>
   );

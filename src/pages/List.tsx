@@ -122,7 +122,7 @@ export const List = () => {
       <Row gap="xl">
         <Table
           data={data}
-          cols={columns.slice(0, 5)}
+          cols={columns}
           selectedItems={selectedItems}
           onRowSelect={(updatedSelection) => setSelectedItems(updatedSelection)}
           onRowHover={() => (

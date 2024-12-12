@@ -7,6 +7,7 @@ export interface Seed {
   sowedDate: string;
   sproutedDate: string;
   lastWatered?: string;
+  variable?: string[];
   substrate?: string[];
 }
 

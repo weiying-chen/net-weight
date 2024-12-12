@@ -21,6 +21,7 @@ type FileUploadProps = {
   maxSize?: number;
   multiple?: boolean;
   accept?: { [key: string]: string[] };
+  acceptText?: string;
 };
 
 export function FileUpload({
@@ -38,6 +39,7 @@ export function FileUpload({
     'image/svg+xml': ['.svg'],
     'application/pdf': ['.pdf'],
   },
+  acceptText,
 }: FileUploadProps) {
   const [files, setFiles] = useState<FileData[]>(initialFiles);
 
@@ -116,7 +118,7 @@ export function FileUpload({
         <Col gap="sm" alignItems="center">
           <p>{isDragActive ? 'Drop the files here...' : placeholder}</p>
           <p className="text-xs text-muted">
-            Accepted file type(s): {acceptedFileTypes}
+            {acceptText || `Accepted file type(s): ${acceptedFileTypes}`}
           </p>
         </Col>
       </div>

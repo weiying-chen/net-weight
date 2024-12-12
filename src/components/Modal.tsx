@@ -22,7 +22,7 @@ export function Modal({
 
   const cnFromSize = {
     md: 'max-w-lg',
-    lg: 'max-w-screen-lg',
+    lg: 'max-w-screen-md',
   };
 
   return (

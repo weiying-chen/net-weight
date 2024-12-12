@@ -182,7 +182,7 @@ export function Table<T>({
   const renderHeader = () => (
     <div className="flex bg-subtle">
       {onRowSelect && (
-        <div className="w-8 px-4 py-2">
+        <div className="px-4 py-2">
           <input
             ref={setIndeterminateState}
             type="checkbox"
@@ -191,6 +191,7 @@ export function Table<T>({
           />
         </div>
       )}
+      <div className="px-4 py-2 text-center text-sm font-semibold">#</div>
       {cols.map((column, index) => (
         <div
           key={index}
@@ -236,7 +237,7 @@ export function Table<T>({
           onMouseLeave={handleMouseLeaveRow}
         >
           {onRowSelect && (
-            <div className="w-8 px-4 py-2">
+            <div className="px-4 py-2">
               <input
                 type="checkbox"
                 checked={selectedItems.some((selected) => selected === item)}
@@ -245,6 +246,7 @@ export function Table<T>({
               />
             </div>
           )}
+          <div className="px-4 py-2 text-center text-sm">{rowIndex + 1}</div>
           {cols.map((column, colIndex) => (
             <div
               key={colIndex}

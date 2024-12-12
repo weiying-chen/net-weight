@@ -48,17 +48,17 @@ export function Seeds(): JSX.Element {
       accessor: (item: Seed) => item.name,
     },
     {
-      header: 'Seeds Sowed',
+      header: 'Seeds sowed',
       sortKey: 'seedsSowed',
       accessor: (item: Seed) => item.seedsSowed,
     },
     {
-      header: 'Seeds Sprouted',
+      header: 'Seeds sprouted',
       sortKey: 'seedsSprouted',
       accessor: (item: Seed) => item.seedsSprouted,
     },
     {
-      header: 'Sowed Date',
+      header: 'Sowed date',
       sortKey: 'sowedDate',
       accessor: (item: Seed) => (
         <div className="flex items-center space-x-2">
@@ -74,7 +74,7 @@ export function Seeds(): JSX.Element {
       ),
     },
     {
-      header: 'Sprouted Date',
+      header: 'Sprouted date',
       sortKey: 'sproutedDate',
       accessor: (item: Seed) => (
         <div className="flex items-center space-x-2">
@@ -92,7 +92,7 @@ export function Seeds(): JSX.Element {
       ),
     },
     {
-      header: 'Last Watered',
+      header: 'Last watered',
       sortKey: 'lastWatered',
       accessor: (item: Seed) => {
         const oneWeekAgo = new Date();
@@ -117,6 +117,11 @@ export function Seeds(): JSX.Element {
           </div>
         );
       },
+    },
+    {
+      header: 'Variable',
+      sortKey: 'variable',
+      accessor: (item: Seed) => item.variable || 'N/A',
     },
     {
       header: 'Substrate',

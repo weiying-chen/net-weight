@@ -271,6 +271,7 @@ export function Form() {
 
                   setValue('files', validFiles); // Update form state with `File[]`
                 }}
+                acceptText="Please upload a private MIB file (.mib) if this is a network element asset."
                 error={errors.files?.message}
               />
             </Col>

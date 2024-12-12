@@ -43,11 +43,11 @@ export function Succs(): JSX.Element {
       header: 'Last Watered',
       sortKey: 'lastWatered',
       accessor: (item: Plant) => {
-        const oneWeekAgo = new Date();
-        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+        const twoWeeksAgo = new Date();
+        twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
 
         const wasWateredAWeekAgo = item.lastWatered
-          ? new Date(item.lastWatered) < oneWeekAgo
+          ? new Date(item.lastWatered) < twoWeeksAgo
           : false;
 
         return (
