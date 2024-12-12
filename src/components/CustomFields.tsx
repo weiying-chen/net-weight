@@ -17,7 +17,7 @@ type CustomField = {
 
 type CustomFieldsProps = {
   label?: string;
-  fields: CustomField[];
+  fields?: CustomField[];
   keysOnly?: boolean;
   errors?: Array<{ key?: string; value?: string }>;
   className?: string;
@@ -40,7 +40,7 @@ export const resetType = (type: ValueType): string | number | boolean => {
 
 export const CustomFields: React.FC<CustomFieldsProps> = ({
   label,
-  fields: initialFields,
+  fields: initialFields = [],
   keysOnly = false,
   className,
   errors,

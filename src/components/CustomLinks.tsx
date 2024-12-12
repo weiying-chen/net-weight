@@ -19,7 +19,7 @@ type PlatformOption = {
 
 type CustomLinksProps = {
   label?: string;
-  links: CustomLink[];
+  links?: CustomLink[];
   options: PlatformOption[];
   className?: string;
   errors?: Array<{ type?: string; value?: string }>;
@@ -29,7 +29,7 @@ type CustomLinksProps = {
 
 export const CustomLinks: React.FC<CustomLinksProps> = ({
   label,
-  links: initialLinks,
+  links: initialLinks = [],
   options,
   className,
   errors = [],

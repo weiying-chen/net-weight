@@ -115,6 +115,24 @@ export const List = () => {
       budget: '$200',
       approvalStatus: 'Pending',
     },
+    ...Array(8)
+      .fill(0)
+      .map((_, index) => ({
+        name: `Duplicated Item ${index + 1}`,
+        createDateTime: '2023-11-03',
+        lastUpdateDateTime: '2023-11-03',
+        createUserName: 'user',
+        status: 'Pending',
+        priority: 'Medium',
+        category: 'Office Supplies',
+        assignedTo: 'Team Member',
+        description: 'Generic description',
+        location: 'Chicago',
+        comments: 'No comments',
+        deadline: '2023-12-15',
+        budget: '$100',
+        approvalStatus: 'Pending',
+      })),
   ];
 
   return (
@@ -126,17 +144,9 @@ export const List = () => {
           selectedItems={selectedItems}
           onRowSelect={(updatedSelection) => setSelectedItems(updatedSelection)}
           onRowHover={() => (
-            <div
-              style={{
-                padding: '8px',
-                backgroundColor: '#f9f9f9',
-                borderRadius: '4px',
-              }}
-            >
-              <p>
-                <strong>Name:</strong>
-              </p>
-            </div>
+            <Row className="bg-muted">
+              <p>Name</p>
+            </Row>
           )}
         />
       </Row>

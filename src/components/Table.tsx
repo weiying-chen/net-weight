@@ -29,11 +29,15 @@ export function Table<T>({
   } | null>(null);
 
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
-  const [hoverPosition, setHoverPosition] = useState<number | null>(null);
+  const [hoverPosition, setHoverPosition] = useState<{
+    top: number;
+    right: number;
+  } | null>(null);
   const hideTimeout = useRef<number | null>(null);
   const [widths, setWidths] = useState<{ [index: number]: number }>({});
   const headerRefs = useRef<(HTMLDivElement | null)[]>([]);
   const bodyRefs = useRef<(HTMLDivElement | null)[][]>([]);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   const sortedData = [...data].sort((a, b) => {
     if (sortConfig && sortConfig.index < cols.length) {
@@ -83,7 +87,20 @@ export function Table<T>({
     const rowElement = event.currentTarget as HTMLDivElement;
     const rowTop = rowElement.getBoundingClientRect().top;
     const rowHeight = rowElement.getBoundingClientRect().height;
-    setHoverPosition(rowTop + rowHeight / 2);
+
+    const container = containerRef.current;
+    const containerBounds = container?.getBoundingClientRect();
+
+    // Adjust for horizontal scrollbar offset
+    const scrollLeft = container?.scrollLeft || 0;
+    const hoverRight = containerBounds
+      ? containerBounds.right + scrollLeft
+      : document.documentElement.clientWidth; // Fallback to visible width
+
+    setHoverPosition({
+      top: rowTop + rowHeight / 2,
+      right: document.documentElement.clientWidth - hoverRight, // Adjusts for scroll offset
+    });
   };
 
   const handleMouseLeaveRow = () => {
@@ -224,48 +241,45 @@ export function Table<T>({
     </div>
   );
 
-  const renderBody = () => (
-    <div>
-      {sortedData.map((item, rowIndex) => (
-        <div
-          key={rowIndex}
-          className={`flex cursor-pointer border-b border-subtle ${
-            hoveredRow === rowIndex ? 'bg-subtle' : ''
-          }`}
-          onClick={(e) => onRowClick?.(e, item)}
-          onMouseEnter={(e) => handleMouseEnterRow(rowIndex, e)}
-          onMouseLeave={handleMouseLeaveRow}
-        >
-          {onRowSelect && (
-            <div className="px-4 py-2">
-              <input
-                type="checkbox"
-                checked={selectedItems.some((selected) => selected === item)}
-                onClick={(e) => e.stopPropagation()}
-                onChange={() => handleRowSelect(rowIndex)}
-              />
-            </div>
-          )}
-          <div className="px-4 py-2 text-center text-sm">{rowIndex + 1}</div>
-          {cols.map((column, colIndex) => (
-            <div
-              key={colIndex}
-              className="overflow-hidden text-ellipsis whitespace-nowrap px-4 py-2 text-sm"
-              style={{ width: `${widths[colIndex]}px` }}
-              ref={(el) => {
-                if (!bodyRefs.current[rowIndex]) {
-                  bodyRefs.current[rowIndex] = [];
-                }
-                bodyRefs.current[rowIndex][colIndex] = el;
-              }}
-            >
-              {column.render(item)}
-            </div>
-          ))}
-        </div>
-      ))}
-    </div>
-  );
+  const renderBody = () =>
+    sortedData.map((item, rowIndex) => (
+      <div
+        key={rowIndex}
+        className={`flex cursor-pointer border-b border-subtle ${
+          hoveredRow === rowIndex ? 'bg-subtle' : ''
+        }`}
+        onClick={(e) => onRowClick?.(e, item)}
+        onMouseEnter={(e) => handleMouseEnterRow(rowIndex, e)}
+        onMouseLeave={handleMouseLeaveRow}
+      >
+        {onRowSelect && (
+          <div className="px-4 py-2">
+            <input
+              type="checkbox"
+              checked={selectedItems.some((selected) => selected === item)}
+              onClick={(e) => e.stopPropagation()}
+              onChange={() => handleRowSelect(rowIndex)}
+            />
+          </div>
+        )}
+        <div className="px-4 py-2 text-center text-sm">{rowIndex + 1}</div>
+        {cols.map((column, colIndex) => (
+          <div
+            key={colIndex}
+            className="overflow-hidden text-ellipsis whitespace-nowrap px-4 py-2 text-sm"
+            style={{ width: `${widths[colIndex]}px` }}
+            ref={(el) => {
+              if (!bodyRefs.current[rowIndex]) {
+                bodyRefs.current[rowIndex] = [];
+              }
+              bodyRefs.current[rowIndex][colIndex] = el;
+            }}
+          >
+            {column.render(item)}
+          </div>
+        ))}
+      </div>
+    ));
 
   const renderHover = () => {
     if (hoveredRow === null || hoverPosition === null || !onRowHover)
@@ -273,8 +287,11 @@ export function Table<T>({
 
     return (
       <div
-        className="fixed right-6 z-10 -translate-y-1/2 transform bg-subtle"
-        style={{ top: `${hoverPosition}px` }}
+        className="fixed z-10 -translate-y-1/2 transform bg-subtle"
+        style={{
+          top: `${hoverPosition.top}px`,
+          right: `${hoverPosition.right}px`,
+        }}
         onMouseEnter={() => {
           if (hideTimeout.current) window.clearTimeout(hideTimeout.current);
         }}
@@ -286,8 +303,7 @@ export function Table<T>({
   };
 
   return (
-    // `w-full` ensures the table stretches to fill the available width if columns are too narrow.
-    <div className="relative w-full overflow-x-auto">
+    <div className="relative w-full overflow-x-auto" ref={containerRef}>
       <div className="min-w-max">
         {renderHeader()}
         {renderBody()}

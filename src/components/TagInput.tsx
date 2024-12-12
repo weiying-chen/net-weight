@@ -5,7 +5,7 @@ import { PseudoInput } from '@/components/PseudoInput';
 
 type TagInputProps = {
   label?: string;
-  tags: string[];
+  tags?: string[];
   placeholder?: string;
   error?: string;
   className?: string;
@@ -14,7 +14,7 @@ type TagInputProps = {
 
 export const TagInput: React.FC<TagInputProps> = ({
   label,
-  tags: initialTags,
+  tags: initialTags = [],
   placeholder,
   error,
   className,
