@@ -91,15 +91,16 @@ export function Table<T>({
     const container = containerRef.current;
     const containerBounds = container?.getBoundingClientRect();
 
-    // Adjust for horizontal scrollbar offset
-    const scrollLeft = container?.scrollLeft || 0;
-    const hoverRight = containerBounds
-      ? containerBounds.right + scrollLeft
-      : document.documentElement.clientWidth; // Fallback to visible width
+    // Calculate the visible right edge of the container
+    const containerRight =
+      containerBounds &&
+      containerBounds.right > document.documentElement.clientWidth
+        ? document.documentElement.clientWidth
+        : containerBounds?.right || document.documentElement.clientWidth;
 
     setHoverPosition({
       top: rowTop + rowHeight / 2,
-      right: document.documentElement.clientWidth - hoverRight, // Adjusts for scroll offset
+      right: document.documentElement.clientWidth - containerRight, // Adjusted to the visible portion
     });
   };
 
@@ -208,7 +209,7 @@ export function Table<T>({
           />
         </div>
       )}
-      <div className="px-4 py-2 text-center text-sm font-semibold">#</div>
+      <div className="w-12 px-4 py-2 text-center text-sm font-semibold">#</div>
       {cols.map((column, index) => (
         <div
           key={index}
@@ -262,11 +263,11 @@ export function Table<T>({
             />
           </div>
         )}
-        <div className="px-4 py-2 text-center text-sm">{rowIndex + 1}</div>
+        <div className="w-12 px-4 py-2 text-center text-sm">{rowIndex + 1}</div>
         {cols.map((column, colIndex) => (
           <div
             key={colIndex}
-            className="overflow-hidden text-ellipsis whitespace-nowrap px-4 py-2 text-sm"
+            className="flex items-center overflow-hidden text-ellipsis whitespace-nowrap px-4 py-2 text-sm"
             style={{ width: `${widths[colIndex]}px` }}
             ref={(el) => {
               if (!bodyRefs.current[rowIndex]) {
