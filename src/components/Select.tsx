@@ -20,6 +20,7 @@ type SelectProps = {
   onChange: (value: string | number) => void;
   onFocus?: () => void;
   onBlur?: () => void;
+  required?: boolean;
   disabled?: boolean;
 };
 
@@ -33,6 +34,7 @@ export const Select: React.FC<SelectProps> = ({
   onChange,
   onFocus,
   onBlur,
+  required,
   disabled,
   ...props
 }) => {
@@ -160,7 +162,11 @@ export const Select: React.FC<SelectProps> = ({
 
   return (
     <Col className={className}>
-      {label && <label className="text-sm font-semibold">{label}</label>}
+      {label && (
+        <label className="text-sm font-semibold">
+          {label} {required && <span className="text-danger">*</span>}
+        </label>
+      )}
       <div
         ref={dropdownRef}
         className="relative w-full"

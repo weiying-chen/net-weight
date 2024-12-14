@@ -144,9 +144,18 @@ export const List = () => {
           selectedItems={selectedItems}
           onRowSelect={(updatedSelection) => setSelectedItems(updatedSelection)}
           onRowHover={() => (
-            <Row className="bg-muted">
+            <Row>
               <p>Name</p>
             </Row>
+          )}
+          tooltipContent={(item) => (
+            <ul>
+              {Object.entries(item).map(([key, value]) => (
+                <li key={key}>
+                  {key}: {String(value)}
+                </li>
+              ))}
+            </ul>
           )}
         />
       </Row>

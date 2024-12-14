@@ -15,6 +15,7 @@ export function Table<T>({
   onRowHover,
   onRowClick,
   onRowSelect,
+  tooltipContent,
 }: {
   data: T[];
   selectedItems: T[];
@@ -22,6 +23,7 @@ export function Table<T>({
   onRowHover?: (item: T) => React.ReactNode;
   onRowClick?: (e: React.MouseEvent<Element>, item: T) => void;
   onRowSelect?: (selectedItems: T[]) => void;
+  tooltipContent?: (item: T) => React.ReactNode;
 }) {
   const [sortConfig, setSortConfig] = useState<{
     index: number;
@@ -33,6 +35,12 @@ export function Table<T>({
     top: number;
     right: number;
   } | null>(null);
+
+  const [tooltipPosition, setTooltipPosition] = useState<{
+    top: number;
+    left: number;
+  } | null>(null);
+
   const hideTimeout = useRef<number | null>(null);
   const [widths, setWidths] = useState<{ [index: number]: number }>({});
   const headerRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -85,28 +93,30 @@ export function Table<T>({
     setHoveredRow(rowIndex);
 
     const rowElement = event.currentTarget as HTMLDivElement;
-    const rowTop = rowElement.getBoundingClientRect().top;
-    const rowHeight = rowElement.getBoundingClientRect().height;
+    const rowRect = rowElement.getBoundingClientRect();
 
     const container = containerRef.current;
     const containerBounds = container?.getBoundingClientRect();
 
-    // Calculate the visible right edge of the container
-    const containerRight =
-      containerBounds &&
-      containerBounds.right > document.documentElement.clientWidth
-        ? document.documentElement.clientWidth
-        : containerBounds?.right || document.documentElement.clientWidth;
+    // Calculate the middle of the table container
+    const containerMiddle =
+      containerBounds?.left! + containerBounds?.width! / 2;
 
     setHoverPosition({
-      top: rowTop + rowHeight / 2,
-      right: document.documentElement.clientWidth - containerRight, // Adjusted to the visible portion
+      top: rowRect.top + rowRect.height / 2,
+      right: document.documentElement.clientWidth - containerBounds!.right,
+    });
+
+    setTooltipPosition({
+      top: rowRect.top + rowRect.height / 2,
+      left: containerMiddle,
     });
   };
 
   const handleMouseLeaveRow = () => {
     hideTimeout.current = window.setTimeout(() => {
       setHoveredRow(null);
+      setTooltipPosition(null);
     }, 100);
   };
 
@@ -166,6 +176,7 @@ export function Table<T>({
   useEffect(() => {
     const handleScroll = () => {
       setHoveredRow(null);
+      setTooltipPosition(null);
     };
 
     window.addEventListener('scroll', handleScroll, true);
@@ -303,6 +314,23 @@ export function Table<T>({
     );
   };
 
+  const renderTooltip = () => {
+    if (hoveredRow === null || tooltipPosition === null || !tooltipContent)
+      return null;
+
+    return (
+      <div
+        className="pointer-events-none fixed z-20 -translate-x-1/2 transform rounded bg-foreground px-2 py-1 text-sm text-background shadow"
+        style={{
+          top: `${tooltipPosition.top}px`,
+          left: `${tooltipPosition.left}px`,
+        }}
+      >
+        {tooltipContent(sortedData[hoveredRow])}
+      </div>
+    );
+  };
+
   return (
     <div className="relative w-full overflow-x-auto" ref={containerRef}>
       <div className="min-w-max">
@@ -310,6 +338,7 @@ export function Table<T>({
         {renderBody()}
       </div>
       {renderHover()}
+      {renderTooltip()}
     </div>
   );
 }

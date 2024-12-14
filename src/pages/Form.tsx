@@ -135,6 +135,32 @@ const schema = z.object({
   files: z.array(z.instanceof(File)).min(1, 'Files is required'),
 });
 
+const getRequiredFields = (schema: z.ZodObject<any>) => {
+  return Object.entries(schema.shape).reduce<string[]>(
+    (requiredFields, [key, field]) => {
+      if (field instanceof z.ZodOptional) return requiredFields;
+
+      if (
+        field instanceof z.ZodString &&
+        field._def.checks.some((check) => check.kind === 'min')
+      ) {
+        requiredFields.push(key);
+      } else if (field instanceof z.ZodEnum) {
+        requiredFields.push(key);
+      } else {
+        requiredFields.push(key);
+      }
+
+      return requiredFields;
+    },
+    [],
+  );
+};
+
+const requiredFields = getRequiredFields(schema);
+
+console.log(requiredFields);
+
 type FormData = z.infer<typeof schema>;
 
 export function Form() {
@@ -235,6 +261,7 @@ export function Form() {
                 <Input
                   label="Name"
                   {...register('name')}
+                  required
                   error={errors.name?.message}
                 />
                 <Switch

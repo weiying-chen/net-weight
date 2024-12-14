@@ -9,6 +9,7 @@ import {
   IconSun,
   IconZzz,
 } from '@tabler/icons-react';
+import { Tooltip } from '@/components/Tooltip';
 
 interface Plant {
   name: string;
@@ -144,7 +145,9 @@ export function Home2(): JSX.Element {
                     : ''
                 }
               >
-                <IconZzz size={20} /> {item.dormancy.start} to{' '}
+                <Tooltip content="Dormancy period">
+                  <IconZzz size={20} />
+                </Tooltip>
                 {item.dormancy.end} ({getSeason(item.dormancy.start)} to{' '}
                 {getSeason(item.dormancy.end)})
               </Row>

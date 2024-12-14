@@ -41,6 +41,16 @@ export function Seeds(): JSX.Element {
     );
   };
 
+  const incrementSeedsSprouted = (id: number) => {
+    setPlants((prevPlants) =>
+      prevPlants.map((plant) =>
+        plant.id === id
+          ? { ...plant, seedsSprouted: (plant.seedsSprouted || 0) + 1 }
+          : plant,
+      ),
+    );
+  };
+
   const columns: Column<Seed>[] = [
     {
       header: 'Name',
@@ -55,7 +65,18 @@ export function Seeds(): JSX.Element {
     {
       header: 'Seeds sprouted',
       sortKey: 'seedsSprouted',
-      accessor: (item: Seed) => item.seedsSprouted,
+      accessor: (item: Seed) => (
+        <div className="flex items-center space-x-2">
+          <span>{item.seedsSprouted || 0}</span>
+          <Button
+            variant="secondary"
+            className="h-auto px-2 py-1 text-xs"
+            onClick={() => incrementSeedsSprouted(item.id)}
+          >
+            +1
+          </Button>
+        </div>
+      ),
     },
     {
       header: 'Sowed date',
