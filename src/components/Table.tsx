@@ -46,6 +46,7 @@ export function Table<T>({
   const headerRefs = useRef<(HTMLDivElement | null)[]>([]);
   const bodyRefs = useRef<(HTMLDivElement | null)[][]>([]);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const tooltipRef = useRef<HTMLDivElement | null>(null);
 
   const sortedData = [...data].sort((a, b) => {
     if (sortConfig && sortConfig.index < cols.length) {
@@ -98,7 +99,6 @@ export function Table<T>({
     const container = containerRef.current;
     const containerBounds = container?.getBoundingClientRect();
 
-    // Calculate the middle of the table container
     const containerMiddle =
       containerBounds?.left! + containerBounds?.width! / 2;
 
@@ -318,13 +318,34 @@ export function Table<T>({
     if (hoveredRow === null || tooltipPosition === null || !tooltipContent)
       return null;
 
+    const adjustTooltipPosition = () => {
+      if (tooltipRef.current) {
+        const tooltipRect = tooltipRef.current.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+
+        const overflowBottom =
+          tooltipPosition.top + tooltipRect.height > viewportHeight;
+
+        const top = overflowBottom
+          ? tooltipPosition.top - tooltipRect.height
+          : tooltipPosition.top;
+
+        return {
+          top: `${top}px`,
+          left: `${tooltipPosition.left}px`,
+        };
+      }
+      return {
+        top: `${tooltipPosition.top}px`,
+        left: `${tooltipPosition.left}px`,
+      };
+    };
+
     return (
       <div
+        ref={tooltipRef}
         className="pointer-events-none fixed z-20 -translate-x-1/2 transform rounded bg-foreground px-2 py-1 text-sm text-background shadow"
-        style={{
-          top: `${tooltipPosition.top}px`,
-          left: `${tooltipPosition.left}px`,
-        }}
+        style={adjustTooltipPosition()}
       >
         {tooltipContent(sortedData[hoveredRow])}
       </div>

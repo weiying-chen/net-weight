@@ -30,7 +30,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
       {children}
       <div
         className={cn(
-          'absolute z-50 transform rounded bg-foreground px-2 py-1 text-sm text-background shadow',
+          'absolute z-50 transform rounded bg-foreground px-3 py-2 text-sm text-background shadow',
           'transition duration-200 ease-in-out',
           'whitespace-nowrap',
           positionClasses[position],
