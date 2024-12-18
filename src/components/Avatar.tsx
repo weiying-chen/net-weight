@@ -17,12 +17,12 @@ export function Avatar({ size = 'md', src, alt, className }: AvatarProps) {
   return (
     <div
       className={cn(
-        'overflow-hidden rounded-full',
+        'flex w-full items-center justify-center overflow-hidden rounded-full border border-border',
         cnFromSize[size],
         className,
       )}
     >
-      <img src={src} alt={alt} className="h-full w-full object-cover" />
+      <img src={src} alt={alt} />
     </div>
   );
 }

@@ -12,18 +12,18 @@ export function Table<T>({
   data,
   selectedItems,
   cols,
-  onRowHover,
   onRowClick,
   onRowSelect,
-  tooltipContent,
+  asActions,
+  asTooltip,
 }: {
   data: T[];
   selectedItems: T[];
   cols: Cols<T>[];
-  onRowHover?: (item: T) => React.ReactNode;
   onRowClick?: (e: React.MouseEvent<Element>, item: T) => void;
   onRowSelect?: (selectedItems: T[]) => void;
-  tooltipContent?: (item: T) => React.ReactNode;
+  asActions?: (item: T) => React.ReactNode;
+  asTooltip?: (item: T) => React.ReactNode;
 }) {
   const [sortConfig, setSortConfig] = useState<{
     index: number;
@@ -294,7 +294,7 @@ export function Table<T>({
     ));
 
   const renderHover = () => {
-    if (hoveredRow === null || hoverPosition === null || !onRowHover)
+    if (hoveredRow === null || hoverPosition === null || !asActions)
       return null;
 
     return (
@@ -309,13 +309,13 @@ export function Table<T>({
         }}
         onMouseLeave={handleMouseLeaveRow}
       >
-        {onRowHover(sortedData[hoveredRow])}
+        {asActions(sortedData[hoveredRow])}
       </div>
     );
   };
 
   const renderTooltip = () => {
-    if (hoveredRow === null || tooltipPosition === null || !tooltipContent)
+    if (hoveredRow === null || tooltipPosition === null || !asTooltip)
       return null;
 
     const adjustTooltipPosition = () => {
@@ -347,7 +347,7 @@ export function Table<T>({
         className="pointer-events-none fixed z-20 -translate-x-1/2 transform rounded bg-foreground px-2 py-1 text-sm text-background shadow"
         style={adjustTooltipPosition()}
       >
-        {tooltipContent(sortedData[hoveredRow])}
+        {asTooltip(sortedData[hoveredRow])}
       </div>
     );
   };

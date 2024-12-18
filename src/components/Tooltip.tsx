@@ -1,16 +1,18 @@
 import { cn } from '@/utils';
-import React, { ReactNode, useState } from 'react';
+import { ReactNode, useState } from 'react';
 
 interface TooltipProps {
   children: ReactNode;
   content: ReactNode;
   position?: 'top' | 'bottom' | 'left' | 'right';
+  className?: string;
 }
 
 export const Tooltip: React.FC<TooltipProps> = ({
   children,
   content,
   position = 'top',
+  className,
 }) => {
   const [isVisible, setIsVisible] = useState(false);
 
@@ -23,7 +25,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
 
   return (
     <div
-      className="relative"
+      className={cn('relative', className)}
       onMouseEnter={() => setIsVisible(true)}
       onMouseLeave={() => setIsVisible(false)}
     >
