@@ -1,16 +1,16 @@
 import { Row } from '@/components/Row';
-import { Switch, SwitchProps } from '@/components/Switch';
+import { Select, SelectProps } from '@/components/Select';
 import { Heading } from '@/components/Heading';
 
-type HeadingToggleProps = SwitchProps & {
+export type HeadingSelectProps<T extends string | number> = SelectProps<T> & {
   text: string;
 };
 
-export const HeadingToggle: React.FC<HeadingToggleProps> = ({
+export const HeadingSelect = <T extends string | number>({
   text,
   className,
-  ...switchProps
-}) => {
+  ...selectProps
+}: HeadingSelectProps<T>) => {
   return (
     <Row
       alignItems="center"
@@ -18,7 +18,7 @@ export const HeadingToggle: React.FC<HeadingToggleProps> = ({
       locked
     >
       <Heading size="sm">{text}</Heading>
-      <Switch small fluid {...switchProps} />
+      <Select {...selectProps} />
     </Row>
   );
 };

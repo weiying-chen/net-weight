@@ -4,31 +4,33 @@ import { cn } from '@/utils';
 import { IconChevronDown } from '@tabler/icons-react';
 import { PseudoInput } from '@/components/PseudoInput';
 
-type SelectOption = {
+type SelectOption<T> = {
   label: string;
-  value: string | number;
+  value: T;
   icon?: React.ReactNode;
 };
 
-type SelectProps = {
+export type SelectProps<T> = {
   label?: string;
-  value: string;
-  options: SelectOption[];
+  value: T;
+  options: SelectOption<T>[];
   placeholder?: string;
   error?: string;
   className?: string;
-  onChange: (value: string | number) => void;
+  onChange: (value: T) => void;
   onFocus?: () => void;
   onBlur?: () => void;
   required?: boolean;
   disabled?: boolean;
+  isIconTrigger?: boolean;
+  small?: boolean;
 };
 
-export const Select: React.FC<SelectProps> = ({
+export const Select = <T extends string | number>({
   label,
   value,
   options,
-  placeholder,
+  placeholder = 'Select an option',
   error,
   className,
   onChange,
@@ -36,22 +38,30 @@ export const Select: React.FC<SelectProps> = ({
   onBlur,
   required,
   disabled,
+  isIconTrigger = false,
+  small = false,
   ...props
-}) => {
+}: SelectProps<T>) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [selected, setSelected] = useState<{
-    value: string | number;
-    label: string;
-    icon?: React.ReactNode;
-  } | null>(() => options.find((option) => option.value === value) || null);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
-
+  const [selected, setSelected] = useState<SelectOption<T> | null>(
+    options.find((option) => option.value === value) || null,
+  );
   const dropdownRef = useRef<HTMLDivElement | null>(null);
+
+  // Sync local state with external `value` prop
+  useEffect(() => {
+    const newSelected =
+      options.find((option) => option.value === value) || null;
+    if (newSelected?.value !== selected?.value) {
+      setSelected(newSelected);
+    }
+  }, [value, options]);
 
   const setInitialFocusedIndex = () => {
     if (selected) {
       const selectedIndex = options.findIndex(
-        (opt) => opt.value === selected.value,
+        (option) => option.value === selected.value,
       );
       setFocusedIndex(selectedIndex !== -1 ? selectedIndex : null);
     } else {
@@ -59,15 +69,30 @@ export const Select: React.FC<SelectProps> = ({
     }
   };
 
+  const handleDropdownToggle = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (disabled) return;
+    event.stopPropagation();
+    setIsOpen((prev) => !prev);
+    if (!isOpen) {
+      setInitialFocusedIndex();
+    }
+    onFocus?.();
+  };
+
+  const closeDropdown = () => {
+    setIsOpen(false);
+    setFocusedIndex(null);
+    onBlur?.();
+  };
+
   const handleOptionClick = (
-    option: SelectOption,
+    option: SelectOption<T>,
     event: React.MouseEvent<HTMLLIElement>,
   ) => {
     event.stopPropagation();
     setSelected(option);
-    onChange(option.value);
-    setIsOpen(false);
-    setFocusedIndex(null);
+    onChange(option.value); // Notify parent of the change
+    closeDropdown();
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -100,46 +125,34 @@ export const Select: React.FC<SelectProps> = ({
         }
         break;
       case 'Escape':
-        setIsOpen(false);
-        setFocusedIndex(null);
-        break;
-      default:
+        closeDropdown();
         break;
     }
   };
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleOutsideClick = (event: MouseEvent) => {
       if (
         dropdownRef.current &&
         !dropdownRef.current.contains(event.target as Node)
       ) {
-        setIsOpen(false);
-        setFocusedIndex(null);
-        onBlur?.();
+        closeDropdown();
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('mousedown', handleOutsideClick);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('mousedown', handleOutsideClick);
     };
-  }, [onBlur]);
-
-  const handleDropdownToggle = (event: React.MouseEvent<HTMLDivElement>) => {
-    if (disabled) return;
-    event.stopPropagation();
-    setIsOpen((prev) => !prev);
-    if (!isOpen) {
-      setInitialFocusedIndex();
-      onFocus?.();
-    } else {
-      onBlur?.();
-    }
-  };
+  }, []);
 
   const renderDropdown = () => (
-    <ul className="absolute left-0 right-0 z-10 mt-1 overflow-hidden rounded border border-border bg-white shadow">
+    <ul
+      className={cn(
+        'absolute z-10 mt-1 overflow-hidden rounded border border-border bg-white shadow',
+        isIconTrigger ? 'left-0 right-auto w-auto' : 'left-0 right-0 w-full',
+      )}
+    >
       {options.map((option, index) => (
         <li
           key={option.value}
@@ -153,15 +166,15 @@ export const Select: React.FC<SelectProps> = ({
           onMouseEnter={() => setFocusedIndex(index)}
           onMouseDown={(e) => e.preventDefault()}
         >
-          {option.icon && option.icon}
-          {option.label}
+          {option.icon && <span>{option.icon}</span>}
+          <span>{option.label}</span>
         </li>
       ))}
     </ul>
   );
 
   return (
-    <Col className={className}>
+    <Col className={cn({ 'w-auto': isIconTrigger }, className)}>
       {label && (
         <label className="text-sm font-semibold">
           {label} {required && <span className="text-danger">*</span>}
@@ -173,24 +186,25 @@ export const Select: React.FC<SelectProps> = ({
         onKeyDown={handleKeyDown}
         onClick={handleDropdownToggle}
         tabIndex={0}
-        onFocus={onFocus}
-        onBlur={onBlur}
         {...props}
       >
         <PseudoInput
-          tabIndex={-1}
+          tabIndex={0}
           error={error}
           disabled={disabled}
           className={cn('cursor-pointer justify-between shadow', {
             'focus-visible:ring-0 focus-visible:ring-offset-0': isOpen,
             'hover:shadow-dark': !disabled,
+            'h-6 px-2 py-1 text-xs': small,
           })}
         >
           <div className="flex items-center gap-2">
-            {selected?.icon && selected.icon}
-            {selected ? selected.label : placeholder || 'Select an option'}
+            {selected?.icon && <span>{selected.icon}</span>}
+            {!isIconTrigger && (
+              <span>{selected ? selected.label : placeholder}</span>
+            )}
           </div>
-          <IconChevronDown size={20} className="ml-2" />
+          <IconChevronDown size={small ? 16 : 20} />
         </PseudoInput>
         {isOpen && renderDropdown()}
       </div>

@@ -8,7 +8,6 @@ import { Seed } from '@/data';
 
 const defaultNewSeed: Omit<Seed, 'id'> = {
   name: '',
-  variant: '',
   seedsSowed: 0,
   seedsSprouted: 0,
   sowedDate: '',
@@ -24,6 +23,13 @@ type AddSeedModalProps = {
   onSave: (seed: Seed | Omit<Seed, 'id'>) => void;
   initialSeed?: Seed | Omit<Seed, 'id'>;
 };
+
+// Helper functions
+const toDateTimeLocal = (isoString: string) =>
+  isoString ? isoString.slice(0, 16) : ''; // Converts ISO to datetime-local format
+
+const toISOString = (dateTimeLocal: string) =>
+  dateTimeLocal ? new Date(dateTimeLocal).toISOString() : '';
 
 export function AddSeedModal({
   isOpen,
@@ -44,7 +50,14 @@ export function AddSeedModal({
   }, [initialSeed]);
 
   const handleSave = () => {
-    onSave(newSeed);
+    // Convert `datetime-local` values back to ISO format for saving
+    const saveSeed = {
+      ...newSeed,
+      sowedDate: toISOString(newSeed.sowedDate),
+      sproutedDate: toISOString(newSeed.sproutedDate),
+      lastWatered: toISOString(newSeed.lastWatered),
+    };
+    onSave(saveSeed);
     setNewSeed(defaultNewSeed);
     onClose();
   };
@@ -67,13 +80,6 @@ export function AddSeedModal({
               label="Name"
               value={newSeed.name}
               onChange={(e) => setNewSeed({ ...newSeed, name: e.target.value })}
-            />
-            <Input
-              label="Variant"
-              value={newSeed.variant}
-              onChange={(e) =>
-                setNewSeed({ ...newSeed, variant: e.target.value })
-              }
             />
             <Input
               label="Seeds Sowed"
@@ -99,7 +105,7 @@ export function AddSeedModal({
             <Input
               label="Sowed Date"
               type="datetime-local"
-              value={newSeed.sowedDate}
+              value={toDateTimeLocal(newSeed.sowedDate)}
               onChange={(e) =>
                 setNewSeed({ ...newSeed, sowedDate: e.target.value })
               }
@@ -107,7 +113,7 @@ export function AddSeedModal({
             <Input
               label="Sprouted Date"
               type="datetime-local"
-              value={newSeed.sproutedDate}
+              value={toDateTimeLocal(newSeed.sproutedDate)}
               onChange={(e) =>
                 setNewSeed({ ...newSeed, sproutedDate: e.target.value })
               }
@@ -115,7 +121,7 @@ export function AddSeedModal({
             <Input
               label="Last Watered"
               type="datetime-local"
-              value={newSeed.lastWatered}
+              value={toDateTimeLocal(newSeed.lastWatered)}
               onChange={(e) =>
                 setNewSeed({ ...newSeed, lastWatered: e.target.value })
               }

@@ -1,7 +1,43 @@
 import { Column } from '@/components/DataTable';
 import { Seed } from '@/data';
-import { timeAgo } from '@/utils';
+
+import {
+  differenceInSeconds,
+  differenceInMinutes,
+  differenceInHours,
+  differenceInDays,
+  differenceInWeeks,
+  differenceInMonths,
+  differenceInYears,
+} from 'date-fns';
+
 import { Button } from '@/components/Button';
+
+const shortTimeAgo = (dateTime: string): string => {
+  const now = new Date();
+  const then = new Date(dateTime);
+
+  const years = differenceInYears(now, then);
+  if (years > 0) return `${years}y`;
+
+  const months = differenceInMonths(now, then);
+  if (months > 0) return `${months}mo`;
+
+  const weeks = differenceInWeeks(now, then);
+  if (weeks > 0) return `${weeks}w`;
+
+  const days = differenceInDays(now, then);
+  if (days > 0) return `${days}d`;
+
+  const hours = differenceInHours(now, then);
+  if (hours > 0) return `${hours}h`;
+
+  const minutes = differenceInMinutes(now, then);
+  if (minutes > 0) return `${minutes}m`;
+
+  const seconds = differenceInSeconds(now, then);
+  return `${seconds}s`;
+};
 
 export const getSeedColumns = (
   incrementSeedsSprouted: (id: number) => void,
@@ -43,7 +79,7 @@ export const getSeedColumns = (
     sortKey: 'sowedDate',
     accessor: (item: Seed) => (
       <div className="flex items-center space-x-2">
-        <span>{item.sowedDate ? timeAgo(item.sowedDate) : 'Unknown'}</span>
+        <span>{item.sowedDate ? shortTimeAgo(item.sowedDate) : 'Unknown'}</span>
         <Button
           variant="secondary"
           className="h-auto px-2 py-1 text-xs"
@@ -63,7 +99,7 @@ export const getSeedColumns = (
     accessor: (item: Seed) => (
       <div className="flex items-center space-x-2">
         <span>
-          {item.sproutedDate ? timeAgo(item.sproutedDate) : 'Not sprouted'}
+          {item.sproutedDate ? shortTimeAgo(item.sproutedDate) : 'Not sprouted'}
         </span>
         <Button
           variant="secondary"
@@ -92,7 +128,9 @@ export const getSeedColumns = (
       return (
         <div className="flex items-center space-x-2">
           <span className={wasWateredAWeekAgo ? 'text-primary' : ''}>
-            {item.lastWatered ? timeAgo(item.lastWatered) : 'Never watered'}
+            {item.lastWatered
+              ? shortTimeAgo(item.lastWatered)
+              : 'Never watered'}
           </span>
           <Button
             variant="secondary"

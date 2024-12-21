@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Col } from '@/components/Col';
 import { Row } from '@/components/Row';
 import { Table } from '@/components/Table';
+import { Button } from '@/components/Button';
 
 export type TableCol<T> = {
   header: string;
@@ -143,16 +144,21 @@ export const List = () => {
           cols={columns}
           selectedItems={selectedItems}
           onRowSelect={(updatedSelection) => setSelectedItems(updatedSelection)}
-          onRowHover={() => (
+          asActions={(item) => (
             <Row>
-              <p>Name</p>
+              <Button onClick={() => alert(`Editing: ${item.name}`)}>
+                Edit
+              </Button>
+              <Button onClick={() => alert(`Deleting: ${item.name}`)}>
+                Delete
+              </Button>
             </Row>
           )}
-          tooltipContent={(item) => (
-            <ul>
+          asTooltip={(item) => (
+            <ul className="list-inside list-disc">
               {Object.entries(item).map(([key, value]) => (
                 <li key={key}>
-                  {key}: {String(value)}
+                  <strong>{key}</strong>: {String(value)}
                 </li>
               ))}
             </ul>

@@ -1,7 +1,6 @@
 export interface Seed {
   id: number;
   name: string;
-  variant: string;
   seedsSowed: number;
   seedsSprouted: number;
   sowedDate: string;
