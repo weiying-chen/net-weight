@@ -11,7 +11,7 @@ export const LabelSelect = <T extends string | number>({
   ...props
 }: LabelSelectProps<T>) => {
   return (
-    <Row alignItems="center" className={className} locked>
+    <Row alignItems="center" className={className} locked fluid>
       {label && <label className="text-sm font-semibold">{label}</label>}
       <Select {...props} isIconTrigger small />
     </Row>

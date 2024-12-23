@@ -1,24 +1,20 @@
-import { Row } from '@/components/Row';
 import { Select, SelectProps } from '@/components/Select';
+import { Row } from '@/components/Row';
 import { Heading } from '@/components/Heading';
 
-export type HeadingSelectProps<T extends string | number> = SelectProps<T> & {
-  text: string;
+type HeadingSelectProps<T extends string | number> = SelectProps<T> & {
+  heading?: string;
 };
 
 export const HeadingSelect = <T extends string | number>({
-  text,
+  heading,
   className,
-  ...selectProps
+  ...props
 }: HeadingSelectProps<T>) => {
   return (
-    <Row
-      alignItems="center"
-      className={`border-b border-border pb-2 ${className}`}
-      locked
-    >
-      <Heading size="sm">{text}</Heading>
-      <Select {...selectProps} />
+    <Row alignItems="center" className={className} locked fluid>
+      {heading && <Heading size="sm">{heading}</Heading>}
+      <Select {...props} isIconTrigger small />
     </Row>
   );
 };
