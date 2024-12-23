@@ -11,6 +11,7 @@ import { Misc } from '@/pages/Misc';
 import { List } from '@/pages/List';
 import { Vcf } from '@/pages/Vcf';
 import { Route, Routes } from 'react-router-dom';
+import { FormP } from '@/pages/FormP';
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
         <Route path="/succs" element={<Succs />} />
         <Route path="/seeds" element={<Seeds />} />
         <Route path="/form" element={<Form />} />
+        <Route path="/formp" element={<FormP />} />
         <Route path="/vcard1" element={<VCard1 />} />
         <Route path="/vcard2" element={<VCard2 />} />
         <Route path="/vcard3" element={<VCard3 />} />

@@ -8,6 +8,7 @@ type SelectOption<T> = {
   label: string;
   value: T;
   icon?: React.ReactNode;
+  isHidden?: boolean; // New property to hide options from the dropdown
 };
 
 export type SelectProps<T> = {
@@ -44,9 +45,7 @@ export const Select = <T extends string | number>({
 }: SelectProps<T>) => {
   const [isOpen, setIsOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
-  const [selected, setSelected] = useState<SelectOption<T> | null>(
-    options.find((option) => option.value === value) || null,
-  );
+  const [selected, setSelected] = useState<SelectOption<T> | null>(null);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
   // Sync local state with external `value` prop
@@ -110,18 +109,26 @@ export const Select = <T extends string | number>({
       case 'ArrowDown':
         event.preventDefault();
         setFocusedIndex((prev) =>
-          prev === null ? 0 : Math.min(prev + 1, options.length - 1),
+          prev === null
+            ? 0
+            : Math.min(
+                prev + 1,
+                options.filter((option) => !option.isHidden).length - 1,
+              ),
         );
         break;
       case 'ArrowUp':
         event.preventDefault();
         setFocusedIndex((prev) =>
-          prev === null ? options.length - 1 : Math.max(prev - 1, 0),
+          prev === null
+            ? options.filter((option) => !option.isHidden).length - 1
+            : Math.max(prev - 1, 0),
         );
         break;
       case 'Enter':
         if (focusedIndex !== null) {
-          handleOptionClick(options[focusedIndex], event as any);
+          const visibleOptions = options.filter((option) => !option.isHidden);
+          handleOptionClick(visibleOptions[focusedIndex], event as any);
         }
         break;
       case 'Escape':
@@ -153,23 +160,25 @@ export const Select = <T extends string | number>({
         isIconTrigger ? 'left-0 right-auto w-auto' : 'left-0 right-0 w-full',
       )}
     >
-      {options.map((option, index) => (
-        <li
-          key={option.value}
-          className={cn(
-            'flex cursor-pointer items-center gap-2 px-3 py-2 text-sm',
-            {
-              'bg-subtle': focusedIndex === index,
-            },
-          )}
-          onClick={(event) => handleOptionClick(option, event)}
-          onMouseEnter={() => setFocusedIndex(index)}
-          onMouseDown={(e) => e.preventDefault()}
-        >
-          {option.icon && <span>{option.icon}</span>}
-          <span>{option.label}</span>
-        </li>
-      ))}
+      {options
+        .filter((option) => !option.isHidden) // Exclude hidden options
+        .map((option, index) => (
+          <li
+            key={option.value}
+            className={cn(
+              'flex cursor-pointer items-center gap-2 px-3 py-2 text-sm',
+              {
+                'bg-subtle': focusedIndex === index,
+              },
+            )}
+            onClick={(event) => handleOptionClick(option, event)}
+            onMouseEnter={() => setFocusedIndex(index)}
+            onMouseDown={(e) => e.preventDefault()}
+          >
+            {option.icon && <span>{option.icon}</span>}
+            <span>{option.label}</span>
+          </li>
+        ))}
     </ul>
   );
 

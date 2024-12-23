@@ -73,7 +73,7 @@ const uploadedFiles = [
 ];
 
 const countryOptions = [
-  { value: 'usa', label: 'United States' },
+  { value: 'usa', label: 'United States', isHidden: true },
   { value: 'canada', label: 'Canada' },
   { value: 'uk', label: 'United Kingdom' },
   { value: 'australia', label: 'Australia' },
