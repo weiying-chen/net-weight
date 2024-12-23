@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, ReactNode } from 'react';
 import { Col } from '@/components/Col';
 import { cn } from '@/utils';
 import { IconChevronDown } from '@tabler/icons-react';
@@ -8,11 +8,11 @@ type SelectOption<T> = {
   label: string;
   value: T;
   icon?: React.ReactNode;
-  isHidden?: boolean; // New property to hide options from the dropdown
+  isHidden?: boolean;
 };
 
 export type SelectProps<T> = {
-  label?: string;
+  label?: ReactNode;
   value: T;
   options: SelectOption<T>[];
   placeholder?: string;
@@ -184,11 +184,14 @@ export const Select = <T extends string | number>({
 
   return (
     <Col className={cn({ 'w-auto': isIconTrigger }, className)}>
-      {label && (
-        <label className="text-sm font-semibold">
-          {label} {required && <span className="text-danger">*</span>}
-        </label>
-      )}
+      {label &&
+        (typeof label === 'string' ? (
+          <label className="text-sm font-semibold">
+            {label} {required && <span className="text-danger"> *</span>}
+          </label>
+        ) : (
+          label
+        ))}
       <div
         ref={dropdownRef}
         className="relative w-full"
