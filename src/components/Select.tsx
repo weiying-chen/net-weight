@@ -183,7 +183,7 @@ export const Select = <T extends string | number>({
   );
 
   return (
-    <Col className={cn({ 'w-auto': isIconTrigger }, className)}>
+    <Col className={cn({ 'w-auto': isIconTrigger })}>
       {label &&
         (typeof label === 'string' ? (
           <label className="text-sm font-semibold">
@@ -204,11 +204,15 @@ export const Select = <T extends string | number>({
           tabIndex={0}
           error={error}
           disabled={disabled}
-          className={cn('cursor-pointer justify-between shadow', {
-            'focus-visible:ring-0 focus-visible:ring-offset-0': isOpen,
-            'hover:shadow-dark': !disabled,
-            'h-6 px-2 py-1 text-xs': small,
-          })}
+          className={cn(
+            'cursor-pointer justify-between shadow',
+            {
+              'focus-visible:ring-0 focus-visible:ring-offset-0': isOpen,
+              'hover:shadow-dark': !disabled,
+              'h-6 px-2 py-1 text-xs': small,
+            },
+            className,
+          )}
         >
           <div className="flex items-center gap-2">
             {selected?.icon && <span>{selected.icon}</span>}
@@ -216,7 +220,7 @@ export const Select = <T extends string | number>({
               <span>{selected ? selected.label : placeholder}</span>
             )}
           </div>
-          <IconChevronDown size={small ? 16 : 20} />
+          {!isIconTrigger && <IconChevronDown size={small ? 16 : 20} />}
         </PseudoInput>
         {isOpen && renderDropdown()}
       </div>

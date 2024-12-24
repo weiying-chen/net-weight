@@ -20,10 +20,10 @@ import {
   profile,
   profileDefaultValues,
   profileSchema,
-  SecVisibleTo,
+  ProfileSecVis,
   secVisibleToOpts,
   Separator,
-  VisibleTo,
+  ProfileVis,
   visibleToOpts,
 } from '@/pages/formpDefaults';
 
@@ -50,12 +50,12 @@ export const FormP = () => {
     console.log('Form submitted:', data);
   };
 
-  function getSecVisibleTo(...fields: VisibleTo[]): SecVisibleTo {
-    const first = fields[0] as VisibleTo;
+  function getSecVisibleTo(...fields: ProfileVis[]): ProfileSecVis {
+    const first = fields[0] as ProfileVis;
     return fields.every((f) => f === first) ? first : 'mixed';
   }
 
-  const getGeneralInfoSecVisibleTo = (): SecVisibleTo => {
+  const getGeneralInfoSecVisibleTo = (): ProfileSecVis => {
     const firstNameVisible = getValues('firstName.visibleTo');
     const lastNameVisible = getValues('lastName.visibleTo');
     const alternativeNameVisible = getValues('alternativeName.visibleTo');
@@ -79,7 +79,7 @@ export const FormP = () => {
     );
   };
 
-  const getOtherInfoSecVisibleTo = (): SecVisibleTo => {
+  const getOtherInfoSecVisibleTo = (): ProfileSecVis => {
     const addressLine1Visible = getValues('addressLine1.visibleTo');
     const addressLine2Visible = getValues('addressLine2.visibleTo');
     const cityVisible = getValues('city.visibleTo');
@@ -97,7 +97,7 @@ export const FormP = () => {
     );
   };
 
-  const getContactInfoSecVisibleTo = (): SecVisibleTo => {
+  const getContactInfoSecVisibleTo = (): ProfileSecVis => {
     const contactInfoVisible = getValues('contactInfo.visibleTo');
     return contactInfoVisible;
   };

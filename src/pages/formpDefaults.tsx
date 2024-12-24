@@ -8,25 +8,25 @@ import {
 import { FieldError, FieldErrorsImpl, Merge } from 'react-hook-form';
 import { z } from 'zod';
 
-export type SecVisibleTo = 'all' | 'users' | 'contacts' | 'owner' | 'mixed';
-export type VisibleTo = 'all' | 'users' | 'contacts' | 'owner';
+export type ProfileVis = 'all' | 'users' | 'contacts' | 'owner';
+export type ProfileSecVis = ProfileVis | 'mixed';
 
 export type SecVisibleToOpt = {
   label: string;
-  value: SecVisibleTo;
+  value: ProfileSecVis;
   icon?: React.ReactNode;
   isHidden?: boolean;
 };
 
 export type VisibleToOpt = {
   label: string;
-  value: VisibleTo;
+  value: ProfileVis;
   icon?: React.ReactNode;
 };
 
-export type ContentField<T> = {
+export type ProfileVisField<T> = {
   value: T;
-  visibleTo: VisibleTo;
+  visibleTo: ProfileVis;
 };
 
 export type ContactInfo = {
@@ -34,25 +34,25 @@ export type ContactInfo = {
     type: string;
     value: string;
   }>;
-  visibleTo: VisibleTo;
+  visibleTo: ProfileVis;
 };
 
-export type ProfileContent = {
-  firstName: ContentField<string>;
-  lastName: ContentField<string>;
-  alternativeName: ContentField<string>;
-  email: ContentField<string>;
-  gender: ContentField<'M' | 'F'>;
-  birthday: ContentField<string>;
-  nationality: ContentField<string>;
-  idType: ContentField<'taiwanese-id-card' | 'passport'>;
-  idNumber: ContentField<string>;
-  addressLine1: ContentField<string>;
-  addressLine2: ContentField<string>;
-  city: ContentField<string>;
-  stateProvince: ContentField<string>;
-  zipPostalCode: ContentField<string>;
-  country: ContentField<string>;
+export type Profile = {
+  firstName: ProfileVisField<string>;
+  lastName: ProfileVisField<string>;
+  alternativeName: ProfileVisField<string>;
+  email: ProfileVisField<string>;
+  gender: ProfileVisField<'M' | 'F'>;
+  birthday: ProfileVisField<string>;
+  nationality: ProfileVisField<string>;
+  idType: ProfileVisField<'taiwanese-id-card' | 'passport'>;
+  idNumber: ProfileVisField<string>;
+  addressLine1: ProfileVisField<string>;
+  addressLine2: ProfileVisField<string>;
+  city: ProfileVisField<string>;
+  stateProvince: ProfileVisField<string>;
+  zipPostalCode: ProfileVisField<string>;
+  country: ProfileVisField<string>;
   contactInfo: ContactInfo;
 };
 
@@ -247,7 +247,7 @@ export const profileSchema = z.object({
   }),
 });
 
-export const profileDefaultValues: ProfileContent = {
+export const profileDefaultValues: Profile = {
   firstName: {
     value: '',
     visibleTo: 'all',
@@ -314,7 +314,7 @@ export const profileDefaultValues: ProfileContent = {
   },
 };
 
-export const profile: ProfileContent = {
+export const profile: Profile = {
   firstName: {
     value: 'John',
     visibleTo: 'all',

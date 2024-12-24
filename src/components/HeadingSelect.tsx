@@ -14,7 +14,12 @@ export const HeadingSelect = <T extends string | number>({
   return (
     <Row alignItems="center" className={className} locked fluid>
       {heading && <Heading size="sm">{heading}</Heading>}
-      <Select {...props} isIconTrigger small />
+      <Select
+        {...props}
+        isIconTrigger
+        small
+        className="border-0 bg-subtle shadow-none"
+      />
     </Row>
   );
 };

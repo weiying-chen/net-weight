@@ -13,7 +13,12 @@ export const LabelSelect = <T extends string | number>({
   return (
     <Row alignItems="center" className={className} locked fluid>
       {label && <label className="text-sm font-semibold">{label}</label>}
-      <Select {...props} isIconTrigger small />
+      <Select
+        {...props}
+        isIconTrigger
+        small
+        className="border-0 bg-subtle shadow-none"
+      />
     </Row>
   );
 };
