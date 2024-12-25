@@ -66,10 +66,10 @@ const uploadedFiles = [
     url: 'https://via.placeholder.com/150',
     name: 'placeholder1.jpg',
   },
-  {
-    url: 'https://via.placeholder.com/200',
-    name: 'placeholder2.png',
-  },
+  // {
+  //   url: 'https://via.placeholder.com/200',
+  //   name: 'placeholder2.png',
+  // },
 ];
 
 const countryOptions = [
@@ -251,7 +251,7 @@ export function Form() {
       </Button>
       <br />
       {isEdit ? (
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSubmit)} className="w-full">
           <Col gap="xl">
             <Col gap="lg">
               <Heading hasBorder isFull>

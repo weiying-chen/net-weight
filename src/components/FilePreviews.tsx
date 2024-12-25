@@ -8,12 +8,14 @@ type FilePreviewsProps = {
   files: FileData[];
   onRemoveFile?: (index: number) => void;
   multiple?: boolean;
+  className?: string;
 };
 
 export function FilePreviews({
   files,
   onRemoveFile,
   multiple = true,
+  className,
 }: FilePreviewsProps) {
   const renderFilename = (file: FileData) => (
     <Row
@@ -48,6 +50,7 @@ export function FilePreviews({
         'w-full gap-2 rounded bg-subtle p-3',
         { 'grid grid-cols-4 md:grid-cols-8': multiple },
         { 'flex justify-center': !multiple },
+        className,
       )}
     >
       {files.map((file, index) => (

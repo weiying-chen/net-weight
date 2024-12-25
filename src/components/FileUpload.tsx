@@ -98,6 +98,25 @@ export function FileUpload({
     .filter((v, i, a) => a.indexOf(v) === i)
     .join(', ');
 
+  const renderDropzone = () => (
+    <div
+      tabIndex={0}
+      {...getRootProps()}
+      className={cn(
+        'relative w-full cursor-pointer rounded border-2 border-dashed border-border p-6 text-sm outline-none ring-foreground ring-offset-2 transition-colors focus-visible:ring-2',
+        { 'border-danger': error },
+      )}
+    >
+      <input {...getInputProps()} />
+      <Col gap="sm" alignItems="center">
+        <p>{isDragActive ? 'Drop the files here...' : placeholder}</p>
+        <p className="text-xs text-muted">
+          {acceptText || `Accepted file type(s): ${acceptedFileTypes}`}
+        </p>
+      </Col>
+    </div>
+  );
+
   return (
     <Col className={className}>
       {label &&
@@ -107,28 +126,23 @@ export function FileUpload({
           label
         ))}
       <div
-        tabIndex={0}
-        {...getRootProps()}
         className={cn(
-          'relative w-full cursor-pointer rounded border-2 border-dashed border-border p-6 text-sm outline-none ring-foreground ring-offset-2 transition-colors focus-visible:ring-2',
-          { 'border-danger': error },
+          'flex w-full',
+          multiple
+            ? 'flex-col gap-4'
+            : 'flex-col items-stretch gap-2 md:flex-row',
         )}
       >
-        <input {...getInputProps()} />
-        <Col gap="sm" alignItems="center">
-          <p>{isDragActive ? 'Drop the files here...' : placeholder}</p>
-          <p className="text-xs text-muted">
-            {acceptText || `Accepted file type(s): ${acceptedFileTypes}`}
-          </p>
-        </Col>
+        {renderDropzone()}
+        {files.length > 0 && (
+          <FilePreviews
+            files={files}
+            multiple={multiple}
+            className={cn({ 'order-first md:w-1/3': !multiple })}
+            onRemoveFile={handleRemoveFile}
+          />
+        )}
       </div>
-      {files.length > 0 && (
-        <FilePreviews
-          files={files}
-          multiple={multiple}
-          onRemoveFile={handleRemoveFile}
-        />
-      )}
       {error && <span className="text-sm text-danger">{error}</span>}
     </Col>
   );
