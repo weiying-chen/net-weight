@@ -68,7 +68,12 @@ export const SectionSelect = <T extends string | number>({
         ) : (
           // Real Select
           <div ref={realSelectRef}>
-            <Select {...selectProps} isIconTrigger small />
+            <Select
+              {...selectProps}
+              isIconTrigger
+              small
+              className="border-0 bg-subtle shadow-none"
+            />
           </div>
         )}
       </Row>
