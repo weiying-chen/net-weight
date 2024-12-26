@@ -6,6 +6,7 @@ interface TooltipProps {
   content: ReactNode;
   position?: 'top' | 'bottom' | 'left' | 'right';
   className?: string;
+  transient?: boolean;
 }
 
 export const Tooltip: React.FC<TooltipProps> = ({
@@ -13,6 +14,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
   content,
   position = 'top',
   className,
+  transient = false,
 }) => {
   const [isVisible, setIsVisible] = useState(false);
 
@@ -23,11 +25,19 @@ export const Tooltip: React.FC<TooltipProps> = ({
     right: 'left-full top-1/2 transform -translate-y-1/2',
   };
 
+  const handleMouseEnter = () => {
+    setIsVisible(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsVisible(false);
+  };
+
   return (
     <div
       className={cn('relative', className)}
-      onMouseEnter={() => setIsVisible(true)}
-      onMouseLeave={() => setIsVisible(false)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       {children}
       <div
@@ -40,6 +50,8 @@ export const Tooltip: React.FC<TooltipProps> = ({
             ? 'pointer-events-auto scale-100 opacity-100'
             : 'pointer-events-none scale-95 opacity-0',
         )}
+        onMouseEnter={transient ? handleMouseLeave : undefined}
+        // onMouseLeave={handleMouseLeave}
       >
         {content}
       </div>

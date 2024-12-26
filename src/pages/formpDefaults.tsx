@@ -5,6 +5,7 @@ import {
   IconUsers,
   IconWorld,
 } from '@tabler/icons-react';
+import { ReactNode } from 'react';
 import { FieldError, FieldErrorsImpl, Merge } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -21,7 +22,8 @@ export type SecVisibleToOpt = {
 export type VisibleToOpt = {
   label: string;
   value: ProfileVis;
-  icon?: React.ReactNode;
+  icon?: ReactNode;
+  tooltip?: ReactNode;
 };
 
 export type ProfileVisField<T> = {
@@ -132,11 +134,36 @@ export const secVisibleToOpts: SecVisibleToOpt[] = [
 ];
 
 export const visibleToOpts: VisibleToOpt[] = [
-  { label: 'All', value: 'all', icon: <IconWorld size={16} /> },
-  { label: 'Users', value: 'users', icon: <IconUsers size={16} /> },
-  { label: 'Contacts', value: 'contacts', icon: <IconAddressBook size={16} /> },
-  { label: 'Owner', value: 'owner', icon: <IconUser size={16} /> },
-  // { label: 'None', value: 'none', icon: <IconEyeOff size={16} /> },
+  {
+    label: 'All',
+    value: 'all',
+    icon: <IconWorld size={16} />,
+    tooltip: 'This option makes the field visible to everyone.',
+  },
+  {
+    label: 'Users',
+    value: 'users',
+    icon: <IconUsers size={16} />,
+    tooltip: 'This option makes the field visible to registered users only.',
+  },
+  {
+    label: 'Contacts',
+    value: 'contacts',
+    icon: <IconAddressBook size={16} />,
+    tooltip: 'This option makes the field visible to your contacts only.',
+  },
+  {
+    label: 'Owner',
+    value: 'owner',
+    icon: <IconUser size={16} />,
+    tooltip: 'This option makes the field visible only to you, the owner.',
+  },
+  // {
+  //   label: 'None',
+  //   value: 'none',
+  //   icon: <IconEyeOff size={16} />,
+  //   tooltip: 'This option hides the field from everyone.',
+  // },
 ];
 
 export const genderOpts = [

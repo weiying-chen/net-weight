@@ -3,12 +3,14 @@ import { Col } from '@/components/Col';
 import { cn } from '@/utils';
 import { IconChevronDown } from '@tabler/icons-react';
 import { PseudoInput } from '@/components/PseudoInput';
+import { Tooltip } from '@/components/Tooltip';
 
 type SelectOption<T> = {
   label: string;
   value: T;
-  icon?: React.ReactNode;
+  icon?: ReactNode;
   isHidden?: boolean;
+  tooltip?: ReactNode;
 };
 
 export type SelectProps<T> = {
@@ -156,29 +158,42 @@ export const Select = <T extends string | number>({
   const renderDropdown = () => (
     <ul
       className={cn(
-        'absolute z-10 mt-1 overflow-hidden rounded border border-border bg-white shadow',
+        'absolute z-10 mt-1 rounded border border-border bg-white shadow',
         isIconTrigger ? 'left-0 right-auto w-auto' : 'left-0 right-0 w-full',
       )}
     >
       {options
-        .filter((option) => !option.isHidden) // Exclude hidden options
-        .map((option, index) => (
-          <li
-            key={option.value}
-            className={cn(
-              'flex cursor-pointer items-center gap-2 px-3 py-2 text-sm',
-              {
-                'bg-subtle': focusedIndex === index,
-              },
-            )}
-            onClick={(event) => handleOptionClick(option, event)}
-            onMouseEnter={() => setFocusedIndex(index)}
-            onMouseDown={(e) => e.preventDefault()}
-          >
-            {option.icon && <span>{option.icon}</span>}
-            <span>{option.label}</span>
-          </li>
-        ))}
+        .filter((option) => !option.isHidden)
+        .map((option, index, visibleOptions) => {
+          const liEl = (
+            <li
+              key={option.value}
+              className={cn(
+                'flex cursor-pointer items-center gap-2 px-3 py-2 text-sm',
+                {
+                  // `overflow-hidden` can't be used because it will clip the tooltip
+                  'bg-subtle': focusedIndex === index,
+                  'rounded-t': index === 0,
+                  'rounded-b': index === visibleOptions.length - 1,
+                },
+              )}
+              onClick={(event) => handleOptionClick(option, event)}
+              onMouseEnter={() => setFocusedIndex(index)}
+              onMouseDown={(e) => e.preventDefault()}
+            >
+              {option.icon && <span>{option.icon}</span>}
+              <span>{option.label}</span>
+            </li>
+          );
+
+          return option.tooltip ? (
+            <Tooltip key={option.value} content={option.tooltip} transient>
+              {liEl}
+            </Tooltip>
+          ) : (
+            liEl
+          );
+        })}
     </ul>
   );
 
