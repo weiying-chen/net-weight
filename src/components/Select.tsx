@@ -1,4 +1,11 @@
-import { useState, useRef, useEffect, ReactNode } from 'react';
+import {
+  useState,
+  useRef,
+  useLayoutEffect,
+  ReactNode,
+  KeyboardEvent,
+  MouseEvent,
+} from 'react';
 import { Col } from '@/components/Col';
 import { cn } from '@/utils';
 import { IconChevronDown } from '@tabler/icons-react';
@@ -48,36 +55,73 @@ export const Select = <T extends string | number>({
   const [isOpen, setIsOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
   const [selected, setSelected] = useState<SelectOption<T> | null>(null);
-  const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const [dropdownPosition, setDropdownPosition] = useState<'top' | 'bottom'>(
+    'bottom',
+  );
+
+  const dropdownRef = useRef<HTMLUListElement | null>(null);
+  const triggerRef = useRef<HTMLDivElement | null>(null);
 
   // Sync local state with external `value` prop
-  useEffect(() => {
+  // Re-run whenever `value` or `options` change
+  // to keep selected value in sync.
+  useLayoutEffect(() => {
     const newSelected =
       options.find((option) => option.value === value) || null;
-    if (newSelected?.value !== selected?.value) {
-      setSelected(newSelected);
-    }
+    setSelected(newSelected);
   }, [value, options]);
 
-  const setInitialFocusedIndex = () => {
-    if (selected) {
-      const selectedIndex = options.findIndex(
-        (option) => option.value === selected.value,
-      );
-      setFocusedIndex(selectedIndex !== -1 ? selectedIndex : null);
-    } else {
-      setFocusedIndex(null);
+  /**
+   * Measures the space available and sets
+   * `dropdownPosition` to `'top'` if there isn't enough room below.
+   */
+  const adjustDropdownPosition = () => {
+    if (triggerRef.current && dropdownRef.current) {
+      const triggerRect = triggerRef.current.getBoundingClientRect();
+      const dropdownHeight = dropdownRef.current.scrollHeight;
+      const viewportHeight = window.innerHeight;
+
+      // If the dropdown would extend beyond the viewport, flip it
+      const shouldFlip = triggerRect.bottom + dropdownHeight > viewportHeight;
+      setDropdownPosition(shouldFlip ? 'top' : 'bottom');
     }
   };
+
+  /**
+   * Use `useLayoutEffect` so that we measure and apply the
+   * correct dropdown position before the browser paints.
+   * This helps avoid the visible flicker with `useEffect`.
+   */
+  useLayoutEffect(() => {
+    if (isOpen) {
+      adjustDropdownPosition();
+
+      const handleResize = () => adjustDropdownPosition();
+      window.addEventListener('resize', handleResize);
+
+      return () => {
+        window.removeEventListener('resize', handleResize);
+      };
+    }
+  }, [isOpen]);
 
   const handleDropdownToggle = (event: React.MouseEvent<HTMLDivElement>) => {
     if (disabled) return;
     event.stopPropagation();
+
     setIsOpen((prev) => !prev);
+
     if (!isOpen) {
-      setInitialFocusedIndex();
+      // If about to open, set the initially focused option
+      setFocusedIndex(
+        selected
+          ? options.findIndex((option) => option.value === selected.value)
+          : null,
+      );
+      onFocus?.();
+    } else {
+      closeDropdown();
     }
-    onFocus?.();
   };
 
   const closeDropdown = () => {
@@ -88,62 +132,63 @@ export const Select = <T extends string | number>({
 
   const handleOptionClick = (
     option: SelectOption<T>,
-    event: React.MouseEvent<HTMLLIElement>,
+    event: MouseEvent<HTMLLIElement>,
   ) => {
     event.stopPropagation();
     setSelected(option);
-    onChange(option.value); // Notify parent of the change
+    onChange(option.value);
     closeDropdown();
   };
 
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (disabled) return;
 
+    // If closed and user presses "Enter", open it
     if (!isOpen && event.key === 'Enter') {
       setIsOpen(true);
-      setInitialFocusedIndex();
+      // Wait until after open to measure
       return;
     }
 
     if (!isOpen) return;
 
+    const visibleOptions = options.filter((option) => !option.isHidden);
+
     switch (event.key) {
       case 'ArrowDown':
         event.preventDefault();
         setFocusedIndex((prev) =>
-          prev === null
-            ? 0
-            : Math.min(
-                prev + 1,
-                options.filter((option) => !option.isHidden).length - 1,
-              ),
+          prev === null ? 0 : Math.min(prev + 1, visibleOptions.length - 1),
         );
         break;
       case 'ArrowUp':
         event.preventDefault();
         setFocusedIndex((prev) =>
-          prev === null
-            ? options.filter((option) => !option.isHidden).length - 1
-            : Math.max(prev - 1, 0),
+          prev === null ? visibleOptions.length - 1 : Math.max(prev - 1, 0),
         );
         break;
       case 'Enter':
         if (focusedIndex !== null) {
-          const visibleOptions = options.filter((option) => !option.isHidden);
+          // "as any" because synthetic events differ between key+mouse
           handleOptionClick(visibleOptions[focusedIndex], event as any);
         }
         break;
       case 'Escape':
         closeDropdown();
         break;
+      default:
+        break;
     }
   };
 
-  useEffect(() => {
-    const handleOutsideClick = (event: MouseEvent) => {
+  // Close dropdown if user clicks outside
+  useLayoutEffect(() => {
+    const handleOutsideClick = (event: globalThis.MouseEvent) => {
       if (
         dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
+        !dropdownRef.current.contains(event.target as Node) &&
+        triggerRef.current &&
+        !triggerRef.current.contains(event.target as Node)
       ) {
         closeDropdown();
       }
@@ -155,10 +200,15 @@ export const Select = <T extends string | number>({
     };
   }, []);
 
+  /**
+   * Renders the dropdown menu.
+   */
   const renderDropdown = () => (
     <ul
+      ref={dropdownRef}
       className={cn(
         'absolute z-10 mt-1 rounded border border-border bg-white shadow',
+        dropdownPosition === 'top' ? 'bottom-full mb-1' : 'top-full mt-1',
         isIconTrigger ? 'left-0 right-auto w-auto' : 'left-0 right-0 w-full',
       )}
     >
@@ -171,7 +221,6 @@ export const Select = <T extends string | number>({
               className={cn(
                 'flex cursor-pointer items-center gap-2 px-3 py-2 text-sm',
                 {
-                  // `overflow-hidden` can't be used because it will clip the tooltip
                   'bg-subtle': focusedIndex === index,
                   'rounded-t': index === 0,
                   'rounded-b': index === visibleOptions.length - 1,
@@ -199,6 +248,7 @@ export const Select = <T extends string | number>({
 
   return (
     <Col className={cn({ 'w-auto': isIconTrigger })}>
+      {/* Render the label if present */}
       {label &&
         (typeof label === 'string' ? (
           <label className="text-sm font-semibold">
@@ -207,8 +257,9 @@ export const Select = <T extends string | number>({
         ) : (
           label
         ))}
+
       <div
-        ref={dropdownRef}
+        ref={triggerRef}
         className="relative w-full"
         onKeyDown={handleKeyDown}
         onClick={handleDropdownToggle}
@@ -235,10 +286,15 @@ export const Select = <T extends string | number>({
               <span>{selected ? selected.label : placeholder}</span>
             )}
           </div>
+          {/* Chevron only if not icon-trigger */}
           {!isIconTrigger && <IconChevronDown size={small ? 16 : 20} />}
         </PseudoInput>
+
+        {/* Dropdown menu */}
         {isOpen && renderDropdown()}
       </div>
+
+      {/* Error message */}
       {error && <span className="text-sm text-danger">{error}</span>}
     </Col>
   );
