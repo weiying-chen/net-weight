@@ -77,23 +77,39 @@ export const DatePicker = ({
       className={cn(
         'absolute z-10',
         dropdownPosition === 'top' ? 'bottom-full mb-1' : 'top-full mt-1',
-        'w-full rounded-md border border-border bg-background p-3 shadow',
+        'rounded-md border border-border bg-background p-3 shadow', // Removed `w-full`
       )}
     >
       <DayPicker
         mode="single"
         selected={value}
         onSelect={(date) => {
-          const parsedDate = typeof date === 'string' ? new Date(date) : date;
-          if (parsedDate instanceof Date && !isNaN(parsedDate.getTime())) {
-            onChange(parsedDate);
+          // const parsedDate = typeof date === 'string' ? new Date(date) : date;
+          // if (parsedDate instanceof Date && !isNaN(parsedDate.getTime())) {
+          //   onChange(parsedDate);
+          // }
+          if (date) {
+            onChange(date);
           }
         }}
         classNames={{
-          day: 'p-2 rounded hover:bg-gray-200', // Tailwind class for each day
-          day_selected: 'bg-blue-500 text-white hover:bg-blue-600', // Highlight selected day
-          nav_button: 'text-gray-500 hover:text-blue-500', // Navigation buttons
-          // month: 'bg-gray-50 p-4 rounded-md shadow', // Calendar container
+          day: 'text-center',
+        }}
+        components={{
+          DayButton: (props) => (
+            <button
+              {...props}
+              className={cn(
+                'w-full rounded p-2 hover:shadow',
+                {
+                  'bg-primary text-background': props.modifiers.selected,
+                },
+                // props.modifiers.disabled && 'cursor-not-allowed text-gray-400',
+              )}
+            >
+              {props.children}
+            </button>
+          ),
         }}
       />
     </div>
