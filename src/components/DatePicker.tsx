@@ -68,15 +68,18 @@ export const DatePicker = ({
         setIsOpen(false);
       }
     };
-    document.addEventListener('mousedown', handleOutsideClick);
+
+    document.addEventListener('click', handleOutsideClick);
     return () => {
-      document.removeEventListener('mousedown', handleOutsideClick);
+      document.removeEventListener('click', handleOutsideClick);
     };
   }, []);
 
   const renderDayPicker = () => (
     <div
       ref={dropdownRef}
+      onMouseDown={(e) => e.stopPropagation()}
+      onClick={(e) => e.stopPropagation()}
       className={cn(
         'absolute z-10',
         dropdownPosition === 'top' ? 'bottom-full mb-1' : 'top-full mt-1',
@@ -96,7 +99,12 @@ export const DatePicker = ({
         className="rounded-md border border-border bg-background shadow"
         components={{
           DayButton: ({ day, modifiers, ...props }) => {
-            const actualDate = day?.date ? new Date(day.date) : null;
+            const actualDate =
+              (day as { date?: Date })?.date instanceof Date
+                ? (day as { date?: Date })?.date
+                : day instanceof Date
+                  ? day
+                  : null;
 
             return (
               <button
