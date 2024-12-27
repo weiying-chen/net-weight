@@ -49,11 +49,6 @@ export const DatePicker = ({
   useLayoutEffect(() => {
     if (isOpen) {
       adjustDropdownPosition();
-      const handleResize = () => adjustDropdownPosition();
-      window.addEventListener('resize', handleResize);
-      return () => {
-        window.removeEventListener('resize', handleResize);
-      };
     }
   }, [isOpen]);
 
@@ -78,12 +73,11 @@ export const DatePicker = ({
   const renderDayPicker = () => (
     <div
       ref={dropdownRef}
-      onMouseDown={(e) => e.stopPropagation()}
       onClick={(e) => e.stopPropagation()}
       className={cn(
         'absolute z-10',
         dropdownPosition === 'top' ? 'bottom-full mb-1' : 'top-full mt-1',
-        'w-full',
+        'w-full rounded-md border border-border bg-background p-3 shadow',
       )}
     >
       <DayPicker
@@ -93,35 +87,13 @@ export const DatePicker = ({
           const parsedDate = typeof date === 'string' ? new Date(date) : date;
           if (parsedDate instanceof Date && !isNaN(parsedDate.getTime())) {
             onChange(parsedDate);
-            setIsOpen(false);
           }
         }}
-        className="rounded-md border border-border bg-background shadow"
-        components={{
-          DayButton: ({ day, modifiers, ...props }) => {
-            const actualDate =
-              (day as { date?: Date })?.date instanceof Date
-                ? (day as { date?: Date })?.date
-                : day instanceof Date
-                  ? day
-                  : null;
-
-            return (
-              <button
-                {...props}
-                className={cn(
-                  'rounded p-1',
-                  modifiers.selected
-                    ? 'bg-blue-500 text-white'
-                    : 'hover:bg-gray-200',
-                )}
-              >
-                {actualDate instanceof Date && !isNaN(actualDate.getTime())
-                  ? actualDate.getDate()
-                  : ''}
-              </button>
-            );
-          },
+        classNames={{
+          day: 'p-2 rounded hover:bg-gray-200', // Tailwind class for each day
+          day_selected: 'bg-blue-500 text-white hover:bg-blue-600', // Highlight selected day
+          nav_button: 'text-gray-500 hover:text-blue-500', // Navigation buttons
+          // month: 'bg-gray-50 p-4 rounded-md shadow', // Calendar container
         }}
       />
     </div>

@@ -200,9 +200,6 @@ export const Select = <T extends string | number>({
     };
   }, []);
 
-  /**
-   * Renders the dropdown menu.
-   */
   const renderDropdown = () => (
     <ul
       ref={dropdownRef}
@@ -215,15 +212,23 @@ export const Select = <T extends string | number>({
       {options
         .filter((option) => !option.isHidden)
         .map((option, index, visibleOptions) => {
+          const isFirst = index === 0;
+          const isLast = index === visibleOptions.length - 1;
+
           const liEl = (
             <li
               key={option.value}
               className={cn(
-                'flex cursor-pointer items-center gap-2 px-3 py-2 text-sm',
+                'flex cursor-pointer items-center gap-2 text-sm',
+                {
+                  'px-3 pb-2 pt-3': isFirst, // First element: padding-top 2, padding-bottom 3
+                  'px-3 pb-3 pt-2': isLast, // Last element: padding-top 3, padding-bottom 2
+                  'px-3 py-2': !isFirst && !isLast, // Middle elements: padding-y 2, padding-x 3
+                },
                 {
                   'bg-subtle': focusedIndex === index,
-                  'rounded-t': index === 0,
-                  'rounded-b': index === visibleOptions.length - 1,
+                  'rounded-t': isFirst,
+                  'rounded-b': isLast,
                 },
               )}
               onClick={(event) => handleOptionClick(option, event)}
