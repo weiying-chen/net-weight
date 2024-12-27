@@ -1,11 +1,15 @@
-import { useState, useRef, useLayoutEffect } from 'react';
-import { DayPicker } from 'react-day-picker';
+import { useState, useRef, useLayoutEffect, ReactNode } from 'react';
+import { DayPicker, MonthCaptionProps, useDayPicker } from 'react-day-picker';
 import { PseudoInput } from '@/components/PseudoInput';
 import { Col } from '@/components/Col';
 import { cn } from '@/utils';
+import { format } from 'date-fns';
+import { Button } from '@/components/Button';
+import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
+import { Row } from '@/components/Row';
 
 export type DatePickerProps = {
-  label?: string;
+  label?: ReactNode; // Changed to ReactNode
   value?: Date;
   onChange: (value: Date) => void;
   placeholder?: string;
@@ -70,6 +74,36 @@ export const DatePicker = ({
     };
   }, []);
 
+  const renderNav = () => {
+    const { previousMonth, nextMonth, goToMonth } = useDayPicker();
+
+    return (
+      <Row fluid>
+        <Button
+          variant="link"
+          onClick={() => previousMonth && goToMonth(previousMonth)}
+        >
+          <IconChevronLeft />
+        </Button>
+        <Button
+          variant="link"
+          onClick={() => nextMonth && goToMonth(nextMonth)}
+        >
+          <IconChevronRight />
+        </Button>
+      </Row>
+    );
+  };
+
+  const renderCaption = ({ calendarMonth }: MonthCaptionProps) => (
+    <Row align="between">
+      <h2 className="text-lg font-semibold">
+        {format(calendarMonth.date, 'MMMM yyyy')}
+      </h2>
+      {renderNav()}
+    </Row>
+  );
+
   const renderDayPicker = () => (
     <div
       ref={dropdownRef}
@@ -77,17 +111,14 @@ export const DatePicker = ({
       className={cn(
         'absolute z-10',
         dropdownPosition === 'top' ? 'bottom-full mb-1' : 'top-full mt-1',
-        'rounded-md border border-border bg-background p-3 shadow', // Removed `w-full`
+        'rounded-md border border-border bg-background p-3 shadow',
       )}
     >
       <DayPicker
         mode="single"
         selected={value}
+        showOutsideDays
         onSelect={(date) => {
-          // const parsedDate = typeof date === 'string' ? new Date(date) : date;
-          // if (parsedDate instanceof Date && !isNaN(parsedDate.getTime())) {
-          //   onChange(parsedDate);
-          // }
           if (date) {
             onChange(date);
           }
@@ -96,20 +127,28 @@ export const DatePicker = ({
           day: 'text-center',
         }}
         components={{
-          DayButton: (props) => (
-            <button
-              {...props}
-              className={cn(
-                'w-full rounded p-2 hover:shadow',
-                {
-                  'bg-primary text-background': props.modifiers.selected,
-                },
-                // props.modifiers.disabled && 'cursor-not-allowed text-gray-400',
-              )}
-            >
-              {props.children}
-            </button>
+          Nav: () => <></>, // `Nav` is handled in `MonthCaption`
+          MonthCaption: (props) => (
+            <>
+              {renderCaption(props)}
+              <div className="my-2 h-px bg-border"></div>
+            </>
           ),
+          DayButton: (props) => {
+            const { modifiers, day, children, ...buttonProps } = props;
+
+            return (
+              <button
+                {...buttonProps}
+                className={cn('w-full rounded p-2 hover:shadow', {
+                  'bg-primary text-background': modifiers.selected,
+                  'text-muted': modifiers.outside,
+                })}
+              >
+                {children}
+              </button>
+            );
+          },
         }}
       />
     </div>
@@ -117,11 +156,14 @@ export const DatePicker = ({
 
   return (
     <Col className={cn('relative', className)}>
-      {label && (
-        <label className="text-sm font-semibold">
-          {label} {required && <span className="text-danger"> *</span>}
-        </label>
-      )}
+      {label &&
+        (typeof label === 'string' ? (
+          <label className="text-sm font-semibold">
+            {label} {required && <span className="text-danger"> *</span>}
+          </label>
+        ) : (
+          label
+        ))}
       <div
         ref={triggerRef}
         className="relative w-full"
