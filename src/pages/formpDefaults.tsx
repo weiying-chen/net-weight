@@ -45,7 +45,7 @@ export type Profile = {
   alternativeName: ProfileVisField<string>;
   email: ProfileVisField<string>;
   gender: ProfileVisField<'M' | 'F'>;
-  birthday: ProfileVisField<string>;
+  birthday: ProfileVisField<Date>; // Update to use Date type
   nationality: ProfileVisField<string>;
   idType: ProfileVisField<'taiwanese-id-card' | 'passport'>;
   idNumber: ProfileVisField<string>;
@@ -86,7 +86,9 @@ export function deepMerge<T>(target: T, source: Partial<T>): T {
   const result = { ...target };
 
   for (const key in source) {
-    if (
+    if (source[key] instanceof Date) {
+      result[key] = source[key] as T[Extract<keyof T, string>];
+    } else if (
       source[key] !== null &&
       source[key] !== undefined &&
       typeof source[key] === 'object' &&
@@ -97,7 +99,6 @@ export function deepMerge<T>(target: T, source: Partial<T>): T {
         source[key] as Partial<T[Extract<keyof T, string>]>,
       );
     } else if (source[key] === null || source[key] === undefined) {
-      // Fall back to the target's value or an empty string
       result[key] = target[key] ?? ('' as T[Extract<keyof T, string>]);
     } else {
       result[key] = source[key] as T[Extract<keyof T, string>];
@@ -209,12 +210,7 @@ export const profileSchema = z.object({
     visibleTo: visibilityEnum,
   }),
   birthday: z.object({
-    value: z
-      .string()
-      .regex(
-        /^\d{4}-\d{2}-\d{2}$/,
-        'Birthday must be in the format YYYY-MM-DD.',
-      ),
+    value: z.date(),
     visibleTo: visibilityEnum,
   }),
   nationality: z.object({
@@ -296,7 +292,7 @@ export const profileDefaultValues: Profile = {
     visibleTo: 'all',
   },
   birthday: {
-    value: '',
+    value: new Date(1995, 7, 15),
     visibleTo: 'all',
   },
   nationality: {
@@ -363,7 +359,7 @@ export const profile: Profile = {
     visibleTo: 'all',
   },
   birthday: {
-    value: '1990-01-01',
+    value: new Date(1995, 7, 15),
     visibleTo: 'users',
   },
   nationality: {

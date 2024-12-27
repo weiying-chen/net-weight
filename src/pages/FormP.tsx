@@ -10,6 +10,7 @@ import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LabelSelect } from '@/components/LabelSelect';
 import { HeadingSelect } from '@/components/HeadingSelect';
+import { DatePicker } from '@/components/DatePicker';
 import {
   clErrFromErr,
   contactTypes,
@@ -108,6 +109,7 @@ export const FormP = () => {
   const renderGeneralInfo = () => {
     // TODO: @REMOVE this
     const isVerified = false; // Example for showing verification
+    console.log('Birthday value:', getValues('birthday.value')); // Log the birthday value here
 
     return (
       <Col>
@@ -221,7 +223,7 @@ export const FormP = () => {
           />
         </Row>
         <Row>
-          <Input
+          <DatePicker
             label={
               <LabelSelect
                 label="Birthday"
@@ -230,10 +232,9 @@ export const FormP = () => {
                 onChange={(option) => setValue('birthday.visibleTo', option)}
               />
             }
-            type="date"
-            {...register('birthday.value')}
-            required
-            disabled
+            value={getValues('birthday.value')}
+            onChange={(date) => setValue('birthday.value', date)}
+            placeholder="Select a date"
             error={errors.birthday?.message}
           />
           <Select
