@@ -128,7 +128,6 @@ export const DatePicker = ({
         onSelect={(date) => {
           if (date) {
             onChange(date);
-            // setDisplayedMonth(date);
             setIsOpen(false);
           }
         }}
@@ -151,6 +150,7 @@ export const DatePicker = ({
                 {...buttonProps}
                 className={cn('w-full rounded p-2 hover:shadow', {
                   'bg-primary text-background': modifiers.selected,
+                  'bg-subtle': modifiers.today,
                   'text-muted': modifiers.outside,
                 })}
               >
