@@ -5,7 +5,11 @@ import { Col } from '@/components/Col';
 import { cn } from '@/utils';
 import { format } from 'date-fns';
 import { Button } from '@/components/Button';
-import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
+import {
+  IconChevronLeft,
+  IconChevronRight,
+  IconCalendarMonth,
+} from '@tabler/icons-react';
 import { Row } from '@/components/Row';
 
 export type DatePickerProps = {
@@ -187,6 +191,7 @@ export const DatePicker = ({
           <div className="flex items-center gap-2">
             <span>{value ? value.toLocaleDateString() : placeholder}</span>
           </div>
+          <IconCalendarMonth size={20} />
         </PseudoInput>
         {isOpen && renderDayPicker()}
       </div>
