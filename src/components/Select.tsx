@@ -62,36 +62,29 @@ export const Select = <T extends string | number>({
   const dropdownRef = useRef<HTMLUListElement | null>(null);
   const triggerRef = useRef<HTMLDivElement | null>(null);
 
-  // Sync local state with external `value` prop
-  // Re-run whenever `value` or `options` change
-  // to keep selected value in sync.
   useLayoutEffect(() => {
     const newSelected =
       options.find((option) => option.value === value) || null;
     setSelected(newSelected);
   }, [value, options]);
 
-  /**
-   * Measures the space available and sets
-   * `dropdownPosition` to `'top'` if there isn't enough room below.
-   */
   const adjustDropdownPosition = () => {
     if (triggerRef.current && dropdownRef.current) {
       const triggerRect = triggerRef.current.getBoundingClientRect();
-      const dropdownHeight = dropdownRef.current.scrollHeight;
+      const dropdownMaxHeight = 384; // The max height of the dropdown in pixels
       const viewportHeight = window.innerHeight;
+      const spaceBelow = viewportHeight - triggerRect.bottom;
+      const spaceAbove = triggerRect.top;
+      const availableSpaceBelow = Math.min(spaceBelow, dropdownMaxHeight);
+      const availableSpaceAbove = Math.min(spaceAbove, dropdownMaxHeight);
+      const shouldFlip = availableSpaceAbove > availableSpaceBelow;
 
-      // If the dropdown would extend beyond the viewport, flip it
-      const shouldFlip = triggerRect.bottom + dropdownHeight > viewportHeight;
+      dropdownRef.current.style.maxHeight = `${shouldFlip ? availableSpaceAbove : availableSpaceBelow}px`;
+
       setDropdownPosition(shouldFlip ? 'top' : 'bottom');
     }
   };
 
-  /**
-   * Use `useLayoutEffect` so that we measure and apply the
-   * correct dropdown position before the browser paints.
-   * This helps avoid the visible flicker with `useEffect`.
-   */
   useLayoutEffect(() => {
     if (isOpen) {
       adjustDropdownPosition();
@@ -112,7 +105,6 @@ export const Select = <T extends string | number>({
     setIsOpen((prev) => !prev);
 
     if (!isOpen) {
-      // If about to open, set the initially focused option
       setFocusedIndex(
         selected
           ? options.findIndex((option) => option.value === selected.value)
@@ -143,10 +135,9 @@ export const Select = <T extends string | number>({
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (disabled) return;
 
-    // If closed and user presses "Enter", open it
     if (!isOpen && event.key === 'Enter') {
       setIsOpen(true);
-      // Wait until after open to measure
+
       return;
     }
 
@@ -169,7 +160,6 @@ export const Select = <T extends string | number>({
         break;
       case 'Enter':
         if (focusedIndex !== null) {
-          // "as any" because synthetic events differ between key+mouse
           handleOptionClick(visibleOptions[focusedIndex], event as any);
         }
         break;
@@ -181,7 +171,6 @@ export const Select = <T extends string | number>({
     }
   };
 
-  // Close dropdown if user clicks outside
   useLayoutEffect(() => {
     const handleOutsideClick = (event: globalThis.MouseEvent) => {
       if (
@@ -204,7 +193,7 @@ export const Select = <T extends string | number>({
     <ul
       ref={dropdownRef}
       className={cn(
-        'absolute z-10 mt-1 rounded border border-border bg-white shadow',
+        'absolute z-10 mt-1 max-h-96 overflow-y-auto rounded border border-border bg-white shadow',
         dropdownPosition === 'top' ? 'bottom-full mb-1' : 'top-full mt-1',
         isIconTrigger ? 'left-0 right-auto w-auto' : 'left-0 right-0 w-full',
       )}
@@ -221,9 +210,9 @@ export const Select = <T extends string | number>({
               className={cn(
                 'flex cursor-pointer items-center gap-2 text-sm',
                 {
-                  'px-3 pb-2 pt-3': isFirst, // First element: padding-top 2, padding-bottom 3
-                  'px-3 pb-3 pt-2': isLast, // Last element: padding-top 3, padding-bottom 2
-                  'px-3 py-2': !isFirst && !isLast, // Middle elements: padding-y 2, padding-x 3
+                  'px-3 pb-2 pt-3': isFirst,
+                  'px-3 pb-3 pt-2': isLast,
+                  'px-3 py-2': !isFirst && !isLast,
                 },
                 {
                   'bg-subtle': focusedIndex === index,
@@ -253,7 +242,6 @@ export const Select = <T extends string | number>({
 
   return (
     <Col className={cn({ 'w-auto': isIconTrigger })}>
-      {/* Render the label if present */}
       {label &&
         (typeof label === 'string' ? (
           <label className="text-sm font-semibold">
@@ -291,15 +279,10 @@ export const Select = <T extends string | number>({
               <span>{selected ? selected.label : placeholder}</span>
             )}
           </div>
-          {/* Chevron only if not icon-trigger */}
           {!isIconTrigger && <IconChevronDown size={small ? 16 : 20} />}
         </PseudoInput>
-
-        {/* Dropdown menu */}
         {isOpen && renderDropdown()}
       </div>
-
-      {/* Error message */}
       {error && <span className="text-sm text-danger">{error}</span>}
     </Col>
   );

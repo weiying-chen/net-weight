@@ -111,6 +111,16 @@ export function deepMerge<T>(target: T, source: Partial<T>): T {
 export const countryOptions = [
   { value: 'us', label: 'United States' },
   { value: 'ca', label: 'Canada' },
+  { value: 'mx', label: 'Mexico' },
+  { value: 'gb', label: 'United Kingdom' },
+  { value: 'fr', label: 'France' },
+  { value: 'de', label: 'Germany' },
+  { value: 'jp', label: 'Japan' },
+  { value: 'cn', label: 'China' },
+  { value: 'in', label: 'India' },
+  { value: 'au', label: 'Australia' },
+  { value: 'nz', label: 'New Zealand' },
+  { value: 'br', label: 'Brazil' },
 ];
 
 export const contactTypes = [
