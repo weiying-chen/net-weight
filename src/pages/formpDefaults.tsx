@@ -369,7 +369,7 @@ export const profile: Profile = {
     visibleTo: 'all',
   },
   birthday: {
-    value: new Date(1995, 7, 15),
+    value: new Date(2024, 10, 15),
     visibleTo: 'users',
   },
   nationality: {

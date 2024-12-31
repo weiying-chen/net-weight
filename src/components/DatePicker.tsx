@@ -13,7 +13,7 @@ import {
 import { Row } from '@/components/Row';
 
 export type DatePickerProps = {
-  label?: ReactNode; // Changed to ReactNode
+  label?: ReactNode;
   value?: Date;
   onChange: (value: Date) => void;
   placeholder?: string;
@@ -39,6 +39,7 @@ export const DatePicker = ({
   const [dropdownPosition, setDropdownPosition] = useState<'top' | 'bottom'>(
     'bottom',
   );
+  const [displayedMonth, setDisplayedMonth] = useState(value || new Date());
 
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const triggerRef = useRef<HTMLDivElement | null>(null);
@@ -121,17 +122,21 @@ export const DatePicker = ({
       <DayPicker
         mode="single"
         selected={value}
+        month={displayedMonth}
+        onMonthChange={setDisplayedMonth}
         showOutsideDays
         onSelect={(date) => {
           if (date) {
             onChange(date);
+            // setDisplayedMonth(date);
+            setIsOpen(false);
           }
         }}
         classNames={{
           day: 'text-center',
         }}
         components={{
-          Nav: () => <></>, // `Nav` is handled in `MonthCaption`
+          Nav: () => <></>,
           MonthCaption: (props) => (
             <>
               {renderCaption(props)}
@@ -171,7 +176,12 @@ export const DatePicker = ({
       <div
         ref={triggerRef}
         className="relative w-full"
-        onClick={() => !disabled && setIsOpen((prev) => !prev)}
+        onClick={() => {
+          if (!disabled) {
+            // setDisplayedMonth(value || new Date());
+            setIsOpen((prev) => !prev);
+          }
+        }}
         tabIndex={0}
       >
         <PseudoInput
