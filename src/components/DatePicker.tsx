@@ -14,8 +14,8 @@ import { Row } from '@/components/Row';
 
 export type DatePickerProps = {
   label?: ReactNode;
-  value?: Date;
-  onChange: (value: Date) => void;
+  value?: Date; // Optional external control
+  onChange?: (value: Date) => void; // Notify parent on change
   placeholder?: string;
   error?: string;
   className?: string;
@@ -26,7 +26,7 @@ export type DatePickerProps = {
 
 export const DatePicker = ({
   label,
-  value,
+  value: externalValue,
   onChange,
   placeholder = 'Select a date',
   error,
@@ -39,7 +39,12 @@ export const DatePicker = ({
   const [dropdownPosition, setDropdownPosition] = useState<'top' | 'bottom'>(
     'bottom',
   );
-  const [displayedMonth, setDisplayedMonth] = useState(value || new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+    externalValue,
+  );
+  const [displayedMonth, setDisplayedMonth] = useState(
+    externalValue || new Date(),
+  );
 
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const triggerRef = useRef<HTMLDivElement | null>(null);
@@ -78,6 +83,18 @@ export const DatePicker = ({
       document.removeEventListener('click', handleOutsideClick);
     };
   }, []);
+
+  // Update internal state when external value changes
+  useLayoutEffect(() => {
+    setSelectedDate(externalValue);
+    setDisplayedMonth(externalValue || new Date());
+  }, [externalValue]);
+
+  const handleSelectDate = (date: Date) => {
+    setSelectedDate(date); // Update internal state
+    onChange?.(date); // Notify parent
+    setIsOpen(false);
+  };
 
   const renderNav = () => {
     const { previousMonth, nextMonth, goToMonth } = useDayPicker();
@@ -121,16 +138,11 @@ export const DatePicker = ({
     >
       <DayPicker
         mode="single"
-        selected={value}
+        selected={selectedDate}
         month={displayedMonth}
         onMonthChange={setDisplayedMonth}
         showOutsideDays
-        onSelect={(date) => {
-          if (date) {
-            onChange(date);
-            setIsOpen(false);
-          }
-        }}
+        onSelect={(date) => date && handleSelectDate(date)}
         classNames={{
           day: 'text-center',
         }}
@@ -178,7 +190,6 @@ export const DatePicker = ({
         className="relative w-full"
         onClick={() => {
           if (!disabled) {
-            // setDisplayedMonth(value || new Date());
             setIsOpen((prev) => !prev);
           }
         }}
@@ -199,7 +210,9 @@ export const DatePicker = ({
           )}
         >
           <div className="flex items-center gap-2">
-            <span>{value ? value.toLocaleDateString() : placeholder}</span>
+            <span>
+              {selectedDate ? selectedDate.toLocaleDateString() : placeholder}
+            </span>
           </div>
           <IconCalendarMonth size={20} />
         </PseudoInput>
