@@ -27,6 +27,7 @@ import {
   ProfileVis,
   visibleToOpts,
 } from '@/pages/formpDefaults';
+import { Heading } from '@/components/Heading';
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
@@ -98,10 +99,10 @@ export const FormP = () => {
     );
   };
 
-  const getContactInfoSecVisibleTo = (): ProfileSecVis => {
-    const contactInfoVisible = getValues('contactInfo.visibleTo');
-    return contactInfoVisible;
-  };
+  // const getContactInfoSecVisibleTo = (): ProfileSecVis => {
+  //   const contactInfoVisible = getValues('contactInfo.visibleTo');
+  //   return contactInfoVisible;
+  // };
 
   // Triggers re-renders when `HeadingSelect` updates form values
   useWatch({ control });
@@ -387,6 +388,7 @@ export const FormP = () => {
 
   const renderContactInfo = () => (
     <Col>
+      {/*
       <HeadingSelect
         heading="Contact Information"
         value={getContactInfoSecVisibleTo()}
@@ -397,6 +399,10 @@ export const FormP = () => {
           }
         }}
       />
+    */}
+      <Heading isFull hasBorder>
+        Contact information
+      </Heading>
       <CustomLinks
         links={getValues('contactInfo.values')}
         options={contactTypes}

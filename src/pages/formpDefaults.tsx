@@ -35,8 +35,8 @@ export type ContactInfo = {
   values: Array<{
     type: string;
     value: string;
+    visibleTo: ProfileVis;
   }>;
-  visibleTo: ProfileVis;
 };
 
 export type Profile = {
@@ -273,10 +273,10 @@ export const profileSchema = z.object({
         z.object({
           type: z.string(),
           value: z.string(),
+          visibleTo: visibilityEnum,
         }),
       )
       .default([]),
-    visibleTo: visibilityEnum,
   }),
 });
 
@@ -343,7 +343,7 @@ export const profileDefaultValues: Profile = {
   },
   contactInfo: {
     values: [],
-    visibleTo: 'all',
+    // visibleTo: 'all',
   },
 };
 
@@ -410,9 +410,8 @@ export const profile: Profile = {
   },
   contactInfo: {
     values: [
-      { type: 'email', value: 'john.business@example.com' },
-      { type: 'phone', value: '+1-555-123-4567' },
+      { type: 'email', value: 'john.business@example.com', visibleTo: 'all' },
+      { type: 'phone', value: '+1-555-123-4567', visibleTo: 'all' },
     ],
-    visibleTo: 'contacts',
   },
 };
