@@ -251,7 +251,6 @@ export const FormP = () => {
             options={countryOptions}
             placeholder="Select nationality"
             required
-            disabled
             onChange={(value) => setValue('nationality.value', value)}
             error={errors.nationality?.message}
           />

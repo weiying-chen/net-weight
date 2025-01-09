@@ -193,7 +193,7 @@ export const Select = <T extends string | number>({
     <ul
       ref={dropdownRef}
       className={cn(
-        'absolute z-10 mt-1 max-h-96 overflow-y-auto rounded border border-border bg-white shadow',
+        'absolute z-10 mt-1 max-h-96 overflow-y-auto overflow-x-hidden rounded border border-border bg-white shadow',
         dropdownPosition === 'top' ? 'bottom-full mb-1' : 'top-full mt-1',
         isIconTrigger ? 'left-0 right-auto w-auto' : 'left-0 right-0 w-full',
       )}
