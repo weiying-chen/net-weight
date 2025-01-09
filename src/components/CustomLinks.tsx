@@ -6,10 +6,10 @@ import { Input } from '@/components/Input';
 import { Select } from '@/components/Select';
 import { IconTrash } from '@tabler/icons-react';
 
-export type CustomLink = {
+export type CustomLink<T = {}> = {
   type: string;
   value: string;
-};
+} & T;
 
 type PlatformOption = {
   value: string;
@@ -17,17 +17,22 @@ type PlatformOption = {
   icon?: React.ReactNode;
 };
 
-type CustomLinksProps = {
+type CustomLinksProps<T = {}> = {
   label?: string;
-  links?: CustomLink[];
+  links?: CustomLink<T>[];
   options: PlatformOption[];
   className?: string;
   errors?: Array<{ type?: string; value?: string }>;
-  onChange: (links: CustomLink[]) => void;
+  onChange: (links: CustomLink<T>[]) => void;
   onFocus?: (field: string | null) => void;
+  asTypeLabel?: (
+    link: CustomLink<T>,
+    index: number,
+    handleLinkChange: (index: number, fieldType: string, value: any) => void,
+  ) => React.ReactNode;
 };
 
-export const CustomLinks: React.FC<CustomLinksProps> = ({
+export const CustomLinks = <T,>({
   label,
   links: initialLinks = [],
   options,
@@ -35,19 +40,16 @@ export const CustomLinks: React.FC<CustomLinksProps> = ({
   errors = [],
   onChange,
   onFocus,
-}) => {
-  const [links, setLinks] = useState<CustomLink[]>(initialLinks);
+  asTypeLabel,
+}: CustomLinksProps<T>) => {
+  const [links, setLinks] = useState<CustomLink<T>[]>(initialLinks);
 
-  const updateLinks = (newLinks: CustomLink[]) => {
+  const updateLinks = (newLinks: CustomLink<T>[]) => {
     setLinks(newLinks);
     onChange(newLinks);
   };
 
-  const handleLinkChange = (
-    index: number,
-    fieldType: 'type' | 'value',
-    value: string,
-  ) => {
+  const handleLinkChange = (index: number, fieldType: string, value: any) => {
     const newLinks = links.map((link, i) => {
       if (i === index) {
         return { ...link, [fieldType]: value };
@@ -58,7 +60,7 @@ export const CustomLinks: React.FC<CustomLinksProps> = ({
   };
 
   const handleAddLink = () => {
-    const newLinks = [...links, { type: '', value: '' }];
+    const newLinks = [...links, { type: '', value: '' } as CustomLink<T>];
     updateLinks(newLinks);
   };
 
@@ -73,7 +75,9 @@ export const CustomLinks: React.FC<CustomLinksProps> = ({
       {links.map((link, index) => (
         <Row alignItems="start" key={index}>
           <Select
-            label="Type"
+            label={
+              asTypeLabel ? asTypeLabel(link, index, handleLinkChange) : 'Type'
+            }
             value={link.type}
             options={options}
             onChange={(value) =>

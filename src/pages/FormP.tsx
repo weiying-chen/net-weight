@@ -28,6 +28,7 @@ import {
   visibleToOpts,
 } from '@/pages/formpDefaults';
 import { Heading } from '@/components/Heading';
+import { LabelStatus } from '@/components/LabelStatus';
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
@@ -110,7 +111,6 @@ export const FormP = () => {
   const renderGeneralInfo = () => {
     // TODO: @REMOVE this
     const isVerified = false; // Example for showing verification
-    console.log('Birthday value:', getValues('birthday.value')); // Log the birthday value here
 
     return (
       <Col>
@@ -403,11 +403,14 @@ export const FormP = () => {
       <Heading isFull hasBorder>
         Contact information
       </Heading>
-      <CustomLinks
+      <CustomLinks<{ visibleTo: 'all' | 'users' | 'contacts' | 'owner' }>
         links={getValues('contactInfo.values')}
         options={contactTypes}
         onChange={(links) => setValue('contactInfo.values', links)}
         errors={clErrFromErr(errors.contactInfo?.values)}
+        asTypeLabel={(link) => (
+          <LabelStatus label="Type" verified={link.visibleTo === 'all'} />
+        )}
       />
     </Col>
   );
