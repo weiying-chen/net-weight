@@ -26,6 +26,7 @@ import {
   Separator,
   ProfileVis,
   visibleToOpts,
+  ContactType,
 } from '@/pages/formpDefaults';
 import { Heading } from '@/components/Heading';
 import { LabelStatus } from '@/components/LabelStatus';
@@ -402,7 +403,13 @@ export const FormP = () => {
       <Heading isFull hasBorder>
         Contact information
       </Heading>
-      <CustomLinks<{ visibleTo: 'all' | 'users' | 'contacts' | 'owner' }>
+      <CustomLinks<
+        ContactType,
+        {
+          verified: boolean;
+          visibleTo: 'all' | 'users' | 'contacts' | 'owner';
+        }
+      >
         links={getValues('contactInfo.values')}
         options={contactTypes}
         onChange={(links) => setValue('contactInfo.values', links)}

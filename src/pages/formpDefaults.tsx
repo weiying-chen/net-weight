@@ -33,7 +33,7 @@ export type ProfileVisField<T> = {
 
 export type ContactInfo = {
   values: Array<{
-    type: string;
+    type: 'phone' | 'email' | 'fax' | 'mobile';
     value: string;
     visibleTo: ProfileVis;
   }>;
@@ -126,9 +126,11 @@ export const countryOptions = [
 export const contactTypes = [
   { value: 'phone', label: 'Phone' },
   { value: 'email', label: 'Email' },
-  { value: 'telephone', label: 'Telephone' },
+  { value: 'mobile', label: 'Mobile' },
   { value: 'fax', label: 'Fax' },
-];
+] as const; // Use 'as const' to make TypeScript infer literal types
+
+export type ContactType = (typeof contactTypes)[number]['value'];
 
 export const secVisibleToOpts: SecVisibleToOpt[] = [
   { label: 'All', value: 'all', icon: <IconWorld size={16} /> },
@@ -267,12 +269,14 @@ export const profileSchema = z.object({
     value: z.string(),
     visibleTo: visibilityEnum,
   }),
+
   contactInfo: z.object({
     values: z
       .array(
         z.object({
-          type: z.string(),
+          type: z.enum(['email', 'phone', 'fax', 'mobile']),
           value: z.string(),
+          verified: z.boolean(),
           visibleTo: visibilityEnum,
         }),
       )

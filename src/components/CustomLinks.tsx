@@ -6,33 +6,33 @@ import { Input } from '@/components/Input';
 import { Select } from '@/components/Select';
 import { IconTrash } from '@tabler/icons-react';
 
-export type CustomLink<T = {}> = {
-  type: string;
+export type CustomLink<T extends string = string, U = {}> = {
+  type: T;
   value: string;
-} & T;
+} & U;
 
-type PlatformOption = {
-  value: string;
+type PlatformOption<T extends string = string> = {
+  value: T;
   label: string;
   icon?: React.ReactNode;
 };
 
-type CustomLinksProps<T = {}> = {
+type CustomLinksProps<T extends string = string, U = {}> = {
   label?: string;
-  links?: CustomLink<T>[];
-  options: PlatformOption[];
+  links?: CustomLink<T, U>[];
+  options: readonly PlatformOption<T>[];
   className?: string;
   errors?: Array<{ type?: string; value?: string }>;
-  onChange: (links: CustomLink<T>[]) => void;
+  onChange: (links: CustomLink<T, U>[]) => void;
   onFocus?: (field: string | null) => void;
   asTypeLabel?: (
-    link: CustomLink<T>,
+    link: CustomLink<T, U>,
     index: number,
     handleLinkChange: (index: number, fieldType: string, value: any) => void,
   ) => React.ReactNode;
 };
 
-export const CustomLinks = <T,>({
+export const CustomLinks = <T extends string, U = {}>({
   label,
   links: initialLinks = [],
   options,
@@ -41,10 +41,10 @@ export const CustomLinks = <T,>({
   onChange,
   onFocus,
   asTypeLabel,
-}: CustomLinksProps<T>) => {
-  const [links, setLinks] = useState<CustomLink<T>[]>(initialLinks);
+}: CustomLinksProps<T, U>) => {
+  const [links, setLinks] = useState<CustomLink<T, U>[]>(initialLinks);
 
-  const updateLinks = (newLinks: CustomLink<T>[]) => {
+  const updateLinks = (newLinks: CustomLink<T, U>[]) => {
     setLinks(newLinks);
     onChange(newLinks);
   };
@@ -60,7 +60,7 @@ export const CustomLinks = <T,>({
   };
 
   const handleAddLink = () => {
-    const newLinks = [...links, { type: '', value: '' } as CustomLink<T>];
+    const newLinks = [...links, { type: '', value: '' } as CustomLink<T, U>];
     updateLinks(newLinks);
   };
 
@@ -79,7 +79,7 @@ export const CustomLinks = <T,>({
               asTypeLabel ? asTypeLabel(link, index, handleLinkChange) : 'Type'
             }
             value={link.type}
-            options={options}
+            options={[...options] as PlatformOption<T>[]}
             onChange={(value) =>
               handleLinkChange(index, 'type', value as string)
             }
