@@ -414,8 +414,18 @@ export const FormP = () => {
         options={contactTypes}
         onChange={(links) => setValue('contactInfo.values', links)}
         errors={clErrFromErr(errors.contactInfo?.values)}
-        asTypeLabel={(link) => (
-          <LabelStatus label="Type" verified={link.visibleTo === 'all'} />
+        asTypeLabel={(link, index, handleLinkChange) => (
+          <Row alignItems="center">
+            <LabelSelect
+              label="Type"
+              value={link.visibleTo || visibleToOpts[0]?.value}
+              options={visibleToOpts}
+              onChange={(option) =>
+                handleLinkChange(index, 'visibleTo', option)
+              }
+            />
+            <LabelStatus verified={link.verified} />
+          </Row>
         )}
       />
     </Col>
