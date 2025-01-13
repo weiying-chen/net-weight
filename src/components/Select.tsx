@@ -268,7 +268,7 @@ export const Select = <T extends string | number>({
             {
               'focus-visible:ring-0 focus-visible:ring-offset-0': isOpen,
               'hover:shadow-dark': !disabled,
-              'h-6 px-2 py-1 text-xs': small,
+              'h-5 px-2 py-1 text-xs': small,
             },
             className,
           )}

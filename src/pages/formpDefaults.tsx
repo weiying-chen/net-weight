@@ -150,25 +150,25 @@ export const visibleToOpts: VisibleToOpt[] = [
   {
     label: 'All',
     value: 'all',
-    icon: <IconWorld size={16} />,
+    icon: <IconWorld size={14} />,
     tooltip: 'This option makes the field visible to everyone.',
   },
   {
     label: 'Users',
     value: 'users',
-    icon: <IconUsers size={16} />,
+    icon: <IconUsers size={14} />,
     tooltip: 'This option makes the field visible to registered users only.',
   },
   {
     label: 'Contacts',
     value: 'contacts',
-    icon: <IconAddressBook size={16} />,
+    icon: <IconAddressBook size={14} />,
     tooltip: 'This option makes the field visible to your contacts only.',
   },
   {
     label: 'Owner',
     value: 'owner',
-    icon: <IconUser size={16} />,
+    icon: <IconUser size={14} />,
     tooltip: 'This option makes the field visible only to you, the owner.',
   },
   // {
