@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Col } from '@/components/Col';
 import { Row } from '@/components/Row';
 import { Button } from '@/components/Button';
@@ -68,6 +68,10 @@ export const CustomLinks = <T extends string, U = {}>({
     const newLinks = links.filter((_, i) => i !== index);
     updateLinks(newLinks);
   };
+
+  useEffect(() => {
+    setLinks(initialLinks);
+  }, [initialLinks]);
 
   return (
     <Col className={className}>
