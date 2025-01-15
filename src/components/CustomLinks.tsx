@@ -30,6 +30,7 @@ type CustomLinksProps<T extends string = string, U = {}> = {
     index: number,
     handleLinkChange: (index: number, fieldType: string, value: any) => void,
   ) => React.ReactNode;
+  onAddLink?: () => CustomLink<T, U>; // External add logic
 };
 
 export const CustomLinks = <T extends string, U = {}>({
@@ -41,6 +42,7 @@ export const CustomLinks = <T extends string, U = {}>({
   onChange,
   onFocus,
   asTypeLabel,
+  onAddLink,
 }: CustomLinksProps<T, U>) => {
   const [links, setLinks] = useState<CustomLink<T, U>[]>(initialLinks);
 
@@ -60,8 +62,11 @@ export const CustomLinks = <T extends string, U = {}>({
   };
 
   const handleAddLink = () => {
-    const newLinks = [...links, { type: '', value: '' } as CustomLink<T, U>];
-    updateLinks(newLinks);
+    const newLink = onAddLink
+      ? onAddLink()
+      : ({ type: '', value: '' } as CustomLink<T, U>);
+
+    updateLinks([...links, newLink]);
   };
 
   const handleRemoveLink = (index: number) => {
