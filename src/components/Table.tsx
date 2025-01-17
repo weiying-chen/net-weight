@@ -7,6 +7,7 @@ type Cols<T> = {
 };
 
 const MIN_COL_WIDTH = 50;
+const TOOLTIP_OFFSET = { x: 20, y: 20 }; // Offset for the tooltip positioning
 
 export function Table<T>({
   data,
@@ -31,11 +32,14 @@ export function Table<T>({
   } | null>(null);
 
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
+
+  // This is for positioning the little "actions" hover at the right side of the table
   const [hoverPosition, setHoverPosition] = useState<{
     top: number;
     right: number;
   } | null>(null);
 
+  // We update this as the user moves their mouse so that the tooltip follows the cursor
   const [tooltipPosition, setTooltipPosition] = useState<{
     top: number;
     left: number;
@@ -59,6 +63,7 @@ export function Table<T>({
       const bStr =
         bValue !== null && bValue !== undefined ? String(bValue) : '';
 
+      // If they're objects or weird, skip sorting
       if (aStr === '[object Object]' || bStr === '[object Object]') {
         return 0;
       }
@@ -73,6 +78,7 @@ export function Table<T>({
   const handleSort = (index: number) => {
     const sampleValue = cols[index].render(data[0]);
 
+    // Skip sorting if the column value is an object
     if (typeof sampleValue === 'object' && sampleValue !== null) {
       return;
     }
@@ -93,33 +99,44 @@ export function Table<T>({
 
     setHoveredRow(rowIndex);
 
+    // Position the "actions" container on the right
     const rowElement = event.currentTarget as HTMLDivElement;
     const rowRect = rowElement.getBoundingClientRect();
 
     const container = containerRef.current;
     const containerBounds = container?.getBoundingClientRect();
 
-    const containerMiddle =
-      containerBounds?.left! + containerBounds?.width! / 2;
-
+    // We'll still place asActions at the vertical center of the row
+    // and to the right of the table.
     setHoverPosition({
       top: rowRect.top + rowRect.height / 2,
       right: document.documentElement.clientWidth - containerBounds!.right,
     });
-
-    setTooltipPosition({
-      top: rowRect.top + rowRect.height / 2,
-      left: containerMiddle,
-    });
   };
 
   const handleMouseLeaveRow = () => {
+    // Start a timeout that clears hovered states unless the user
+    // immediately re-enters the row or the asActions container.
     hideTimeout.current = window.setTimeout(() => {
       setHoveredRow(null);
       setTooltipPosition(null);
     }, 100);
   };
 
+  // Let the tooltip follow the cursor while in the row
+  const handleMouseMoveRow = (rowIndex: number, event: React.MouseEvent) => {
+    if (hoveredRow !== rowIndex) return;
+    if (hideTimeout.current) {
+      window.clearTimeout(hideTimeout.current);
+    }
+
+    setTooltipPosition({
+      top: event.clientY + TOOLTIP_OFFSET.y,
+      left: event.clientX + TOOLTIP_OFFSET.x,
+    });
+  };
+
+  // Let the user resize columns
   const startResizing = (index: number, event: React.MouseEvent) => {
     event.preventDefault();
 
@@ -145,6 +162,7 @@ export function Table<T>({
     document.addEventListener('mouseup', onMouseUp);
   };
 
+  // On first mount / updates, measure columns to set a min width
   useEffect(() => {
     if (data.length === 0) return;
 
@@ -173,6 +191,7 @@ export function Table<T>({
     calculateWidths();
   }, [data, cols]);
 
+  // If user scrolls, hide the tooltip
   useEffect(() => {
     const handleScroll = () => {
       setHoveredRow(null);
@@ -185,6 +204,7 @@ export function Table<T>({
     };
   }, []);
 
+  // Handling row selection
   const handleRowSelect = (rowIndex: number) => {
     const selectedItem = data[rowIndex];
     const isSelected = selectedItems.some((item) => item === selectedItem);
@@ -265,6 +285,7 @@ export function Table<T>({
         onClick={(e) => onRowClick?.(e, item)}
         onMouseEnter={(e) => handleMouseEnterRow(rowIndex, e)}
         onMouseLeave={handleMouseLeaveRow}
+        onMouseMove={(e) => handleMouseMoveRow(rowIndex, e)}
       >
         {onRowSelect && (
           <div className="flex items-center justify-center px-4 py-2">
@@ -297,21 +318,44 @@ export function Table<T>({
       </div>
     ));
 
+  // We'll also let the user move the cursor around the asActions container
+  // so the tooltip doesn't freeze.
+  const handleMouseMoveHover = (e: React.MouseEvent) => {
+    if (hoveredRow === null) return;
+    if (hideTimeout.current) {
+      window.clearTimeout(hideTimeout.current);
+    }
+    setTooltipPosition({
+      top: e.clientY + TOOLTIP_OFFSET.y,
+      left: e.clientX + TOOLTIP_OFFSET.x,
+    });
+  };
+
+  const handleMouseEnterHover = () => {
+    if (hideTimeout.current) window.clearTimeout(hideTimeout.current);
+  };
+
+  const handleMouseLeaveHover = () => {
+    hideTimeout.current = window.setTimeout(() => {
+      setHoveredRow(null);
+      setTooltipPosition(null);
+    }, 100);
+  };
+
   const renderHover = () => {
     if (hoveredRow === null || hoverPosition === null || !asActions)
       return null;
 
     return (
       <div
-        className="fixed z-10 -translate-y-1/2 transform bg-subtle"
+        className="pointer-events-auto fixed z-10 -translate-y-1/2 transform bg-subtle"
         style={{
           top: `${hoverPosition.top}px`,
           right: `${hoverPosition.right}px`,
         }}
-        onMouseEnter={() => {
-          if (hideTimeout.current) window.clearTimeout(hideTimeout.current);
-        }}
-        onMouseLeave={handleMouseLeaveRow}
+        onMouseEnter={handleMouseEnterHover}
+        onMouseLeave={handleMouseLeaveHover}
+        onMouseMove={handleMouseMoveHover}
       >
         {asActions(sortedData[hoveredRow])}
       </div>
@@ -322,21 +366,32 @@ export function Table<T>({
     if (hoveredRow === null || tooltipPosition === null || !asTooltip)
       return null;
 
+    // Prevent the tooltip from extending beyond the viewport to the right or left
     const adjustTooltipPosition = () => {
       if (tooltipRef.current) {
         const tooltipRect = tooltipRef.current.getBoundingClientRect();
+        const viewportWidth = window.innerWidth;
         const viewportHeight = window.innerHeight;
 
-        const overflowBottom =
-          tooltipPosition.top + tooltipRect.height > viewportHeight;
+        let top = tooltipPosition.top;
+        let left = tooltipPosition.left;
 
-        const top = overflowBottom
-          ? tooltipPosition.top - tooltipRect.height
-          : tooltipPosition.top;
+        // If going off the bottom edge, flip above the cursor
+        if (top + tooltipRect.height > viewportHeight) {
+          top = tooltipPosition.top - TOOLTIP_OFFSET.y - tooltipRect.height;
+        }
+        // If going off the right edge, shift left
+        if (left + tooltipRect.width > viewportWidth) {
+          left = viewportWidth - tooltipRect.width - 5; // 5px margin
+        }
+        // If going off the left edge, shift right
+        if (left < 0) {
+          left = 5;
+        }
 
         return {
           top: `${top}px`,
-          left: `${tooltipPosition.left}px`,
+          left: `${left}px`,
         };
       }
       return {
@@ -348,7 +403,7 @@ export function Table<T>({
     return (
       <div
         ref={tooltipRef}
-        className="pointer-events-none fixed z-20 -translate-x-1/2 transform rounded bg-foreground p-3 text-sm text-background shadow"
+        className="pointer-events-none fixed z-20 transform whitespace-nowrap rounded bg-foreground p-3 text-sm text-background shadow"
         style={adjustTooltipPosition()}
       >
         {asTooltip(sortedData[hoveredRow])}
