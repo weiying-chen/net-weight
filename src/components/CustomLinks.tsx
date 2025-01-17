@@ -116,7 +116,7 @@ export const CustomLinks = <T extends string, U = {}>({
         </Row>
       ))}
       <Button type="button" onClick={handleAddLink} className="self-start">
-        Add Link
+        Add link
       </Button>
     </Col>
   );

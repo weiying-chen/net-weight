@@ -348,7 +348,7 @@ export function Table<T>({
     return (
       <div
         ref={tooltipRef}
-        className="pointer-events-none fixed z-20 -translate-x-1/2 transform rounded bg-foreground px-2 py-1 text-sm text-background shadow"
+        className="pointer-events-none fixed z-20 -translate-x-1/2 transform rounded bg-foreground p-3 text-sm text-background shadow"
         style={adjustTooltipPosition()}
       >
         {asTooltip(sortedData[hoveredRow])}

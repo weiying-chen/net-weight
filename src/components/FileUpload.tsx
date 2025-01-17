@@ -22,6 +22,7 @@ type FileUploadProps = {
   multiple?: boolean;
   accept?: { [key: string]: string[] };
   acceptText?: string;
+  required?: boolean;
 };
 
 export function FileUpload({
@@ -40,6 +41,7 @@ export function FileUpload({
     'application/pdf': ['.pdf'],
   },
   acceptText,
+  required,
 }: FileUploadProps) {
   const [files, setFiles] = useState<FileData[]>(initialFiles);
 
@@ -121,7 +123,9 @@ export function FileUpload({
     <Col className={className}>
       {label &&
         (typeof label === 'string' ? (
-          <label className="text-sm font-semibold">{label}</label>
+          <label className="text-sm font-semibold">
+            {label} {required && <span className="text-danger"> *</span>}
+          </label>
         ) : (
           label
         ))}
