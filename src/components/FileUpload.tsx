@@ -105,7 +105,7 @@ export function FileUpload({
       tabIndex={0}
       {...getRootProps()}
       className={cn(
-        'relative w-full cursor-pointer rounded border-2 border-dashed border-border p-6 text-sm outline-none ring-foreground ring-offset-2 transition-colors focus-visible:ring-2',
+        'relative w-full cursor-pointer rounded border-2 border-dashed border-border p-6 text-sm outline-none ring-foreground ring-offset-2 ring-offset-background transition-colors focus-visible:ring-2',
         { 'border-danger': error },
       )}
     >

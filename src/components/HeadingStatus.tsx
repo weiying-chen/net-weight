@@ -3,15 +3,15 @@ import { Row } from '@/components/Row';
 import { Heading } from '@/components/Heading';
 import { cn } from '@/utils';
 
-type HeadingSelectProps<T extends string | number> = SelectProps<T> & {
+type HeadingStatusProps<T extends string | number> = SelectProps<T> & {
   heading?: string;
 };
 
-export const HeadingSelect = <T extends string | number>({
+export const HeadingStatus = <T extends string | number>({
   heading,
   className,
   ...props
-}: HeadingSelectProps<T>) => {
+}: HeadingStatusProps<T>) => {
   return (
     <>
       {/* <Row alignItems="center" className={className} locked fluid> */}

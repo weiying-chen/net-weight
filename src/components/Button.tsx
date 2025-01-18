@@ -38,7 +38,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         type={type}
         className={cn(
-          'flex h-10 items-center justify-center gap-2 whitespace-nowrap rounded border border-border px-4 py-2 text-sm font-medium shadow ring-foreground ring-offset-2 hover:shadow-dark focus:outline-none focus-visible:ring-2',
+          'flex h-10 items-center justify-center gap-2 whitespace-nowrap rounded border border-border px-4 py-2 text-sm font-medium shadow ring-foreground ring-offset-2 ring-offset-background hover:shadow-dark focus:outline-none focus-visible:ring-2',
           cnFromVariant[variant],
           {
             'w-full md:w-auto': !locked,

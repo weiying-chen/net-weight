@@ -141,7 +141,7 @@ export const Slider: React.FC<SliderProps> = ({
             aria-valuenow={value}
             aria-label={label}
             className={cn(
-              'absolute top-1/2 h-5 w-5 -translate-y-1/2 cursor-pointer rounded-full border border-border bg-background shadow outline-none ring-foreground ring-offset-2 transition-colors focus-visible:ring-2',
+              'absolute top-1/2 h-5 w-5 -translate-y-1/2 cursor-pointer rounded-full border border-border bg-background shadow outline-none ring-foreground ring-offset-2 ring-offset-background transition-colors focus-visible:ring-2',
               disabled && 'cursor-not-allowed opacity-50',
             )}
             style={{

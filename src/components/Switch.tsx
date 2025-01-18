@@ -41,7 +41,7 @@ export const Switch: React.FC<SwitchProps> = ({
         onClick={handleToggle}
         disabled={disabled}
         className={cn(
-          'relative inline-flex shrink-0 cursor-pointer items-center justify-between rounded border border-transparent outline-none ring-foreground ring-offset-2 transition-colors focus-visible:ring-2',
+          'relative inline-flex shrink-0 cursor-pointer items-center justify-between rounded border border-transparent outline-none ring-foreground ring-offset-2 ring-offset-background transition-colors focus-visible:ring-2',
           small ? 'h-4 w-8 bg-subtle text-xs' : 'h-10 w-20 bg-subtle text-sm',
           {
             'border-danger': error,
