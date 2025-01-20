@@ -2,11 +2,19 @@ import { Row } from '@/components/Row';
 import { Select, SelectProps } from '@/components/Select';
 import { IconRosetteDiscountCheckFilled } from '@tabler/icons-react';
 
-type LabelStatusProps<T extends string | number> = SelectProps<T> & {
+type CommonProps = {
   label?: string;
   verified?: boolean;
   className?: string;
 };
+
+type LabelStatusProps<T extends string | number> =
+  | (CommonProps & {
+      options: Array<SelectProps<T>['options'][number]>;
+      value: T;
+      onChange: (option: T) => void;
+    })
+  | CommonProps;
 
 export const LabelStatus = <T extends string | number>({
   label,
@@ -14,17 +22,19 @@ export const LabelStatus = <T extends string | number>({
   className,
   ...props
 }: LabelStatusProps<T>) => {
+  const isInteractive = 'options' in props;
+
   return (
     <Row alignItems="center" className={className} locked>
       {label && <label className="text-sm font-semibold">{label}</label>}
-      {props.options ? (
+      {isInteractive && (
         <Select
-          {...props}
+          {...(props as SelectProps<T>)}
           isIconTrigger
           small
           className="border-0 bg-subtle shadow-none"
         />
-      ) : null}
+      )}
       {verified && (
         <IconRosetteDiscountCheckFilled size={16} className="text-primary" />
       )}

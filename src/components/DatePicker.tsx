@@ -193,7 +193,7 @@ export const DatePicker = ({
             setIsOpen((prev) => !prev);
           }
         }}
-        tabIndex={0}
+        // tabIndex={0}
       >
         <PseudoInput
           tabIndex={0}

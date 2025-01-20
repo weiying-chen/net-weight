@@ -8,8 +8,7 @@ import { IconRosetteDiscountCheckFilled } from '@tabler/icons-react';
 import { z } from 'zod';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { LabelSelect } from '@/components/LabelSelect';
-import { HeadingSelect } from '@/components/HeadingSelect';
+import { HeadingStatus } from '@/components/HeadingStatus';
 import { DatePicker } from '@/components/DatePicker';
 import {
   clErrFromErr,
@@ -106,7 +105,7 @@ export const FormP = () => {
   //   return contactInfoVisible;
   // };
 
-  // Triggers re-renders when `HeadingSelect` updates form values
+  // Triggers re-renders when `HeadingStatus` updates form values
   useWatch({ control });
 
   const renderGeneralInfo = () => {
@@ -116,7 +115,7 @@ export const FormP = () => {
     return (
       <Col>
         <Row alignItems="center">
-          <HeadingSelect
+          <HeadingStatus
             heading="General Information"
             value={getGeneralInfoSecVisibleTo()}
             options={secVisibleToOpts}
@@ -150,7 +149,7 @@ export const FormP = () => {
         <Row>
           <Input
             label={
-              <LabelSelect
+              <LabelStatus
                 label="First Name"
                 value={getValues('firstName.visibleTo')}
                 options={visibleToOpts}
@@ -164,7 +163,7 @@ export const FormP = () => {
           />
           <Input
             label={
-              <LabelSelect
+              <LabelStatus
                 label="Last Name"
                 value={getValues('lastName.visibleTo')}
                 options={visibleToOpts}
@@ -178,7 +177,7 @@ export const FormP = () => {
           />
           <Input
             label={
-              <LabelSelect
+              <LabelStatus
                 label="Alternative Name"
                 value={getValues('alternativeName.visibleTo')}
                 options={visibleToOpts}
@@ -194,7 +193,7 @@ export const FormP = () => {
         <Row>
           <Input
             label={
-              <LabelSelect
+              <LabelStatus
                 label="Email"
                 value={getValues('email.visibleTo')}
                 options={visibleToOpts}
@@ -208,7 +207,7 @@ export const FormP = () => {
           />
           <Select
             label={
-              <LabelSelect
+              <LabelStatus
                 label="Gender"
                 value={getValues('gender.visibleTo')}
                 options={visibleToOpts}
@@ -227,7 +226,7 @@ export const FormP = () => {
         <Row>
           <DatePicker
             label={
-              <LabelSelect
+              <LabelStatus
                 label="Birthday"
                 value={getValues('birthday.visibleTo')}
                 options={visibleToOpts}
@@ -241,7 +240,7 @@ export const FormP = () => {
           />
           <Select
             label={
-              <LabelSelect
+              <LabelStatus
                 label="Nationality"
                 value={getValues('nationality.visibleTo')}
                 options={visibleToOpts}
@@ -259,7 +258,7 @@ export const FormP = () => {
         <Row>
           <Select
             label={
-              <LabelSelect
+              <LabelStatus
                 label="ID Type"
                 value={getValues('idType.visibleTo')}
                 options={visibleToOpts}
@@ -281,7 +280,7 @@ export const FormP = () => {
           />
           <Input
             label={
-              <LabelSelect
+              <LabelStatus
                 label="ID Number"
                 value={getValues('idNumber.visibleTo')}
                 options={visibleToOpts}
@@ -300,7 +299,7 @@ export const FormP = () => {
 
   const renderOtherInfo = () => (
     <Col>
-      <HeadingSelect
+      <HeadingStatus
         heading="Other Information"
         value={getOtherInfoSecVisibleTo()}
         options={secVisibleToOpts}
@@ -318,7 +317,7 @@ export const FormP = () => {
       <Row>
         <Input
           label={
-            <LabelSelect
+            <LabelStatus
               label="Address Line 2"
               value={getValues('addressLine2.visibleTo')}
               options={visibleToOpts}
@@ -332,7 +331,7 @@ export const FormP = () => {
       <Row>
         <Input
           label={
-            <LabelSelect
+            <LabelStatus
               label="City"
               value={getValues('city.visibleTo')}
               options={visibleToOpts}
@@ -344,7 +343,7 @@ export const FormP = () => {
         />
         <Input
           label={
-            <LabelSelect
+            <LabelStatus
               label="State/Province"
               value={getValues('stateProvince.visibleTo')}
               options={visibleToOpts}
@@ -358,7 +357,7 @@ export const FormP = () => {
       <Row>
         <Input
           label={
-            <LabelSelect
+            <LabelStatus
               label="Zip/Postal Code"
               value={getValues('zipPostalCode.visibleTo')}
               options={visibleToOpts}
@@ -370,7 +369,7 @@ export const FormP = () => {
         />
         <Select
           label={
-            <LabelSelect
+            <LabelStatus
               label="Country"
               value={getValues('country.visibleTo')}
               options={visibleToOpts}
@@ -389,7 +388,7 @@ export const FormP = () => {
   const renderContactInfo = () => (
     <Col>
       {/*
-      <HeadingSelect
+      <HeadingStatus
         heading="Contact Information"
         value={getContactInfoSecVisibleTo()}
         options={secVisibleToOpts}
@@ -416,7 +415,7 @@ export const FormP = () => {
         errors={clErrFromErr(errors.contactInfo?.values)}
         asTypeLabel={(link, index, handleLinkChange) => (
           <Row alignItems="center">
-            <LabelSelect
+            <LabelStatus
               label="Type"
               value={link.visibleTo || visibleToOpts[0]?.value}
               options={visibleToOpts}
@@ -424,7 +423,6 @@ export const FormP = () => {
                 handleLinkChange(index, 'visibleTo', option)
               }
             />
-            <LabelStatus verified={link.verified} />
           </Row>
         )}
       />

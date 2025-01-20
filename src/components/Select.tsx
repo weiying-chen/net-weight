@@ -256,7 +256,7 @@ export const Select = <T extends string | number>({
         className="relative w-full"
         onKeyDown={handleKeyDown}
         onClick={handleDropdownToggle}
-        tabIndex={0}
+        // tabIndex={0}
         {...props}
       >
         <PseudoInput
