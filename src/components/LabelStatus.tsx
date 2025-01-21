@@ -5,6 +5,7 @@ import { IconRosetteDiscountCheckFilled } from '@tabler/icons-react';
 type CommonProps = {
   label?: string;
   verified?: boolean;
+  required?: boolean;
   className?: string;
 };
 
@@ -19,6 +20,7 @@ type LabelStatusProps<T extends string | number> =
 export const LabelStatus = <T extends string | number>({
   label,
   verified,
+  required,
   className,
   ...props
 }: LabelStatusProps<T>) => {
@@ -26,7 +28,12 @@ export const LabelStatus = <T extends string | number>({
 
   return (
     <Row alignItems="center" className={className} locked>
-      {label && <label className="text-sm font-semibold">{label}</label>}
+      {label && (
+        <label className="text-sm font-semibold">
+          {label}
+          {required && <span className="ml-1 text-danger">*</span>}
+        </label>
+      )}
       {isInteractive && (
         <Select
           {...(props as SelectProps<T>)}
