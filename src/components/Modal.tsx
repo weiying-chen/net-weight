@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { cn } from '@/utils';
 import { IconX } from '@tabler/icons-react';
 import { Button } from '@/components/Button';
@@ -18,7 +18,21 @@ export function Modal({
   className,
   size = 'md',
 }: ModalProps) {
-  if (!isOpen) return null;
+  const [isMounted, setIsMounted] = useState(false); // Ensures the modal stays in the DOM during animation
+  const [isAnimating, setIsAnimating] = useState(false); // Tracks if animation is in progress
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsMounted(true); // Add modal to the DOM
+      requestAnimationFrame(() => setIsAnimating(true)); // Trigger animation
+    } else {
+      setIsAnimating(false); // Start exit animation
+      const timeout = setTimeout(() => setIsMounted(false), 200); // Match the animation duration
+      return () => clearTimeout(timeout);
+    }
+  }, [isOpen]);
+
+  if (!isMounted) return null;
 
   const cnFromSize = {
     md: 'max-w-lg',
@@ -32,13 +46,24 @@ export function Modal({
         className,
       )}
     >
-      <div className="fixed inset-0 bg-black bg-opacity-50" onClick={onClose} />
+      {/* Background overlay */}
       <div
         className={cn(
-          'relative z-10 w-full border border-border bg-background p-6 shadow md:rounded-xl',
+          'fixed inset-0 bg-black bg-opacity-50 transition-opacity duration-200',
+          isAnimating ? 'opacity-100' : 'opacity-0',
+        )}
+        onClick={onClose}
+      />
+
+      {/* Modal content */}
+      <div
+        className={cn(
+          'relative z-10 w-full transform border border-border bg-background p-6 shadow transition-all duration-200 ease-in-out md:rounded-xl',
           cnFromSize[size],
+          isAnimating ? 'scale-100 opacity-100' : 'scale-95 opacity-0',
         )}
       >
+        {/* Close button */}
         <Button
           variant="link"
           className="absolute right-6 top-6"

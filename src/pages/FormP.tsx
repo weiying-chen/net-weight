@@ -29,6 +29,7 @@ import {
 } from '@/pages/formpDefaults';
 import { Heading } from '@/components/Heading';
 import { LabelStatus } from '@/components/LabelStatus';
+import { ModalInput } from '@/components/ModalInput';
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
@@ -291,6 +292,16 @@ export const FormP = () => {
             required
             disabled
             error={errors.idNumber?.message}
+          />
+          <ModalInput
+            label="Open Modal"
+            placeholder="Click me to open"
+            modalContent={
+              <div>
+                <h1 className="text-lg font-bold">Modal Content</h1>
+                <p>This is the content inside the modal.</p>
+              </div>
+            }
           />
         </Row>
       </Col>

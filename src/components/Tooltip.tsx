@@ -3,6 +3,7 @@ import {
   useState,
   useRef,
   useLayoutEffect,
+  useEffect,
   CSSProperties,
 } from 'react';
 import { createPortal } from 'react-dom';
@@ -24,9 +25,16 @@ export const Tooltip: React.FC<TooltipProps> = ({
   transient = false,
 }) => {
   const [isVisible, setIsVisible] = useState(false);
+
+  // This controls whether the tooltip is actually in the DOM.
+  // Even after isVisible goes false, we keep the tooltip in the DOM
+  // long enough to show the fade-out animation.
+  const [shouldRender, setShouldRender] = useState(false);
+
+  // Used for hiding flicker on initial measure (positions at 0,0).
   const [isMeasured, setIsMeasured] = useState(false);
 
-  // Store final tooltip style (top/left) after measurement
+  // Final tooltip styles (top/left).
   const [style, setStyle] = useState<CSSProperties>({
     position: 'absolute',
     top: 0,
@@ -34,7 +42,6 @@ export const Tooltip: React.FC<TooltipProps> = ({
     zIndex: 9999,
   });
 
-  // Refs to trigger and tooltip elements
   const triggerRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
 
@@ -47,9 +54,25 @@ export const Tooltip: React.FC<TooltipProps> = ({
   };
 
   /**
-   * Calculate tooltip position. We wrap it in a requestAnimationFrame so
-   * that layout is stable before measuring. Then we set `isMeasured = true`
-   * so that the tooltip becomes visible (no flicker at 0,0).
+   * We keep tooltip in the DOM as long as shouldRender = true.
+   * When isVisible changes to true => shouldRender = true immediately.
+   * When isVisible changes to false => we wait 200ms (the duration of fade-out),
+   * then set shouldRender = false (unmount).
+   */
+  useEffect(() => {
+    if (isVisible) {
+      setShouldRender(true);
+    } else {
+      const timeoutId = setTimeout(() => setShouldRender(false), 200); // match transition duration
+      return () => clearTimeout(timeoutId);
+    }
+  }, [isVisible]);
+
+  /**
+   * Calculate tooltip position whenever the tooltip becomes "visible".
+   * We do this in a requestAnimationFrame so layout is stable before measuring.
+   * Then set `isMeasured = true` so that the tooltip transitions in without
+   * flickering at (0,0).
    */
   useLayoutEffect(() => {
     if (!isVisible) {
@@ -57,9 +80,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
       return;
     }
 
-    // Reset measurement so tooltip starts hidden
     setIsMeasured(false);
-
     requestAnimationFrame(() => {
       const triggerEl = triggerRef.current;
       const tooltipEl = tooltipRef.current;
@@ -119,19 +140,14 @@ export const Tooltip: React.FC<TooltipProps> = ({
         left,
       }));
 
+      // Once measured, we'll allow it to be visible in the correct place.
       setIsMeasured(true);
     });
   }, [isVisible, position]);
 
-  /**
-   * We only portal the tooltip if isVisible. Inside the portal, we do:
-   * - Use `invisible` class (or style) if we haven’t measured yet, so user
-   *   doesn’t see flicker at the wrong position.
-   * - Add a slight scale + opacity transition for a smooth appearance.
-   */
   return (
     <>
-      {/* The trigger element in normal flow */}
+      {/* Trigger element */}
       <div
         ref={triggerRef}
         className={cn(className)}
@@ -141,18 +157,22 @@ export const Tooltip: React.FC<TooltipProps> = ({
         {children}
       </div>
 
-      {isVisible &&
+      {shouldRender &&
         createPortal(
           <div
             ref={tooltipRef}
             style={style}
+            // Use transitions for fade/scale in & out.
+            // If not visible, we apply 'opacity-0 scale-95' (fade out).
+            // If measured and visible, 'opacity-100 scale-100' (fade in).
+            // If it's visible but not measured, also hide (invisible) to prevent flicker.
             className={cn(
               'pointer-events-none transform rounded bg-foreground px-3 py-2 text-sm text-background shadow',
               'whitespace-nowrap transition duration-200 ease-in-out',
-              // Slight scale/opacity transition
-              isMeasured ? 'scale-100 opacity-100' : 'scale-95 opacity-0',
-              // Hide it (no flicker) until measured:
-              !isMeasured && 'invisible',
+              isVisible && isMeasured
+                ? 'scale-100 opacity-100'
+                : 'scale-95 opacity-0',
+              isVisible && !isMeasured && 'invisible', // Hide while measuring
             )}
             // If "transient" is true, hide on tooltip mouseenter
             onMouseEnter={transient ? handleMouseLeave : undefined}
