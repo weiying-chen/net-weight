@@ -32,6 +32,21 @@ export function Modal({
     }
   }, [isOpen]);
 
+  // Handle Escape key to close the modal
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
   if (!isMounted) return null;
 
   const cnFromSize = {
@@ -46,7 +61,6 @@ export function Modal({
         className,
       )}
     >
-      {/* Background overlay */}
       <div
         className={cn(
           'fixed inset-0 bg-black bg-opacity-50 transition-opacity duration-200',
@@ -54,8 +68,6 @@ export function Modal({
         )}
         onClick={onClose}
       />
-
-      {/* Modal content */}
       <div
         className={cn(
           'relative z-10 w-full transform border border-border bg-background p-6 shadow transition-all duration-200 ease-in-out md:rounded-xl',
@@ -63,7 +75,6 @@ export function Modal({
           isAnimating ? 'scale-100 opacity-100' : 'scale-95 opacity-0',
         )}
       >
-        {/* Close button */}
         <Button
           variant="link"
           className="absolute right-6 top-6"

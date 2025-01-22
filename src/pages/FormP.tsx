@@ -30,10 +30,15 @@ import {
 import { Heading } from '@/components/Heading';
 import { LabelStatus } from '@/components/LabelStatus';
 import { ModalInput } from '@/components/ModalInput';
+import { RadioGroup } from '@/components/RadioGroup';
+import { useState } from 'react';
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
 export const FormP = () => {
+  const [selectedOption, setSelectedOption] = useState('1');
+  const [inputValue, setInputValue] = useState('');
+
   const {
     register,
     control,
@@ -296,11 +301,27 @@ export const FormP = () => {
           <ModalInput
             label="Open Modal"
             placeholder="Click me to open"
-            modalContent={
-              <div>
-                <h1 className="text-lg font-bold">Modal Content</h1>
-                <p>This is the content inside the modal.</p>
-              </div>
+            content={
+              <Col>
+                <Heading>Modal Content</Heading>
+                <RadioGroup
+                  name="modalOptions"
+                  value={selectedOption}
+                  onChange={setSelectedOption}
+                  options={[
+                    { label: 'Option 1', value: '1' },
+                    { label: 'Option 2', value: '2' },
+                    { label: 'Option 3', value: '3' },
+                  ]}
+                />
+                <Input
+                  label="Your Input"
+                  placeholder="Type something here..."
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  required
+                />
+              </Col>
             }
           />
         </Row>
