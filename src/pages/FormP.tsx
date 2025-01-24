@@ -29,16 +29,10 @@ import {
 } from '@/pages/formpDefaults';
 import { Heading } from '@/components/Heading';
 import { LabelStatus } from '@/components/LabelStatus';
-import { ModalInput } from '@/components/ModalInput';
-import { RadioGroup } from '@/components/RadioGroup';
-import { useState } from 'react';
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
 export const FormP = () => {
-  const [selectedOption, setSelectedOption] = useState('1');
-  const [inputValue, setInputValue] = useState('');
-
   const {
     register,
     control,
@@ -297,32 +291,6 @@ export const FormP = () => {
             required
             disabled
             error={errors.idNumber?.message}
-          />
-          <ModalInput
-            label="Open Modal"
-            placeholder="Click me to open"
-            content={
-              <Col>
-                <Heading>Modal Content</Heading>
-                <RadioGroup
-                  name="modalOptions"
-                  value={selectedOption}
-                  onChange={setSelectedOption}
-                  options={[
-                    { label: 'Option 1', value: '1' },
-                    { label: 'Option 2', value: '2' },
-                    { label: 'Option 3', value: '3' },
-                  ]}
-                />
-                <Input
-                  label="Your Input"
-                  placeholder="Type something here..."
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  required
-                />
-              </Col>
-            }
           />
         </Row>
       </Col>
