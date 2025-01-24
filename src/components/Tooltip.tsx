@@ -9,7 +9,7 @@ interface TooltipProps {
   transient?: boolean;
 }
 
-const TOOLTIP_OFFSET = { x: 10, y: 10 }; // Offset for tooltip positioning
+const TOOLTIP_OFFSET = { x: 10, y: 10 };
 
 export const Tooltip: React.FC<TooltipProps> = ({
   children,
@@ -18,70 +18,83 @@ export const Tooltip: React.FC<TooltipProps> = ({
   transient = false,
 }) => {
   const [isVisible, setIsVisible] = useState(false);
+
   const [shouldRender, setShouldRender] = useState(false);
-  const [tooltipPosition, setTooltipPosition] = useState<CSSProperties>({
+  const [isMeasured, setIsMeasured] = useState(false);
+
+  const [style, setStyle] = useState<CSSProperties>({
     position: 'absolute',
     top: 0,
     left: 0,
     zIndex: 9999,
   });
 
+  const triggerRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
 
   const handleMouseEnter = () => {
     setIsVisible(true);
   };
-
   const handleMouseLeave = () => {
     setIsVisible(false);
   };
 
-  const handleMouseMove = (event: React.MouseEvent) => {
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
+  const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
+    requestAnimationFrame(() => {
+      if (!tooltipRef.current) return;
 
-    const tooltipRect = tooltipRef.current?.getBoundingClientRect() || {
-      width: 0,
-      height: 0,
-    };
+      const tooltipRect = tooltipRef.current.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
 
-    let top = event.clientY + TOOLTIP_OFFSET.y;
-    let left = event.clientX + TOOLTIP_OFFSET.x;
+      let top = event.clientY + TOOLTIP_OFFSET.y;
+      let left = event.clientX + TOOLTIP_OFFSET.x;
 
-    // Prevent the tooltip from extending beyond the viewport
-    if (top + tooltipRect.height > viewportHeight) {
-      top = event.clientY - TOOLTIP_OFFSET.y - tooltipRect.height;
-    }
-    if (left + tooltipRect.width > viewportWidth) {
-      left = viewportWidth - tooltipRect.width - 5; // 5px margin
-    }
-    if (left < 0) {
-      left = 5; // Ensure at least 5px from the left edge
-    }
+      if (top + tooltipRect.height > viewportHeight) {
+        top = event.clientY - TOOLTIP_OFFSET.y - tooltipRect.height;
+      }
 
-    setTooltipPosition((prev) => ({
-      ...prev,
-      top,
-      left,
-    }));
+      if (left + tooltipRect.width > viewportWidth) {
+        left = viewportWidth - tooltipRect.width - 5;
+      }
+
+      if (left < 0) {
+        left = 5;
+      }
+
+      setStyle((prev) => ({
+        ...prev,
+        top,
+        left,
+      }));
+
+      setIsMeasured(true);
+    });
   };
 
   useEffect(() => {
     if (isVisible) {
       setShouldRender(true);
     } else {
-      const timeoutId = setTimeout(() => setShouldRender(false), 200); // Match transition duration
+      const timeoutId = setTimeout(() => setShouldRender(false), 200);
       return () => clearTimeout(timeoutId);
+    }
+  }, [isVisible]);
+
+  useEffect(() => {
+    if (!isVisible) {
+      setIsMeasured(false);
     }
   }, [isVisible]);
 
   return (
     <>
       <div
+        ref={triggerRef}
         className={cn(className)}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        onMouseMove={handleMouseMove} // Track cursor movement
+        onMouseMove={handleMouseMove}
       >
         {children}
       </div>
@@ -90,11 +103,14 @@ export const Tooltip: React.FC<TooltipProps> = ({
         createPortal(
           <div
             ref={tooltipRef}
-            style={tooltipPosition}
+            style={style}
             className={cn(
-              'pointer-events-none fixed z-20 transform whitespace-nowrap rounded bg-foreground px-3 py-2 text-sm text-background shadow',
-              'transition-opacity duration-200 ease-in-out',
-              isVisible ? 'opacity-100' : 'opacity-0',
+              'pointer-events-none transform rounded bg-foreground px-3 py-2 text-sm text-background shadow',
+              'whitespace-nowrap transition duration-200 ease-in-out',
+              isVisible && isMeasured
+                ? 'scale-100 opacity-100'
+                : 'scale-95 opacity-0',
+              isVisible && !isMeasured && 'invisible',
             )}
             onMouseEnter={transient ? handleMouseLeave : undefined}
           >

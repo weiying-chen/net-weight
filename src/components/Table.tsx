@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { IconArrowUp, IconArrowDown } from '@tabler/icons-react';
+import { Tooltip } from './Tooltip'; // <-- import your new Tooltip here
 
 type Cols<T> = {
   header: string;
@@ -7,7 +8,6 @@ type Cols<T> = {
 };
 
 const MIN_COL_WIDTH = 50;
-const TOOLTIP_OFFSET = { x: 20, y: 20 }; // Offset for the tooltip positioning
 
 export function Table<T>({
   data,
@@ -31,27 +31,25 @@ export function Table<T>({
     direction: 'asc' | 'desc';
   } | null>(null);
 
+  // Track which row is hovered (for asActions).
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
 
-  // This is for positioning the little "actions" hover at the right side of the table
+  // This is for positioning the “actions” hover at the right side of the table.
   const [hoverPosition, setHoverPosition] = useState<{
     top: number;
     right: number;
   } | null>(null);
 
-  // We update this as the user moves their mouse so that the tooltip follows the cursor
-  const [tooltipPosition, setTooltipPosition] = useState<{
-    top: number;
-    left: number;
-  } | null>(null);
-
+  // Used to delay hiding asActions so user can move into that popover.
   const hideTimeout = useRef<number | null>(null);
+
+  // Track column widths for resizing.
   const [widths, setWidths] = useState<{ [index: number]: number }>({});
   const headerRefs = useRef<(HTMLDivElement | null)[]>([]);
   const bodyRefs = useRef<(HTMLDivElement | null)[][]>([]);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const tooltipRef = useRef<HTMLDivElement | null>(null);
 
+  // Sort the data based on the current sortConfig (if any).
   const sortedData = [...data].sort((a, b) => {
     if (sortConfig && sortConfig.index < cols.length) {
       const { index, direction } = sortConfig;
@@ -63,7 +61,7 @@ export function Table<T>({
       const bStr =
         bValue !== null && bValue !== undefined ? String(bValue) : '';
 
-      // If they're objects or weird, skip sorting
+      // If they're objects or something un-sortable, do not sort.
       if (aStr === '[object Object]' || bStr === '[object Object]') {
         return 0;
       }
@@ -75,23 +73,22 @@ export function Table<T>({
     return 0;
   });
 
+  // Handle sorting when the user clicks a column header.
   const handleSort = (index: number) => {
     const sampleValue = cols[index].render(data[0]);
-
-    // Skip sorting if the column value is an object
+    // Skip sorting if the column value is an object.
     if (typeof sampleValue === 'object' && sampleValue !== null) {
       return;
     }
 
     let direction: 'asc' | 'desc' = 'asc';
-
     if (sortConfig?.index === index) {
       direction = sortConfig.direction === 'asc' ? 'desc' : 'asc';
     }
-
     setSortConfig({ index, direction });
   };
 
+  // For showing the asActions on hover.
   const handleMouseEnterRow = (rowIndex: number, event: React.MouseEvent) => {
     if (hideTimeout.current) {
       window.clearTimeout(hideTimeout.current);
@@ -99,47 +96,39 @@ export function Table<T>({
 
     setHoveredRow(rowIndex);
 
-    // Position the "actions" container on the right
+    // Position the popover on the right side.
     const rowElement = event.currentTarget as HTMLDivElement;
     const rowRect = rowElement.getBoundingClientRect();
-
     const container = containerRef.current;
     const containerBounds = container?.getBoundingClientRect();
 
-    // We'll still place asActions at the vertical center of the row
-    // and to the right of the table.
-    setHoverPosition({
-      top: rowRect.top + rowRect.height / 2,
-      right: document.documentElement.clientWidth - containerBounds!.right,
-    });
+    if (containerBounds) {
+      setHoverPosition({
+        top: rowRect.top + rowRect.height / 2,
+        right: document.documentElement.clientWidth - containerBounds.right,
+      });
+    }
   };
 
   const handleMouseLeaveRow = () => {
-    // Start a timeout that clears hovered states unless the user
-    // immediately re-enters the row or the asActions container.
+    // Delay hiding so user can move into the asActions popover if needed.
     hideTimeout.current = window.setTimeout(() => {
       setHoveredRow(null);
-      setTooltipPosition(null);
     }, 100);
   };
 
-  // Let the tooltip follow the cursor while in the row
-  const handleMouseMoveRow = (rowIndex: number, event: React.MouseEvent) => {
+  // We still clear the hide timeout if the user is moving around within the row.
+  // (Prevents asActions from disappearing if you haven't actually left the row.)
+  const handleMouseMoveRow = (rowIndex: number) => {
     if (hoveredRow !== rowIndex) return;
     if (hideTimeout.current) {
       window.clearTimeout(hideTimeout.current);
     }
-
-    setTooltipPosition({
-      top: event.clientY + TOOLTIP_OFFSET.y,
-      left: event.clientX + TOOLTIP_OFFSET.x,
-    });
   };
 
-  // Let the user resize columns
+  // Let the user resize columns.
   const startResizing = (index: number, event: React.MouseEvent) => {
     event.preventDefault();
-
     const startX = event.clientX;
     const startWidth = widths[index];
 
@@ -162,7 +151,7 @@ export function Table<T>({
     document.addEventListener('mouseup', onMouseUp);
   };
 
-  // On first mount / updates, measure columns to set a min width
+  // On mount / updates, measure columns to set initial min widths.
   useEffect(() => {
     if (data.length === 0) return;
 
@@ -174,7 +163,7 @@ export function Table<T>({
           headerRefs.current[colIndex]?.getBoundingClientRect().width || 0;
 
         const bodyWidths = bodyRefs.current.map((row) =>
-          row[colIndex] ? row[colIndex].getBoundingClientRect().width : 0,
+          row[colIndex] ? row[colIndex]!.getBoundingClientRect().width : 0,
         );
 
         const maxBodyWidth = Math.max(...bodyWidths, 0);
@@ -191,20 +180,7 @@ export function Table<T>({
     calculateWidths();
   }, [data, cols]);
 
-  // If user scrolls, hide the tooltip
-  useEffect(() => {
-    const handleScroll = () => {
-      setHoveredRow(null);
-      setTooltipPosition(null);
-    };
-
-    window.addEventListener('scroll', handleScroll, true);
-    return () => {
-      window.removeEventListener('scroll', handleScroll, true);
-    };
-  }, []);
-
-  // Handling row selection
+  // Handling row selection.
   const handleRowSelect = (rowIndex: number) => {
     const selectedItem = data[rowIndex];
     const isSelected = selectedItems.some((item) => item === selectedItem);
@@ -228,6 +204,7 @@ export function Table<T>({
     onRowSelect?.(newSelection);
   };
 
+  // Renders the header row with sortable columns.
   const renderHeader = () => (
     <div className="flex bg-subtle">
       {onRowSelect && (
@@ -275,60 +252,73 @@ export function Table<T>({
     </div>
   );
 
+  // Renders each row of data.
   const renderBody = () =>
-    sortedData.map((item, rowIndex) => (
-      <div
-        key={rowIndex}
-        className={`flex cursor-pointer border-b border-subtle ${
-          hoveredRow === rowIndex ? 'bg-subtle' : ''
-        }`}
-        onClick={(e) => onRowClick?.(e, item)}
-        onMouseEnter={(e) => handleMouseEnterRow(rowIndex, e)}
-        onMouseLeave={handleMouseLeaveRow}
-        onMouseMove={(e) => handleMouseMoveRow(rowIndex, e)}
-      >
-        {onRowSelect && (
-          <div className="flex items-center justify-center px-4 py-2">
-            <input
-              type="checkbox"
-              checked={selectedItems.some((selected) => selected === item)}
-              onClick={(e) => e.stopPropagation()}
-              onChange={() => handleRowSelect(rowIndex)}
-            />
+    sortedData.map((item, rowIndex) => {
+      // The row content we always render
+      const rowContent = (
+        <div
+          key={rowIndex}
+          className={`flex cursor-pointer border-b border-subtle ${
+            hoveredRow === rowIndex ? 'bg-subtle' : ''
+          }`}
+          onClick={(e) => onRowClick?.(e, item)}
+          onMouseEnter={(e) => handleMouseEnterRow(rowIndex, e)}
+          onMouseLeave={handleMouseLeaveRow}
+          onMouseMove={() => handleMouseMoveRow(rowIndex)}
+        >
+          {onRowSelect && (
+            <div className="flex items-center justify-center px-4 py-2">
+              <input
+                type="checkbox"
+                checked={selectedItems.some((selected) => selected === item)}
+                onClick={(e) => e.stopPropagation()}
+                onChange={() => handleRowSelect(rowIndex)}
+              />
+            </div>
+          )}
+          <div className="flex w-12 items-center justify-center px-4 py-2 text-sm">
+            {rowIndex + 1}
           </div>
-        )}
-        <div className="flex w-12 items-center justify-center px-4 py-2 text-sm">
-          {rowIndex + 1}
+          {cols.map((column, colIndex) => (
+            <div
+              key={colIndex}
+              className="flex items-center overflow-hidden text-ellipsis whitespace-nowrap px-4 py-2 text-sm"
+              style={{ width: `${widths[colIndex]}px` }}
+              ref={(el) => {
+                if (!bodyRefs.current[rowIndex]) {
+                  bodyRefs.current[rowIndex] = [];
+                }
+                bodyRefs.current[rowIndex][colIndex] = el;
+              }}
+            >
+              {column.render(item)}
+            </div>
+          ))}
         </div>
-        {cols.map((column, colIndex) => (
-          <div
-            key={colIndex}
-            className="flex items-center overflow-hidden text-ellipsis whitespace-nowrap px-4 py-2 text-sm"
-            style={{ width: `${widths[colIndex]}px` }}
-            ref={(el) => {
-              if (!bodyRefs.current[rowIndex]) {
-                bodyRefs.current[rowIndex] = [];
-              }
-              bodyRefs.current[rowIndex][colIndex] = el;
-            }}
-          >
-            {column.render(item)}
-          </div>
-        ))}
-      </div>
-    ));
+      );
 
-  // We'll also let the user move the cursor around the asActions container
-  // so the tooltip doesn't freeze.
-  const handleMouseMoveHover = (e: React.MouseEvent) => {
+      // If we have a tooltip function, wrap the row in our Tooltip component
+      // so that the tooltip shows whatever `asTooltip(item)` returns.
+      if (asTooltip) {
+        return (
+          <Tooltip key={rowIndex} content={asTooltip(item)}>
+            {rowContent}
+          </Tooltip>
+        );
+      }
+
+      // Otherwise, just return the row as-is.
+      return rowContent;
+    });
+
+  // Manages the asActions popover.
+  // (Still uses hoveredRow + positions it on the right side)
+  const handleMouseMoveHover = () => {
     if (hoveredRow === null) return;
     if (hideTimeout.current) {
       window.clearTimeout(hideTimeout.current);
     }
-    setTooltipPosition({
-      top: e.clientY + TOOLTIP_OFFSET.y,
-      left: e.clientX + TOOLTIP_OFFSET.x,
-    });
   };
 
   const handleMouseEnterHover = () => {
@@ -338,10 +328,10 @@ export function Table<T>({
   const handleMouseLeaveHover = () => {
     hideTimeout.current = window.setTimeout(() => {
       setHoveredRow(null);
-      setTooltipPosition(null);
     }, 100);
   };
 
+  // Renders the asActions popover if the user hovers a row.
   const renderHover = () => {
     if (hoveredRow === null || hoverPosition === null || !asActions)
       return null;
@@ -362,55 +352,6 @@ export function Table<T>({
     );
   };
 
-  const renderTooltip = () => {
-    if (hoveredRow === null || tooltipPosition === null || !asTooltip)
-      return null;
-
-    // Prevent the tooltip from extending beyond the viewport to the right or left
-    const adjustTooltipPosition = () => {
-      if (tooltipRef.current) {
-        const tooltipRect = tooltipRef.current.getBoundingClientRect();
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
-
-        let top = tooltipPosition.top;
-        let left = tooltipPosition.left;
-
-        // If going off the bottom edge, flip above the cursor
-        if (top + tooltipRect.height > viewportHeight) {
-          top = tooltipPosition.top - TOOLTIP_OFFSET.y - tooltipRect.height;
-        }
-        // If going off the right edge, shift left
-        if (left + tooltipRect.width > viewportWidth) {
-          left = viewportWidth - tooltipRect.width - 5; // 5px margin
-        }
-        // If going off the left edge, shift right
-        if (left < 0) {
-          left = 5;
-        }
-
-        return {
-          top: `${top}px`,
-          left: `${left}px`,
-        };
-      }
-      return {
-        top: `${tooltipPosition.top}px`,
-        left: `${tooltipPosition.left}px`,
-      };
-    };
-
-    return (
-      <div
-        ref={tooltipRef}
-        className="pointer-events-none fixed z-20 transform whitespace-nowrap rounded bg-foreground p-3 text-sm text-background shadow"
-        style={adjustTooltipPosition()}
-      >
-        {asTooltip(sortedData[hoveredRow])}
-      </div>
-    );
-  };
-
   return (
     <div className="relative w-full overflow-x-auto" ref={containerRef}>
       <div className="min-w-max">
@@ -418,7 +359,7 @@ export function Table<T>({
         {renderBody()}
       </div>
       {renderHover()}
-      {renderTooltip()}
+      {/* No custom tooltip here anymore—it's handled by the <Tooltip> component above. */}
     </div>
   );
 }
