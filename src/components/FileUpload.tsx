@@ -1,4 +1,4 @@
-import { useState, useEffect, ReactNode } from 'react';
+import { useState, useEffect, ReactNode, useRef } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Col } from '@/components/Col';
 import { cn } from '@/utils';
@@ -44,6 +44,7 @@ export function FileUpload({
   required,
 }: FileUploadProps) {
   const [files, setFiles] = useState<FileData[]>(initialFiles);
+  const initialized = useRef(false);
 
   const updateFiles = (newFiles: FileData[]) => {
     setFiles(newFiles);
@@ -118,6 +119,13 @@ export function FileUpload({
       </Col>
     </div>
   );
+
+  useEffect(() => {
+    if (!initialized.current && initialFiles.length > 0) {
+      setFiles(initialFiles);
+      initialized.current = true;
+    }
+  }, [initialFiles]);
 
   return (
     <Col className={className}>
