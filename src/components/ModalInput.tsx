@@ -35,7 +35,6 @@ export const ModalInput = ({
       <div
         className="relative w-full"
         onClick={() => !disabled && setIsOpen(true)}
-        // tabIndex={0}
       >
         <PseudoInput
           tabIndex={0}
@@ -45,7 +44,7 @@ export const ModalInput = ({
             'hover:shadow-dark': !disabled,
           })}
         >
-          <div>{value || placeholder}</div>
+          {value || placeholder}
           <IconWorldSearch size={20} />
         </PseudoInput>
       </div>

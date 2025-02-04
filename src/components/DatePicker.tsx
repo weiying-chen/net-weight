@@ -209,11 +209,7 @@ export const DatePicker = ({
             className,
           )}
         >
-          <div className="flex items-center gap-2">
-            <span>
-              {selectedDate ? selectedDate.toLocaleDateString() : placeholder}
-            </span>
-          </div>
+          {selectedDate ? selectedDate.toLocaleDateString() : placeholder}
           <IconCalendarMonth size={20} />
         </PseudoInput>
         {isOpen && renderDayPicker()}

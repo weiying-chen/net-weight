@@ -9,6 +9,7 @@ type ModalProps = {
   children: ReactNode;
   className?: string;
   size?: 'md' | 'lg';
+  locked?: boolean;
 };
 
 export function Modal({
@@ -17,23 +18,25 @@ export function Modal({
   children,
   className,
   size = 'md',
+  locked = false,
 }: ModalProps) {
-  const [isMounted, setIsMounted] = useState(false); // Ensures the modal stays in the DOM during animation
-  const [isAnimating, setIsAnimating] = useState(false); // Tracks if animation is in progress
+  const [isMounted, setIsMounted] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
-      setIsMounted(true); // Add modal to the DOM
-      requestAnimationFrame(() => setIsAnimating(true)); // Trigger animation
+      setIsMounted(true);
+      requestAnimationFrame(() => setIsAnimating(true));
     } else {
-      setIsAnimating(false); // Start exit animation
-      const timeout = setTimeout(() => setIsMounted(false), 200); // Match the animation duration
+      setIsAnimating(false);
+      const timeout = setTimeout(() => setIsMounted(false), 200);
       return () => clearTimeout(timeout);
     }
   }, [isOpen]);
 
-  // Handle Escape key to close the modal
   useEffect(() => {
+    if (locked) return;
+
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && isOpen) {
         onClose();
@@ -41,11 +44,10 @@ export function Modal({
     };
 
     document.addEventListener('keydown', handleKeyDown);
-
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, locked]);
 
   if (!isMounted) return null;
 
@@ -66,7 +68,7 @@ export function Modal({
           'fixed inset-0 bg-black bg-opacity-50 transition-opacity duration-200',
           isAnimating ? 'opacity-100' : 'opacity-0',
         )}
-        onClick={onClose}
+        onClick={locked ? undefined : onClose}
       />
       <div
         className={cn(
@@ -75,13 +77,15 @@ export function Modal({
           isAnimating ? 'scale-100 opacity-100' : 'scale-95 opacity-0',
         )}
       >
-        <Button
-          variant="link"
-          className="absolute right-6 top-6"
-          onClick={onClose}
-        >
-          <IconX size={20} />
-        </Button>
+        {!locked && (
+          <Button
+            variant="link"
+            className="absolute right-6 top-6"
+            onClick={onClose}
+          >
+            <IconX size={20} />
+          </Button>
+        )}
         {children}
       </div>
     </div>
