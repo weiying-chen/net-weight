@@ -22,7 +22,9 @@ export const ClipCopy = ({ value, className }: ClipCopyProps) => {
   return (
     <Col className={className}>
       <PseudoInput tabIndex={0} className="justify-between">
-        <span className="overflow-hidden text-ellipsis">{value}</span>
+        <span className="overflow-hidden text-ellipsis text-nowrap">
+          {value}
+        </span>
         <Button className="h-7 gap-1 px-2 py-1" onClick={handleCopy} locked>
           <IconCopy size={16} />
           {isCopied ? 'Copied!' : 'Copy'}

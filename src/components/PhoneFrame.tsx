@@ -61,7 +61,7 @@ export const PhoneFrame = ({ children }: { children: React.ReactNode }) => {
       <div className="absolute left-1/2 top-0 z-20 h-3 w-32 -translate-x-1/2 transform rounded-b-full bg-foreground"></div>
       <div
         ref={contentRef}
-        className="relative z-0 h-full overflow-y-scroll p-6 scrollbar-hide"
+        className="relative z-0 h-full overflow-y-scroll scrollbar-hide"
       >
         {children}
       </div>

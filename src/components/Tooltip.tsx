@@ -18,10 +18,8 @@ export const Tooltip: React.FC<TooltipProps> = ({
   transient = false,
 }) => {
   const [isVisible, setIsVisible] = useState(false);
-
   const [shouldRender, setShouldRender] = useState(false);
   const [isMeasured, setIsMeasured] = useState(false);
-
   const [style, setStyle] = useState<CSSProperties>({
     position: 'absolute',
     top: 0,
@@ -35,6 +33,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
   const handleMouseEnter = () => {
     setIsVisible(true);
   };
+
   const handleMouseLeave = () => {
     setIsVisible(false);
   };
@@ -47,19 +46,33 @@ export const Tooltip: React.FC<TooltipProps> = ({
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
 
-      let top = event.clientY + TOOLTIP_OFFSET.y;
-      let left = event.clientX + TOOLTIP_OFFSET.x;
+      // Calculate initial position in document coordinates by adding the scroll offsets
+      let top = event.clientY + window.scrollY + TOOLTIP_OFFSET.y;
+      let left = event.clientX + window.scrollX + TOOLTIP_OFFSET.x;
 
-      if (top + tooltipRect.height > viewportHeight) {
-        top = event.clientY - TOOLTIP_OFFSET.y - tooltipRect.height;
+      // Adjust if the tooltip goes off the bottom of the viewport
+      if (
+        event.clientY + TOOLTIP_OFFSET.y + tooltipRect.height >
+        viewportHeight
+      ) {
+        top =
+          event.clientY +
+          window.scrollY -
+          TOOLTIP_OFFSET.y -
+          tooltipRect.height;
       }
 
-      if (left + tooltipRect.width > viewportWidth) {
-        left = viewportWidth - tooltipRect.width - 5;
+      // Adjust if the tooltip goes off the right edge of the viewport
+      if (
+        event.clientX + TOOLTIP_OFFSET.x + tooltipRect.width >
+        viewportWidth
+      ) {
+        left = window.scrollX + viewportWidth - tooltipRect.width - 5;
       }
 
-      if (left < 0) {
-        left = 5;
+      // Ensure the tooltip is not positioned off the left edge
+      if (left < window.scrollX) {
+        left = window.scrollX + 5;
       }
 
       setStyle((prev) => ({

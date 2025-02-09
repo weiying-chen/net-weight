@@ -8,7 +8,7 @@ import { IconTrash } from '@tabler/icons-react';
 
 export type CustomLink<T extends string = string, U = {}> = {
   type: T;
-  value: string;
+  value: string | null; // Allow null values
 } & U;
 
 type PlatformOption<T extends string = string> = {
@@ -22,15 +22,15 @@ type CustomLinksProps<T extends string = string, U = {}> = {
   links?: CustomLink<T, U>[];
   options: readonly PlatformOption<T>[];
   className?: string;
-  errors?: Array<{ type?: string; value?: string }>;
   onChange: (links: CustomLink<T, U>[]) => void;
   onFocus?: (field: string | null) => void;
+  onAddLink?: () => CustomLink<T, U>;
   asTypeLabel?: (
     link: CustomLink<T, U>,
     index: number,
     handleLinkChange: (index: number, fieldType: string, value: any) => void,
   ) => React.ReactNode;
-  onAddLink?: () => CustomLink<T, U>; // External add logic
+  errors?: Array<{ type?: string; value?: string }>;
 };
 
 export const CustomLinks = <T extends string, U = {}>({
@@ -38,13 +38,23 @@ export const CustomLinks = <T extends string, U = {}>({
   links: initialLinks = [],
   options,
   className,
-  errors = [],
   onChange,
   onFocus,
-  asTypeLabel,
   onAddLink,
+  asTypeLabel,
+  errors = [],
 }: CustomLinksProps<T, U>) => {
-  const [links, setLinks] = useState<CustomLink<T, U>[]>(initialLinks);
+  const [links, setLinks] = useState<CustomLink<T, U>[]>([]);
+
+  useEffect(() => {
+    // Sanitize initial links to ensure `null` values are converted to ''
+    setLinks(
+      initialLinks.map((link) => ({
+        ...link,
+        value: link.value ?? '', // Convert `null` to empty string
+      })),
+    );
+  }, [initialLinks]);
 
   const updateLinks = (newLinks: CustomLink<T, U>[]) => {
     setLinks(newLinks);
@@ -52,12 +62,11 @@ export const CustomLinks = <T extends string, U = {}>({
   };
 
   const handleLinkChange = (index: number, fieldType: string, value: any) => {
-    const newLinks = links.map((link, i) => {
-      if (i === index) {
-        return { ...link, [fieldType]: value };
-      }
-      return link;
-    });
+    const newLinks = links.map((link, i) =>
+      i === index
+        ? { ...link, [fieldType]: value ?? '' } // Convert `null` to empty string
+        : link,
+    );
     updateLinks(newLinks);
   };
 
@@ -73,10 +82,6 @@ export const CustomLinks = <T extends string, U = {}>({
     const newLinks = links.filter((_, i) => i !== index);
     updateLinks(newLinks);
   };
-
-  useEffect(() => {
-    setLinks(initialLinks);
-  }, [initialLinks]);
 
   return (
     <Col className={className}>
@@ -98,7 +103,7 @@ export const CustomLinks = <T extends string, U = {}>({
           />
           <Input
             label="Value"
-            value={link.value}
+            value={link.value ?? ''} // Ensure `null` is not passed to the input
             onChange={(e) => handleLinkChange(index, 'value', e.target.value)}
             onFocus={() => onFocus?.(`content.socialLinks.${index}.value`)}
             onBlur={() => onFocus?.(null)}
