@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { cn } from '@/utils';
 import { Col } from '@/components/Col';
 import { Row } from '@/components/Row';
@@ -18,7 +18,7 @@ type SliderProps = {
 
 export const Slider: React.FC<SliderProps> = ({
   label,
-  value: initialValue = 0,
+  value: baseValue = 0,
   min = 0,
   max = 100,
   step = 1,
@@ -28,7 +28,7 @@ export const Slider: React.FC<SliderProps> = ({
   className,
   error,
 }) => {
-  const [value, setValue] = useState(initialValue);
+  const [value, setValue] = useState(baseValue);
   const sliderTrackRef = useRef<HTMLDivElement | null>(null);
   const thumbRef = useRef<HTMLDivElement | null>(null);
 
@@ -106,6 +106,10 @@ export const Slider: React.FC<SliderProps> = ({
     setValue(newValue);
     onChange(newValue);
   };
+
+  useEffect(() => {
+    setValue(baseValue);
+  }, [baseValue]);
 
   return (
     <Col className={className}>

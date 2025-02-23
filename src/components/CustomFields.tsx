@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Col } from '@/components/Col';
 import { Row } from '@/components/Row';
 import { Button } from '@/components/Button';
@@ -148,6 +148,10 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
         );
     }
   };
+
+  useEffect(() => {
+    setFields(initialFields);
+  }, [initialFields]);
 
   return (
     <Col className={className}>

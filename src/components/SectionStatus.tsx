@@ -7,15 +7,15 @@ import { useState, useRef } from 'react';
 import { IconBlendMode } from '@tabler/icons-react';
 
 type SectionStatusProps<T extends string | number> = SelectProps<T> & {
-  isVisible: boolean;
   heading: string;
+  isVisible?: boolean;
   isMixed?: boolean; // Indicates whether the component starts in a "mixed" state
   children: React.ReactNode;
 };
 
 export const SectionStatus = <T extends string | number>({
-  isVisible,
   heading,
+  isVisible = true,
   isMixed = false,
   children,
   className,

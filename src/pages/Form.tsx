@@ -170,6 +170,7 @@ export function Form() {
   const [confirmResolve, setConfirmResolve] = useState<
     ((value: boolean) => void) | null
   >(null);
+  const [isSearchBoxFocused, setIsSearchBoxFocused] = useState(false);
 
   const {
     register,
@@ -396,6 +397,16 @@ export function Form() {
           />
         </Col>
       )}
+      <Input
+        type="text"
+        placeholder="Search..."
+        value=""
+        readOnly={!isSearchBoxFocused}
+        className="md:w-64"
+        onFocus={() => setIsSearchBoxFocused(true)}
+        onBlur={() => setIsSearchBoxFocused(false)}
+      />
+
       <Modal isOpen={isModalOpen} onClose={handleCloseClick}>
         <p>{currFolder?.name}</p>
         <Button onClick={handleOkClick}>OK</Button>

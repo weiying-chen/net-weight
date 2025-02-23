@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Row } from '@/components/Row';
 import { Select, SelectProps } from '@/components/Select';
 import { IconRosetteDiscountCheckFilled } from '@tabler/icons-react';
@@ -25,6 +26,23 @@ export const LabelStatus = <T extends string | number>({
   ...props
 }: LabelStatusProps<T>) => {
   const isInteractive = 'options' in props;
+  const selectProps = isInteractive ? (props as SelectProps<T>) : undefined;
+  const isSelectedDisabled = selectProps
+    ? selectProps.options.length === 1
+    : false;
+
+  const initialValue = selectProps?.value;
+  const [value, setValue] = useState<T | undefined>(initialValue);
+
+  const isValidValue = selectProps
+    ? selectProps.options.some((option) => option.value === initialValue)
+    : false;
+
+  useEffect(() => {
+    if (isValidValue) {
+      setValue(initialValue);
+    }
+  }, [initialValue, isValidValue]);
 
   return (
     <Row alignItems="center" className={className} locked>
@@ -34,9 +52,11 @@ export const LabelStatus = <T extends string | number>({
           {required && <span className="ml-1 text-danger">*</span>}
         </label>
       )}
-      {isInteractive && (
+      {isInteractive && selectProps && (
         <Select
-          {...(props as SelectProps<T>)}
+          {...selectProps}
+          value={value as T}
+          disabled={isSelectedDisabled}
           isIconTrigger
           small
           className="border-0 bg-subtle shadow-none"

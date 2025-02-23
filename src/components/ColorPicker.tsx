@@ -63,6 +63,10 @@ export const ColorPicker = ({
     };
   }, [isPickerOpen]);
 
+  useEffect(() => {
+    setColor(value);
+  }, [value]);
+
   return (
     <Col className="relative" ref={pickerRef}>
       {label && <label className="text-sm font-semibold">{label}</label>}

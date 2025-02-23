@@ -48,7 +48,7 @@ export const PhoneFrame = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   return (
-    <div className="relative mx-auto h-[583px] w-[317px] overflow-hidden rounded-[2rem] border-8 border-foreground">
+    <div className="relative z-0 mx-auto h-[583px] w-[317px] overflow-hidden rounded-[2rem] border-8 border-foreground">
       <div
         className="absolute right-1 top-0 z-10 w-1 rounded-full bg-muted transition-opacity duration-300"
         style={{
@@ -57,7 +57,6 @@ export const PhoneFrame = ({ children }: { children: React.ReactNode }) => {
           opacity: isScrolling ? 1 : 0,
         }}
       ></div>
-      {/* Use absolute positioning for the notch */}
       <div className="absolute left-1/2 top-0 z-20 h-3 w-32 -translate-x-1/2 transform rounded-b-full bg-foreground"></div>
       <div
         ref={contentRef}
