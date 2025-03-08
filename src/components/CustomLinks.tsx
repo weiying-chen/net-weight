@@ -8,7 +8,7 @@ import { IconTrash } from '@tabler/icons-react';
 
 export type CustomLink<T extends string = string, U = {}> = {
   type: T;
-  value: string | null; // Allow null values
+  value: string | null;
 } & U;
 
 type PlatformOption<T extends string = string> = {
@@ -17,41 +17,48 @@ type PlatformOption<T extends string = string> = {
   icon?: React.ReactNode;
 };
 
-type CustomLinksProps<T extends string = string, U = {}> = {
+export type CustomLinksProps<T extends string = string, U = {}> = {
   label?: string;
+  addLinkLabel?: string;
+  typeLabel?: string;
+  valueLabel?: string;
   links?: CustomLink<T, U>[];
   options: readonly PlatformOption<T>[];
   className?: string;
-  onChange: (links: CustomLink<T, U>[]) => void;
-  onFocus?: (field: string | null) => void;
-  onAddLink?: () => CustomLink<T, U>;
   asTypeLabel?: (
     link: CustomLink<T, U>,
     index: number,
     handleLinkChange: (index: number, fieldType: string, value: any) => void,
   ) => React.ReactNode;
+  selectPlaceholder?: string;
+  onChange: (links: CustomLink<T, U>[]) => void;
+  onFocus?: (field: string | null) => void;
+  onAddLink?: () => CustomLink<T, U>;
   errors?: Array<{ type?: string; value?: string }>;
 };
 
 export const CustomLinks = <T extends string, U = {}>({
   label,
+  addLinkLabel = 'Add link',
+  typeLabel = 'Type',
+  valueLabel = 'Value',
   links: initialLinks = [],
   options,
   className,
+  asTypeLabel,
+  selectPlaceholder,
   onChange,
   onFocus,
   onAddLink,
-  asTypeLabel,
   errors = [],
 }: CustomLinksProps<T, U>) => {
   const [links, setLinks] = useState<CustomLink<T, U>[]>([]);
 
   useEffect(() => {
-    // Sanitize initial links to ensure `null` values are converted to ''
     setLinks(
       initialLinks.map((link) => ({
         ...link,
-        value: link.value ?? '', // Convert `null` to empty string
+        value: link.value ?? '',
       })),
     );
   }, [initialLinks]);
@@ -63,9 +70,7 @@ export const CustomLinks = <T extends string, U = {}>({
 
   const handleLinkChange = (index: number, fieldType: string, value: any) => {
     const newLinks = links.map((link, i) =>
-      i === index
-        ? { ...link, [fieldType]: value ?? '' } // Convert `null` to empty string
-        : link,
+      i === index ? { ...link, [fieldType]: value ?? '' } : link,
     );
     updateLinks(newLinks);
   };
@@ -74,7 +79,6 @@ export const CustomLinks = <T extends string, U = {}>({
     const newLink = onAddLink
       ? onAddLink()
       : ({ type: '', value: '' } as CustomLink<T, U>);
-
     updateLinks([...links, newLink]);
   };
 
@@ -90,10 +94,13 @@ export const CustomLinks = <T extends string, U = {}>({
         <Row alignItems="start" key={index}>
           <Select
             label={
-              asTypeLabel ? asTypeLabel(link, index, handleLinkChange) : 'Type'
+              asTypeLabel
+                ? asTypeLabel(link, index, handleLinkChange)
+                : typeLabel
             }
             value={link.type}
             options={[...options] as PlatformOption<T>[]}
+            placeholder={selectPlaceholder}
             onChange={(value) =>
               handleLinkChange(index, 'type', value as string)
             }
@@ -102,8 +109,8 @@ export const CustomLinks = <T extends string, U = {}>({
             error={errors?.[index]?.type}
           />
           <Input
-            label="Value"
-            value={link.value ?? ''} // Ensure `null` is not passed to the input
+            label={valueLabel}
+            value={link.value ?? ''}
             onChange={(e) => handleLinkChange(index, 'value', e.target.value)}
             onFocus={() => onFocus?.(`content.socialLinks.${index}.value`)}
             onBlur={() => onFocus?.(null)}
@@ -121,7 +128,7 @@ export const CustomLinks = <T extends string, U = {}>({
         </Row>
       ))}
       <Button type="button" onClick={handleAddLink} className="self-start">
-        Add link
+        {addLinkLabel}
       </Button>
     </Col>
   );

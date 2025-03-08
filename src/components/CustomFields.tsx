@@ -7,15 +7,15 @@ import { Select } from '@/components/Select';
 import { IconTrash } from '@tabler/icons-react';
 import { Switch } from '@/components/Switch';
 
-type ValueType = 'string' | 'number' | 'boolean';
+export type ValueType = 'string' | 'number' | 'boolean';
 
-type CustomField = {
+export type CustomField = {
   key: string;
   value: string | number | boolean;
   type: ValueType;
 };
 
-type CustomFieldsProps = {
+export type CustomFieldsProps = {
   label?: string;
   fields?: CustomField[];
   keysOnly?: boolean;
@@ -23,6 +23,13 @@ type CustomFieldsProps = {
   className?: string;
   lockedFields?: string[];
   fillOnceFields?: string[];
+  passwordFields?: string[];
+  addFieldLabel?: string;
+  nameLabel?: string;
+  typeLabel?: string;
+  valueLabel?: string;
+  selectPlaceholder?: string;
+  typeOptions?: { value: ValueType; label: string }[];
   onChange: (fields: CustomField[]) => void;
   onBeforeRemove?: (field: CustomField) => Promise<boolean> | boolean;
 };
@@ -46,11 +53,26 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
   errors,
   lockedFields = [],
   fillOnceFields = [],
+  passwordFields = [],
+  addFieldLabel = 'Add field',
+  nameLabel = 'Name',
+  typeLabel = 'Type',
+  valueLabel = 'Value',
+  selectPlaceholder,
+  typeOptions = [
+    { value: 'string', label: 'Text' },
+    { value: 'number', label: 'Number' },
+    { value: 'boolean', label: 'Switch (on/off)' },
+  ],
   onChange,
   onBeforeRemove,
 }) => {
   const prevFields = useRef([...initialFields]);
   const [fields, setFields] = useState<CustomField[]>(initialFields);
+
+  useEffect(() => {
+    setFields(initialFields);
+  }, [initialFields]);
 
   const updateFields = (newFields: CustomField[]) => {
     setFields(newFields);
@@ -62,60 +84,40 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
     fieldType: 'key' | 'value' | 'type',
     value: string | number | boolean,
   ) => {
-    const newFields = fields.map((field, i) => {
-      if (i === index) {
-        if (fieldType === 'type') {
-          const resetValue = resetType(value as ValueType);
-          return {
+    const newFields = fields.map((field, i) =>
+      i === index
+        ? {
             ...field,
-            type: value as ValueType,
-            value: resetValue,
-          };
-        }
-        return { ...field, [fieldType]: value };
-      }
-      return field;
-    });
+            [fieldType]:
+              fieldType === 'type' ? resetType(value as ValueType) : value,
+          }
+        : field,
+    );
     updateFields(newFields);
   };
 
   const handleAddField = () => {
-    const newFields = [
-      ...fields,
-      { key: '', value: '', type: 'string' as ValueType },
-    ];
-    updateFields(newFields);
+    updateFields([...fields, { key: '', value: '', type: 'string' }]);
   };
 
   const handleRemoveField = async (index: number) => {
-    const fieldToRemove = fields[index];
-
     if (onBeforeRemove) {
-      const canRemove = await onBeforeRemove(fieldToRemove);
-      if (!canRemove) {
-        return;
-      }
+      const canRemove = await onBeforeRemove(fields[index]);
+      if (!canRemove) return;
     }
-
-    const newFields = fields.filter((_, i) => i !== index);
-    updateFields(newFields);
+    updateFields(fields.filter((_, i) => i !== index));
   };
-
-  const typeOptions = [
-    { value: 'string', label: 'Text' },
-    { value: 'number', label: 'Number' },
-    { value: 'boolean', label: 'Switch (on/off)' },
-  ];
 
   const renderValueInput = (field: CustomField, index: number) => {
     const isFillOnce =
       fillOnceFields.includes(field.key) && !!prevFields.current[index]?.value;
+    const isPassword = passwordFields.includes(field.key);
 
     switch (field.type) {
       case 'number':
         return (
           <Input
-            label="Value"
+            label={valueLabel}
             type="number"
             value={String(field.value)}
             onChange={(e) =>
@@ -131,7 +133,7 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
             <Switch
               checked={Boolean(field.value)}
               onChange={(checked) => handleFieldChange(index, 'value', checked)}
-              label="Value"
+              label={valueLabel}
               disabled={isFillOnce}
             />
           </Row>
@@ -139,7 +141,8 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
       default:
         return (
           <Input
-            label="Value"
+            label={valueLabel}
+            type={isPassword ? 'password' : 'text'}
             value={String(field.value)}
             onChange={(e) => handleFieldChange(index, 'value', e.target.value)}
             error={errors?.[index]?.value}
@@ -149,29 +152,25 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
     }
   };
 
-  useEffect(() => {
-    setFields(initialFields);
-  }, [initialFields]);
-
   return (
     <Col className={className}>
       {label && <label className="text-sm font-semibold">{label}</label>}
       {fields.map((field, index) => {
         const isLocked = lockedFields.includes(field.key);
-
         return (
           <Row alignItems="start" key={index}>
             <Input
-              label="Name"
+              label={nameLabel}
               value={field.key}
               onChange={(e) => handleFieldChange(index, 'key', e.target.value)}
               error={errors?.[index]?.key}
               disabled={isLocked}
             />
             <Select
-              label="Type"
+              label={typeLabel}
               value={field.type}
               options={typeOptions}
+              placeholder={selectPlaceholder}
               onChange={(value) =>
                 handleFieldChange(index, 'type', value as ValueType)
               }
@@ -191,7 +190,7 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
         );
       })}
       <Button type="button" onClick={handleAddField} className="self-start">
-        Add Field
+        {addFieldLabel}
       </Button>
     </Col>
   );

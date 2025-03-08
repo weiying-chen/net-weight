@@ -26,7 +26,9 @@ export function Modal({
   useEffect(() => {
     if (isOpen) {
       setIsMounted(true);
-      requestAnimationFrame(() => setIsAnimating(true));
+      // Delay the animation trigger slightly to allow initial render
+      const timer = setTimeout(() => setIsAnimating(true), 20);
+      return () => clearTimeout(timer);
     } else {
       setIsAnimating(false);
       const timeout = setTimeout(() => setIsMounted(false), 200);

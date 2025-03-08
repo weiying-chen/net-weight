@@ -40,7 +40,7 @@ export function FileUpload({
     'image/svg+xml': ['.svg'],
     'application/pdf': ['.pdf'],
   },
-  acceptText,
+  acceptText = 'Accepted file type(s): ',
   required,
 }: FileUploadProps) {
   const [files, setFiles] = useState<FileData[]>(initialFiles);
@@ -106,7 +106,7 @@ export function FileUpload({
       tabIndex={0}
       {...getRootProps()}
       className={cn(
-        'relative w-full cursor-pointer rounded border-2 border-dashed border-border p-6 text-sm outline-none ring-foreground ring-offset-2 ring-offset-background transition-colors focus-visible:ring-2',
+        'relative flex w-full cursor-pointer flex-col items-center justify-center rounded border-2 border-dashed border-border p-6 text-sm outline-none ring-foreground ring-offset-2 ring-offset-background transition-colors focus-visible:ring-2',
         { 'border-danger': error },
       )}
     >
@@ -114,7 +114,7 @@ export function FileUpload({
       <Col gap="sm" alignItems="center">
         <p>{isDragActive ? 'Drop the files here...' : placeholder}</p>
         <p className="text-xs text-muted">
-          {acceptText || `Accepted file type(s): ${acceptedFileTypes}`}
+          {`${acceptText}${acceptedFileTypes}`}
         </p>
       </Col>
     </div>

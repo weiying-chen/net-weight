@@ -208,7 +208,7 @@ export const Select = <T extends string | number>({
             <li
               key={option.value}
               className={cn(
-                'flex cursor-pointer items-center gap-2 text-sm',
+                'flex cursor-pointer items-center gap-2 whitespace-nowrap text-sm',
                 {
                   'px-3 pb-2 pt-3': isFirst,
                   'px-3 pb-3 pt-2': isLast,

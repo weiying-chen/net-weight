@@ -11,20 +11,39 @@ import {
 } from '@tabler/icons-react';
 import { cn } from '@/utils';
 
+type ListEditorLabels = {
+  active?: string;
+  inactive?: string;
+  moveUp?: string;
+  moveDown?: string;
+  add?: string;
+  remove?: string;
+};
+
 type ListEditorProps = {
   items: string[];
-  activeItems?: string[]; // Optional
+  activeItems?: string[];
   className?: string;
   onChange: (initialItems: string[]) => void;
+  labels?: ListEditorLabels;
 };
 
 export function ListEditor({
   items,
-  activeItems: initialItems = [], // Default to an empty array if not provided
+  activeItems: initialItems = [],
   className,
   onChange,
+  labels,
 }: ListEditorProps) {
-  // Initialize activeItems correctly
+  const {
+    active = 'Active',
+    inactive = 'Inactive',
+    moveUp = 'Move Up',
+    moveDown = 'Move Down',
+    add = 'Add',
+    remove = 'Remove',
+  } = labels || {};
+
   const [activeItems, setActiveItems] = useState<string[]>(() => {
     return initialItems && initialItems.length > 0 ? initialItems : items;
   });
@@ -36,12 +55,10 @@ export function ListEditor({
   const [pickedInactiveItems, setPickedInactiveItems] = useState<string[]>([]);
   const [pickedActiveItems, setPickedActiveItems] = useState<string[]>([]);
 
-  // Update inactive items when activeItems or items change
   useEffect(() => {
     setInactiveItems(items.filter((item) => !activeItems.includes(item)));
   }, [activeItems, items]);
 
-  // Optional: Update activeItems if initialItems prop changes
   useEffect(() => {
     setActiveItems((prevActiveItems) => {
       if (
@@ -112,17 +129,13 @@ export function ListEditor({
 
   const handleAllItemClick = (item: string) => {
     setPickedInactiveItems((prev) =>
-      prev.includes(item)
-        ? prev.filter((item) => item !== item)
-        : [...prev, item],
+      prev.includes(item) ? prev.filter((i) => i !== item) : [...prev, item],
     );
   };
 
   const handlePickedItemClick = (item: string) => {
     setPickedActiveItems((prev) =>
-      prev.includes(item)
-        ? prev.filter((item) => item !== item)
-        : [...prev, item],
+      prev.includes(item) ? prev.filter((i) => i !== item) : [...prev, item],
     );
   };
 
@@ -153,7 +166,7 @@ export function ListEditor({
         onClick={handleAddItems}
         disabled={pickedInactiveItems.length === 0}
       >
-        <IconArrowRight size={20} /> Add
+        <IconArrowRight size={20} /> {add}
       </Button>
       <Button
         variant="danger"
@@ -161,7 +174,7 @@ export function ListEditor({
         onClick={handleRemoveItems}
         disabled={pickedActiveItems.length === 0}
       >
-        <IconArrowLeft size={20} /> Remove
+        <IconArrowLeft size={20} /> {remove}
       </Button>
     </Col>
   );
@@ -176,7 +189,7 @@ export function ListEditor({
           activeItems.indexOf(pickedActiveItems[0]) === 0
         }
       >
-        <IconArrowUp size={20} /> Move Up
+        <IconArrowUp size={20} /> {moveUp}
       </Button>
       <Button
         variant="secondary"
@@ -189,7 +202,7 @@ export function ListEditor({
             activeItems.length - 1
         }
       >
-        <IconArrowDown size={20} /> Move Down
+        <IconArrowDown size={20} /> {moveDown}
       </Button>
     </Row>
   );
@@ -197,12 +210,12 @@ export function ListEditor({
   return (
     <Row gap="lg" className={className}>
       <Col className="min-w-0 flex-1">
-        <Heading size="sm">Inactive</Heading>
+        <Heading size="sm">{inactive}</Heading>
         {renderList(inactiveItems, pickedInactiveItems, handleAllItemClick)}
       </Col>
       {renderEditButtons()}
       <Col className="min-w-0 flex-1">
-        <Heading size="sm">Active</Heading>
+        <Heading size="sm">{active}</Heading>
         {renderList(activeItems, pickedActiveItems, handlePickedItemClick)}
         {renderMoveButtons()}
       </Col>
