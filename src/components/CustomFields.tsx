@@ -82,17 +82,26 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
   const handleFieldChange = (
     index: number,
     fieldType: 'key' | 'value' | 'type',
-    value: string | number | boolean,
+    newValue: string | number | boolean,
   ) => {
-    const newFields = fields.map((field, i) =>
-      i === index
-        ? {
-            ...field,
-            [fieldType]:
-              fieldType === 'type' ? resetType(value as ValueType) : value,
-          }
-        : field,
-    );
+    const newFields = fields.map((field, i) => {
+      if (i !== index) return field;
+
+      if (fieldType === 'type') {
+        const newType = newValue as ValueType;
+        return {
+          ...field,
+          type: newType,
+          value: resetType(newType),
+        };
+      }
+
+      return {
+        ...field,
+        [fieldType]: newValue,
+      };
+    });
+
     updateFields(newFields);
   };
 

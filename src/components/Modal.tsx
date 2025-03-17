@@ -74,7 +74,7 @@ export function Modal({
       />
       <div
         className={cn(
-          'relative z-10 w-full transform border border-border bg-background p-6 shadow transition-all duration-200 ease-in-out md:rounded-xl',
+          'relative w-full transform border border-border bg-background p-6 shadow transition-all duration-200 ease-in-out md:rounded-xl',
           cnFromSize[size],
           isAnimating ? 'scale-100 opacity-100' : 'scale-95 opacity-0',
         )}
@@ -82,6 +82,7 @@ export function Modal({
         {!locked && (
           <Button
             variant="link"
+            locked
             className="absolute right-6 top-6"
             onClick={onClose}
           >

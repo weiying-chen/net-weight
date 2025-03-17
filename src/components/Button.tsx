@@ -43,7 +43,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           {
             'w-full md:w-auto': !locked,
             'w-full md:w-full': isFull,
-            'w-10 rounded-full px-0 py-0 md:w-10': circular,
+            'h-10 w-10 shrink-0 rounded-full px-0 py-0 md:w-10': circular,
             'pointer-events-none opacity-50': props.disabled || isLoading,
           },
           className,

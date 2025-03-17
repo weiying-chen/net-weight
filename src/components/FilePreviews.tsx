@@ -1,4 +1,4 @@
-import { IconFileDescription, IconX } from '@tabler/icons-react';
+import { IconFileDescription, IconX, IconEdit } from '@tabler/icons-react';
 import { Row } from '@/components/Row';
 import { Col } from '@/components/Col';
 import { cn } from '@/utils';
@@ -7,6 +7,7 @@ import { FileData } from '@/components/FileUpload';
 type FilePreviewsProps = {
   files: FileData[];
   onRemoveFile?: (index: number) => void;
+  onClickEdit?: (index: number) => void;
   multiple?: boolean;
   className?: string;
 };
@@ -14,9 +15,11 @@ type FilePreviewsProps = {
 export function FilePreviews({
   files,
   onRemoveFile,
+  onClickEdit,
   multiple = true,
   className,
 }: FilePreviewsProps) {
+  // Render the file name overlay.
   const renderFilename = (file: FileData) => (
     <Row
       align="center"
@@ -29,20 +32,34 @@ export function FilePreviews({
       </span>
     </Row>
   );
-
-  const renderX = (index: number) => {
-    if (!onRemoveFile) return null;
-
-    return (
-      <button
-        type="button"
-        className="absolute right-1 top-1 z-10 rounded-full bg-foreground p-1 text-background opacity-0 shadow transition-opacity duration-200 hover:shadow-dark group-hover:opacity-100"
-        onClick={() => onRemoveFile(index)}
-      >
-        <IconX size={16} />
-      </button>
-    );
-  };
+  // Render both edit and remove buttons inside a Row container.
+  const renderActions = (index: number) => (
+    <Row
+      align="end"
+      className="absolute right-1 top-1 z-10 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+    >
+      {/* Edit button */}
+      {onClickEdit && (
+        <button
+          type="button"
+          className="rounded-full bg-foreground p-1 text-background shadow hover:shadow-dark"
+          onClick={() => onClickEdit(index)}
+        >
+          <IconEdit size={16} />
+        </button>
+      )}
+      {/* Remove file button */}
+      {onRemoveFile && (
+        <button
+          type="button"
+          className="rounded-full bg-foreground p-1 text-background shadow hover:shadow-dark"
+          onClick={() => onRemoveFile(index)}
+        >
+          <IconX size={16} />
+        </button>
+      )}
+    </Row>
+  );
 
   return (
     <div
@@ -62,7 +79,7 @@ export function FilePreviews({
             { 'w-auto': !multiple },
           )}
         >
-          {renderX(index)}
+          {renderActions(index)}
           {file.url ? (
             <img
               src={file.url}

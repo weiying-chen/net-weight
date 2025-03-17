@@ -1,4 +1,4 @@
-import { useState, useEffect, ReactNode, useRef } from 'react';
+import { useState, useEffect, ReactNode } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Col } from '@/components/Col';
 import { cn } from '@/utils';
@@ -17,12 +17,13 @@ type FileUploadProps = {
   error?: string;
   className?: string;
   onChange: (files: FileData[]) => void;
-  files?: { url?: string; name: string; file?: File }[];
+  files?: FileData[];
   maxSize?: number;
   multiple?: boolean;
   accept?: { [key: string]: string[] };
   acceptText?: string;
   required?: boolean;
+  onClickEdit?: (index: number) => void;
 };
 
 export function FileUpload({
@@ -42,9 +43,10 @@ export function FileUpload({
   },
   acceptText = 'Accepted file type(s): ',
   required,
+  onClickEdit,
 }: FileUploadProps) {
   const [files, setFiles] = useState<FileData[]>(initialFiles);
-  const initialized = useRef(false);
+  // const prevInitialFilesRef = useRef(initialFiles); // Keep track of last prop state
 
   const updateFiles = (newFiles: FileData[]) => {
     setFiles(newFiles);
@@ -52,14 +54,13 @@ export function FileUpload({
   };
 
   const onDrop = (acceptedFiles: File[]) => {
-    const newFiles = acceptedFiles.map((file) => {
-      const isImage = file.type.startsWith('image/');
-      return {
-        url: isImage ? URL.createObjectURL(file) : undefined,
-        name: file.name,
-        file,
-      };
-    });
+    const newFiles = acceptedFiles.map((file) => ({
+      url: file.type.startsWith('image/')
+        ? URL.createObjectURL(file)
+        : undefined,
+      name: file.name,
+      file,
+    }));
 
     updateFiles(multiple ? [...files, ...newFiles] : newFiles);
   };
@@ -77,29 +78,19 @@ export function FileUpload({
   });
 
   useEffect(() => {
+    // if (JSON.stringify(files) !== JSON.stringify(initialFiles)) {
+    setFiles([...initialFiles]); // 🚀 Ensures new reference
+    // }
+  }, [initialFiles]);
+
+  // Cleanup URLs to prevent memory leaks
+  useEffect(() => {
     return () => {
       files.forEach((fileData) => {
-        if (fileData.url) {
-          URL.revokeObjectURL(fileData.url);
-        }
+        if (fileData.url) URL.revokeObjectURL(fileData.url);
       });
     };
   }, [files]);
-
-  const formatNames = {
-    '.jpeg': 'JPEG',
-    '.jpg': 'JPEG',
-    '.png': 'PNG',
-    '.svg': 'SVG',
-    '.pdf': 'PDF',
-    '.mib': 'MIB',
-  };
-
-  const acceptedFileTypes = Object.values(accept)
-    .flat()
-    .map((ext) => formatNames[ext as keyof typeof formatNames] || ext)
-    .filter((v, i, a) => a.indexOf(v) === i)
-    .join(', ');
 
   const renderDropzone = () => (
     <div
@@ -113,19 +104,10 @@ export function FileUpload({
       <input {...getInputProps()} />
       <Col gap="sm" alignItems="center">
         <p>{isDragActive ? 'Drop the files here...' : placeholder}</p>
-        <p className="text-xs text-muted">
-          {`${acceptText}${acceptedFileTypes}`}
-        </p>
+        <p className="text-xs text-muted">{`${acceptText}${Object.values(accept).flat().join(', ')}`}</p>
       </Col>
     </div>
   );
-
-  useEffect(() => {
-    if (!initialized.current && initialFiles.length > 0) {
-      setFiles(initialFiles);
-      initialized.current = true;
-    }
-  }, [initialFiles]);
 
   return (
     <Col className={className}>
@@ -152,6 +134,7 @@ export function FileUpload({
             multiple={multiple}
             className={cn({ 'order-first md:w-1/3': !multiple })}
             onRemoveFile={handleRemoveFile}
+            onClickEdit={onClickEdit}
           />
         )}
       </div>
