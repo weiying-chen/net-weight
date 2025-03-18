@@ -1,3 +1,5 @@
+import React, { useRef, useState, useEffect, useCallback } from 'react';
+import ReactDOM from 'react-dom';
 import { IconFileDescription, IconX, IconEdit } from '@tabler/icons-react';
 import { Row } from '@/components/Row';
 import { Col } from '@/components/Col';
@@ -7,58 +9,142 @@ import { FileData } from '@/components/FileUpload';
 type FilePreviewsProps = {
   files: FileData[];
   onRemoveFile?: (index: number) => void;
-  onClickEdit?: (index: number) => void;
+  onEditClick?: (index: number) => void;
   multiple?: boolean;
   className?: string;
 };
 
+/**
+ * Create a portal <div> in document.body, remove on unmount.
+ */
+function usePortalContainer() {
+  const [portalContainer, setPortalContainer] = useState<HTMLDivElement | null>(
+    null,
+  );
+
+  useEffect(() => {
+    const el = document.createElement('div');
+    document.body.appendChild(el);
+    setPortalContainer(el);
+
+    return () => {
+      document.body.removeChild(el);
+    };
+  }, []);
+
+  return portalContainer;
+}
+
+/**
+ * RemoveButtonPortal:
+ * Places the "X" in the top-right corner of the container via portal,
+ * so it won't be clipped by overflow hidden or border radius.
+ * We recalc on scroll/resize so it follows the container.
+ */
+function RemoveButtonPortal({
+  index,
+  onRemoveFile,
+  containerRef,
+  hovered,
+  multiple,
+}: {
+  index: number;
+  onRemoveFile: (index: number) => void;
+  containerRef: React.RefObject<HTMLDivElement>;
+  hovered: boolean;
+  multiple: boolean;
+}) {
+  const portalContainer = usePortalContainer();
+  const [coords, setCoords] = useState({ top: 0, left: 0 });
+
+  // Tweak these values until it looks perfect for both shapes
+  const borderWidth = 1;
+  const offsetTop = (multiple ? 4 : 20) + borderWidth;
+  const offsetRight = (multiple ? 28 : 20) + borderWidth;
+
+  const updatePosition = useCallback(() => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+
+    const top = rect.top + window.scrollY + offsetTop;
+    const left = rect.right + window.scrollX - offsetRight;
+
+    setCoords({ top, left });
+  }, [containerRef, offsetTop, offsetRight]);
+
+  useEffect(() => {
+    updatePosition();
+    function handleScrollResize() {
+      updatePosition();
+    }
+    window.addEventListener('scroll', handleScrollResize);
+    window.addEventListener('resize', handleScrollResize);
+
+    return () => {
+      window.removeEventListener('scroll', handleScrollResize);
+      window.removeEventListener('resize', handleScrollResize);
+    };
+  }, [updatePosition]);
+
+  if (!portalContainer) return null;
+
+  return ReactDOM.createPortal(
+    <div
+      style={{
+        position: 'absolute',
+        top: coords.top,
+        left: coords.left,
+        zIndex: 9999,
+        opacity: hovered ? 1 : 0, // fade in/out on hover
+        transition: 'opacity 0.2s',
+      }}
+    >
+      <button
+        type="button"
+        className="rounded-full bg-foreground p-1 text-background shadow hover:shadow-dark"
+        onClick={(e) => {
+          e.stopPropagation(); // Prevent triggering edit on container
+          onRemoveFile(index);
+        }}
+      >
+        <IconX size={16} />
+      </button>
+    </div>,
+    portalContainer,
+  );
+}
+
 export function FilePreviews({
   files,
   onRemoveFile,
-  onClickEdit,
+  onEditClick,
   multiple = true,
   className,
 }: FilePreviewsProps) {
-  // Render the file name overlay.
-  const renderFilename = (file: FileData) => (
-    <Row
-      align="center"
-      alignItems="center"
-      className="absolute bottom-0 flex h-7 overflow-hidden border-t border-border p-2 text-xs"
-      locked
-    >
-      <span className="truncate text-ellipsis whitespace-nowrap">
-        {file.name}
-      </span>
-    </Row>
-  );
-  // Render both edit and remove buttons inside a Row container.
-  const renderActions = (index: number) => (
-    <Row
-      align="end"
-      className="absolute right-1 top-1 z-10 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
-    >
-      {/* Edit button */}
-      {onClickEdit && (
-        <button
-          type="button"
-          className="rounded-full bg-foreground p-1 text-background shadow hover:shadow-dark"
-          onClick={() => onClickEdit(index)}
-        >
-          <IconEdit size={16} />
-        </button>
-      )}
-      {/* Remove file button */}
-      {onRemoveFile && (
-        <button
-          type="button"
-          className="rounded-full bg-foreground p-1 text-background shadow hover:shadow-dark"
-          onClick={() => onRemoveFile(index)}
-        >
-          <IconX size={16} />
-        </button>
-      )}
-    </Row>
+  // Render file name overlay if multiple
+  const renderFilename = (file: FileData) =>
+    multiple ? (
+      <Row
+        align="center"
+        alignItems="center"
+        className="absolute bottom-0 flex h-7 overflow-hidden border-t border-border p-2 text-xs"
+        locked
+      >
+        <span className="truncate text-ellipsis whitespace-nowrap">
+          {file.name}
+        </span>
+      </Row>
+    ) : null;
+
+  /**
+   * Overlay:
+   * - Just a semi-transparent black background (on hover).
+   * - A plain IconEdit in the center (no click action).
+   */
+  const renderOverlay = () => (
+    <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-black/40 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+      <IconEdit size={40} className="text-background" />
+    </div>
   );
 
   return (
@@ -70,34 +156,80 @@ export function FilePreviews({
         className,
       )}
     >
-      {files.map((file, index) => (
-        <div
-          key={index}
-          className={cn(
-            'group relative overflow-hidden rounded border border-border bg-background pb-7',
-            { 'aspect-w-1 aspect-h-1 w-full': multiple },
-            { 'w-auto': !multiple },
-          )}
-        >
-          {renderActions(index)}
-          {file.url ? (
-            <img
-              src={file.url}
-              alt={`Preview ${index + 1}`}
-              className={cn(
-                'w-full',
-                { 'h-full object-contain': multiple },
-                { 'max-h-24': !multiple },
-              )}
-            />
-          ) : (
-            <Col align="center" alignItems="center" className="h-full">
-              <IconFileDescription size={60} stroke={1} />
-            </Col>
-          )}
-          {renderFilename(file)}
-        </div>
-      ))}
+      {files.map((file, index) => {
+        const containerRef = useRef<HTMLDivElement>(null);
+        const [hovered, setHovered] = useState(false);
+
+        return (
+          <div
+            key={index}
+            ref={containerRef}
+            className={cn(
+              'group relative cursor-pointer overflow-hidden border border-border bg-background',
+              {
+                // multiple => rectangular style
+                'aspect-w-1 aspect-h-1 w-full rounded-md pb-7': multiple,
+                // single => circle
+                'flex h-32 w-32 items-center justify-center rounded-full':
+                  !multiple,
+              },
+            )}
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
+            onClick={() => {
+              // Clicking anywhere in the container triggers edit (if provided)
+              if (onEditClick) onEditClick(index);
+            }}
+          >
+            {/* The "X" is in a portal, so not clipped */}
+            {onRemoveFile && (
+              <RemoveButtonPortal
+                index={index}
+                onRemoveFile={onRemoveFile}
+                containerRef={containerRef}
+                hovered={hovered}
+                multiple={multiple}
+              />
+            )}
+
+            {/* Plain overlay icon */}
+            {renderOverlay()}
+
+            {/* Image or fallback icon */}
+            {file.url ? (
+              multiple ? (
+                <div className="relative box-border h-full w-full p-1">
+                  <img
+                    src={file.url}
+                    alt={`Preview ${index + 1}`}
+                    className="h-full w-full object-contain"
+                  />
+                </div>
+              ) : (
+                <img
+                  src={file.url}
+                  alt={`Preview ${index + 1}`}
+                  className="h-full w-full object-cover"
+                />
+              )
+            ) : (
+              <Col
+                align="center"
+                alignItems="center"
+                className={cn('h-full w-full', {
+                  'rounded-md': multiple,
+                  'rounded-full': !multiple,
+                })}
+              >
+                <IconFileDescription size={60} stroke={1} />
+              </Col>
+            )}
+
+            {/* Show file name overlay only if multiple */}
+            {multiple && renderFilename(file)}
+          </div>
+        );
+      })}
     </div>
   );
 }

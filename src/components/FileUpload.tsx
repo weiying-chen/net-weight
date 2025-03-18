@@ -23,7 +23,7 @@ type FileUploadProps = {
   accept?: { [key: string]: string[] };
   acceptText?: string;
   required?: boolean;
-  onClickEdit?: (index: number) => void;
+  onEditClick?: (index: number) => void;
 };
 
 export function FileUpload({
@@ -43,7 +43,7 @@ export function FileUpload({
   },
   acceptText = 'Accepted file type(s): ',
   required,
-  onClickEdit,
+  onEditClick,
 }: FileUploadProps) {
   const [files, setFiles] = useState<FileData[]>(initialFiles);
   // const prevInitialFilesRef = useRef(initialFiles); // Keep track of last prop state
@@ -134,7 +134,7 @@ export function FileUpload({
             multiple={multiple}
             className={cn({ 'order-first md:w-1/3': !multiple })}
             onRemoveFile={handleRemoveFile}
-            onClickEdit={onClickEdit}
+            onEditClick={onEditClick}
           />
         )}
       </div>
