@@ -28,7 +28,9 @@ function usePortalContainer() {
     setPortalContainer(el);
 
     return () => {
-      document.body.removeChild(el);
+      if (el.parentNode) {
+        document.body.removeChild(el);
+      }
     };
   }, []);
 
@@ -65,10 +67,8 @@ function RemoveButtonPortal({
   const updatePosition = useCallback(() => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
-
     const top = rect.top + window.scrollY + offsetTop;
     const left = rect.right + window.scrollX - offsetRight;
-
     setCoords({ top, left });
   }, [containerRef, offsetTop, offsetRight]);
 
@@ -79,7 +79,6 @@ function RemoveButtonPortal({
     }
     window.addEventListener('scroll', handleScrollResize);
     window.addEventListener('resize', handleScrollResize);
-
     return () => {
       window.removeEventListener('scroll', handleScrollResize);
       window.removeEventListener('resize', handleScrollResize);
@@ -90,13 +89,11 @@ function RemoveButtonPortal({
 
   return ReactDOM.createPortal(
     <div
+      className="absolute z-10 transition-opacity duration-200"
       style={{
-        position: 'absolute',
         top: coords.top,
         left: coords.left,
-        zIndex: 9999,
         opacity: hovered ? 1 : 0, // fade in/out on hover
-        transition: 'opacity 0.2s',
       }}
     >
       <button
@@ -114,14 +111,32 @@ function RemoveButtonPortal({
   );
 }
 
-export function FilePreviews({
-  files,
+type FilePreviewItemProps = {
+  file: FileData;
+  index: number;
+  onRemoveFile?: (index: number) => void;
+  onEditClick?: (index: number) => void;
+  multiple: boolean;
+};
+
+function FilePreviewItem({
+  file,
+  index,
   onRemoveFile,
   onEditClick,
-  multiple = true,
-  className,
-}: FilePreviewsProps) {
-  // Render file name overlay if multiple
+  multiple,
+}: FilePreviewItemProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [hovered, setHovered] = useState(false);
+
+  // Render the overlay with edit icon only if onEditClick is provided.
+  const renderOverlay = () =>
+    onEditClick ? (
+      <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-black/40 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+        <IconEdit size={40} className="text-background" />
+      </div>
+    ) : null;
+
   const renderFilename = (file: FileData) =>
     multiple ? (
       <Row
@@ -136,17 +151,76 @@ export function FilePreviews({
       </Row>
     ) : null;
 
-  /**
-   * Overlay:
-   * - Just a semi-transparent black background (on hover).
-   * - A plain IconEdit in the center (no click action).
-   */
-  const renderOverlay = () => (
-    <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-black/40 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-      <IconEdit size={40} className="text-background" />
+  return (
+    <div
+      ref={containerRef}
+      className={cn(
+        'group relative overflow-hidden border border-border bg-background',
+        onEditClick && 'cursor-pointer',
+        {
+          'aspect-w-1 aspect-h-1 w-full rounded-md pb-7': multiple,
+          'flex h-32 w-32 items-center justify-center rounded-full': !multiple,
+        },
+      )}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onClick={() => {
+        if (onEditClick) onEditClick(index);
+      }}
+    >
+      {onRemoveFile && (
+        <RemoveButtonPortal
+          index={index}
+          onRemoveFile={onRemoveFile}
+          containerRef={containerRef}
+          hovered={hovered}
+          multiple={multiple}
+        />
+      )}
+
+      {renderOverlay()}
+
+      {file.url ? (
+        multiple ? (
+          <div className="relative box-border h-full w-full p-1">
+            <img
+              src={file.url}
+              alt={`Preview ${index + 1}`}
+              className="h-full w-full object-contain"
+            />
+          </div>
+        ) : (
+          <img
+            src={file.url}
+            alt={`Preview ${index + 1}`}
+            className="h-full w-full object-cover"
+          />
+        )
+      ) : (
+        <Col
+          align="center"
+          alignItems="center"
+          className={cn('h-full w-full', {
+            'rounded-md': multiple,
+            'rounded-full': !multiple,
+          })}
+        >
+          <IconFileDescription size={60} stroke={1} />
+        </Col>
+      )}
+
+      {multiple && renderFilename(file)}
     </div>
   );
+}
 
+export function FilePreviews({
+  files,
+  onRemoveFile,
+  onEditClick,
+  multiple = true,
+  className,
+}: FilePreviewsProps) {
   return (
     <div
       className={cn(
@@ -156,80 +230,16 @@ export function FilePreviews({
         className,
       )}
     >
-      {files.map((file, index) => {
-        const containerRef = useRef<HTMLDivElement>(null);
-        const [hovered, setHovered] = useState(false);
-
-        return (
-          <div
-            key={index}
-            ref={containerRef}
-            className={cn(
-              'group relative cursor-pointer overflow-hidden border border-border bg-background',
-              {
-                // multiple => rectangular style
-                'aspect-w-1 aspect-h-1 w-full rounded-md pb-7': multiple,
-                // single => circle
-                'flex h-32 w-32 items-center justify-center rounded-full':
-                  !multiple,
-              },
-            )}
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
-            onClick={() => {
-              // Clicking anywhere in the container triggers edit (if provided)
-              if (onEditClick) onEditClick(index);
-            }}
-          >
-            {/* The "X" is in a portal, so not clipped */}
-            {onRemoveFile && (
-              <RemoveButtonPortal
-                index={index}
-                onRemoveFile={onRemoveFile}
-                containerRef={containerRef}
-                hovered={hovered}
-                multiple={multiple}
-              />
-            )}
-
-            {/* Plain overlay icon */}
-            {renderOverlay()}
-
-            {/* Image or fallback icon */}
-            {file.url ? (
-              multiple ? (
-                <div className="relative box-border h-full w-full p-1">
-                  <img
-                    src={file.url}
-                    alt={`Preview ${index + 1}`}
-                    className="h-full w-full object-contain"
-                  />
-                </div>
-              ) : (
-                <img
-                  src={file.url}
-                  alt={`Preview ${index + 1}`}
-                  className="h-full w-full object-cover"
-                />
-              )
-            ) : (
-              <Col
-                align="center"
-                alignItems="center"
-                className={cn('h-full w-full', {
-                  'rounded-md': multiple,
-                  'rounded-full': !multiple,
-                })}
-              >
-                <IconFileDescription size={60} stroke={1} />
-              </Col>
-            )}
-
-            {/* Show file name overlay only if multiple */}
-            {multiple && renderFilename(file)}
-          </div>
-        );
-      })}
+      {files.map((file, index) => (
+        <FilePreviewItem
+          key={index}
+          file={file}
+          index={index}
+          onRemoveFile={onRemoveFile}
+          onEditClick={onEditClick}
+          multiple={multiple}
+        />
+      ))}
     </div>
   );
 }

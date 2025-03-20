@@ -168,14 +168,14 @@ export const Slider: React.FC<SliderProps> = ({
 
   return (
     <Col className={className}>
-      <Row align="between">
+      <Row align="between" locked>
         {label && <label className="text-sm font-semibold">{label}</label>}
         <span className="text-sm">
           {step < 1 ? clampedValue.toFixed(2) : clampedValue} {unit}
         </span>
       </Row>
       {buttonLabels ? (
-        <Row alignItems="center">
+        <Row alignItems="center" locked>
           <Button
             variant="link"
             circular

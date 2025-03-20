@@ -22,7 +22,7 @@ export function Avatar({ size = 'md', src, alt, className }: AvatarProps) {
         className,
       )}
     >
-      <img src={src} alt={alt} />
+      <img src={src} alt={alt} className="h-full w-full object-cover" />
     </div>
   );
 }
