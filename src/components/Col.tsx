@@ -48,7 +48,8 @@ export const Col = forwardRef<HTMLDivElement, ColProps>(
       <div
         className={cn(
           'flex w-full flex-col',
-          { 'md:w-auto': fluid },
+          // { 'md:w-auto': fluid },
+          { 'w-auto': fluid },
           cnFromGap[gap],
           cnFromAlign[align],
           cnFromAlignItems[alignItems],

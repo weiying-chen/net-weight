@@ -11,6 +11,7 @@ import { cn } from '@/utils';
 import { IconChevronDown } from '@tabler/icons-react';
 import { PseudoInput } from '@/components/PseudoInput';
 import { Tooltip } from '@/components/Tooltip';
+import { Row } from '@/components/Row';
 
 type SelectOption<T> = {
   label: string;
@@ -256,7 +257,6 @@ export const Select = <T extends string | number>({
         className="relative w-full"
         onKeyDown={handleKeyDown}
         onClick={handleDropdownToggle}
-        // tabIndex={0}
         {...props}
       >
         <PseudoInput
@@ -273,12 +273,12 @@ export const Select = <T extends string | number>({
             className,
           )}
         >
-          <div className="flex items-center gap-2">
+          <Row alignItems="center">
             {selected?.icon && <span>{selected.icon}</span>}
             {!isIconTrigger && (
               <span>{selected ? selected.label : placeholder}</span>
             )}
-          </div>
+          </Row>
           {!isIconTrigger && <IconChevronDown size={small ? 16 : 20} />}
         </PseudoInput>
         {isOpen && renderDropdown()}

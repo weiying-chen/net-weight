@@ -19,7 +19,7 @@ type FileUploadProps = {
   onChange: (files: FileData[]) => void;
   files?: FileData[];
   maxSize?: number;
-  multiple?: boolean;
+  layout?: 'grid' | 'avatar' | 'banner';
   accept?: { [key: string]: string[] };
   acceptText?: string;
   required?: boolean;
@@ -34,7 +34,7 @@ export function FileUpload({
   onChange,
   files: initialFiles = [],
   maxSize = Infinity,
-  multiple = true,
+  layout = 'grid',
   accept = {
     'image/jpeg': ['.jpeg', '.jpg'],
     'image/png': ['.png'],
@@ -46,7 +46,8 @@ export function FileUpload({
   onEditClick,
 }: FileUploadProps) {
   const [files, setFiles] = useState<FileData[]>(initialFiles);
-  // const prevInitialFilesRef = useRef(initialFiles); // Keep track of last prop state
+  const isPreviewGrid = layout === 'grid' || layout === 'banner';
+  const allowMultiple = layout === 'grid';
 
   const updateFiles = (newFiles: FileData[]) => {
     setFiles(newFiles);
@@ -62,7 +63,7 @@ export function FileUpload({
       file,
     }));
 
-    updateFiles(multiple ? [...files, ...newFiles] : newFiles);
+    updateFiles(allowMultiple ? [...files, ...newFiles] : newFiles);
   };
 
   const handleRemoveFile = (index: number) => {
@@ -74,16 +75,15 @@ export function FileUpload({
     onDrop,
     accept,
     maxSize,
-    multiple,
+    multiple: allowMultiple,
   });
 
   useEffect(() => {
-    // if (JSON.stringify(files) !== JSON.stringify(initialFiles)) {
-    setFiles([...initialFiles]); // 🚀 Ensures new reference
-    // }
+    if (JSON.stringify(files) !== JSON.stringify(initialFiles)) {
+      setFiles([...initialFiles]);
+    }
   }, [initialFiles]);
 
-  // Cleanup URLs to prevent memory leaks
   useEffect(() => {
     return () => {
       files.forEach((fileData) => {
@@ -104,7 +104,9 @@ export function FileUpload({
       <input {...getInputProps()} />
       <Col gap="sm" alignItems="center">
         <p>{isDragActive ? 'Drop the files here...' : placeholder}</p>
-        <p className="text-xs text-muted">{`${acceptText}${Object.values(accept).flat().join(', ')}`}</p>
+        <p className="text-xs text-muted">
+          {`${acceptText}${Object.values(accept).flat().join(', ')}`}
+        </p>
       </Col>
     </div>
   );
@@ -122,7 +124,7 @@ export function FileUpload({
       <div
         className={cn(
           'flex w-full',
-          multiple
+          isPreviewGrid
             ? 'flex-col gap-4'
             : 'flex-col items-stretch gap-2 md:flex-row',
         )}
@@ -131,8 +133,8 @@ export function FileUpload({
         {files.length > 0 && (
           <FilePreviews
             files={files}
-            multiple={multiple}
-            className={cn({ 'order-first md:w-1/3': !multiple })}
+            layout={layout}
+            className={cn({ 'order-first md:w-1/3': !isPreviewGrid })}
             onRemoveFile={handleRemoveFile}
             onEditClick={onEditClick}
           />

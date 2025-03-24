@@ -12,6 +12,7 @@ import { List } from '@/pages/List';
 import { Vcf } from '@/pages/Vcf';
 import { Route, Routes } from 'react-router-dom';
 import { FormP } from '@/pages/FormP';
+import { PG } from '@/pages/PG';
 
 export default function App() {
   return (
@@ -30,6 +31,7 @@ export default function App() {
         <Route path="/misc" element={<Misc />} />
         <Route path="/list" element={<List />} />
         <Route path="/vcf" element={<Vcf />} />
+        <Route path="/pg" element={<PG />} />
       </Routes>
     </div>
   );

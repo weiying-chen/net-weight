@@ -50,7 +50,8 @@ export const Row = forwardRef<HTMLDivElement, RowProps>(
       <div
         className={cn(
           'flex w-full',
-          { 'md:w-auto': fluid },
+          // { 'md:w-auto': fluid },
+          { 'w-auto': fluid },
           { 'flex-col md:flex-row': !locked },
           cnFromGap[gap],
           cnFromAlign[align],
