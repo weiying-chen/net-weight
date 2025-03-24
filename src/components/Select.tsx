@@ -2,6 +2,7 @@ import {
   useState,
   useRef,
   useLayoutEffect,
+  useEffect,
   ReactNode,
   KeyboardEvent,
   MouseEvent,
@@ -35,6 +36,7 @@ export type SelectProps<T> = {
   disabled?: boolean;
   isIconTrigger?: boolean;
   small?: boolean;
+  searchable?: boolean;
 };
 
 export const Select = <T extends string | number>({
@@ -51,6 +53,7 @@ export const Select = <T extends string | number>({
   disabled,
   isIconTrigger = false,
   small = false,
+  searchable = false,
   ...props
 }: SelectProps<T>) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -59,8 +62,9 @@ export const Select = <T extends string | number>({
   const [dropdownPosition, setDropdownPosition] = useState<'top' | 'bottom'>(
     'bottom',
   );
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const dropdownRef = useRef<HTMLUListElement | null>(null);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
   const triggerRef = useRef<HTMLDivElement | null>(null);
 
   useLayoutEffect(() => {
@@ -72,7 +76,7 @@ export const Select = <T extends string | number>({
   const adjustDropdownPosition = () => {
     if (triggerRef.current && dropdownRef.current) {
       const triggerRect = triggerRef.current.getBoundingClientRect();
-      const dropdownMaxHeight = 384; // The max height of the dropdown in pixels
+      const dropdownMaxHeight = 384;
       const viewportHeight = window.innerHeight;
       const spaceBelow = viewportHeight - triggerRect.bottom;
       const spaceAbove = triggerRect.top;
@@ -81,7 +85,6 @@ export const Select = <T extends string | number>({
       const shouldFlip = availableSpaceAbove > availableSpaceBelow;
 
       dropdownRef.current.style.maxHeight = `${shouldFlip ? availableSpaceAbove : availableSpaceBelow}px`;
-
       setDropdownPosition(shouldFlip ? 'top' : 'bottom');
     }
   };
@@ -89,22 +92,39 @@ export const Select = <T extends string | number>({
   useLayoutEffect(() => {
     if (isOpen) {
       adjustDropdownPosition();
-
       const handleResize = () => adjustDropdownPosition();
       window.addEventListener('resize', handleResize);
-
       return () => {
         window.removeEventListener('resize', handleResize);
       };
     }
   }, [isOpen]);
 
-  const handleDropdownToggle = (event: React.MouseEvent<HTMLDivElement>) => {
+  const filteredOptions = options.filter(
+    (option) =>
+      !option.isHidden &&
+      (!searchable ||
+        option.label.toLowerCase().includes(searchQuery.toLowerCase())),
+  );
+
+  useEffect(() => {
+    if (isOpen && searchable) {
+      setFocusedIndex(filteredOptions.length > 0 ? 0 : null);
+    }
+  }, [searchQuery, isOpen, filteredOptions.length]);
+
+  const closeDropdown = () => {
+    setIsOpen(false);
+    setFocusedIndex(null);
+    setSearchQuery('');
+    onBlur?.();
+  };
+
+  const handleDropdownToggle = (event: MouseEvent<HTMLDivElement>) => {
     if (disabled) return;
     event.stopPropagation();
 
     setIsOpen((prev) => !prev);
-
     if (!isOpen) {
       setFocusedIndex(
         selected
@@ -117,12 +137,6 @@ export const Select = <T extends string | number>({
     }
   };
 
-  const closeDropdown = () => {
-    setIsOpen(false);
-    setFocusedIndex(null);
-    onBlur?.();
-  };
-
   const handleOptionClick = (
     option: SelectOption<T>,
     event: MouseEvent<HTMLLIElement>,
@@ -133,19 +147,18 @@ export const Select = <T extends string | number>({
     closeDropdown();
   };
 
-  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+  const handleKeyDown = (
+    event: KeyboardEvent<HTMLDivElement | HTMLInputElement>,
+  ) => {
     if (disabled) return;
 
     if (!isOpen && event.key === 'Enter') {
       setIsOpen(true);
-
       return;
     }
-
     if (!isOpen) return;
 
-    const visibleOptions = options.filter((option) => !option.isHidden);
-
+    const visibleOptions = filteredOptions;
     switch (event.key) {
       case 'ArrowDown':
         event.preventDefault();
@@ -160,7 +173,7 @@ export const Select = <T extends string | number>({
         );
         break;
       case 'Enter':
-        if (focusedIndex !== null) {
+        if (focusedIndex !== null && visibleOptions[focusedIndex]) {
           handleOptionClick(visibleOptions[focusedIndex], event as any);
         }
         break;
@@ -183,7 +196,6 @@ export const Select = <T extends string | number>({
         closeDropdown();
       }
     };
-
     document.addEventListener('mousedown', handleOutsideClick);
     return () => {
       document.removeEventListener('mousedown', handleOutsideClick);
@@ -191,29 +203,41 @@ export const Select = <T extends string | number>({
   }, []);
 
   const renderDropdown = () => (
-    <ul
+    <div
       ref={dropdownRef}
       className={cn(
-        'absolute z-50 mt-1 max-h-96 overflow-y-auto overflow-x-hidden rounded border border-border bg-background shadow',
+        'absolute z-50 overflow-hidden rounded border border-border bg-background shadow',
         dropdownPosition === 'top' ? 'bottom-full mb-1' : 'top-full mt-1',
         isIconTrigger ? 'left-0 right-auto w-auto' : 'left-0 right-0 w-full',
       )}
     >
-      {options
-        .filter((option) => !option.isHidden)
-        .map((option, index, visibleOptions) => {
+      {searchable && (
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search..."
+          onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => {
+            e.stopPropagation();
+            handleKeyDown(e);
+          }}
+          className="w-full px-3 pb-2 pt-3 focus:outline-none"
+          autoFocus
+        />
+      )}
+      <ul className="max-h-96 overflow-y-auto overflow-x-hidden">
+        {filteredOptions.map((option, index) => {
           const isFirst = index === 0;
-          const isLast = index === visibleOptions.length - 1;
-
+          const isLast = index === filteredOptions.length - 1;
           const liEl = (
             <li
               key={option.value}
               className={cn(
-                'flex cursor-pointer items-center gap-2 whitespace-nowrap text-sm',
+                'flex cursor-pointer items-center gap-2 whitespace-nowrap px-3 py-2 text-sm',
                 {
-                  'px-3 pb-2 pt-3': isFirst,
+                  'px-3 pb-2 pt-3': isFirst && !searchable,
                   'px-3 pb-3 pt-2': isLast,
-                  'px-3 py-2': !isFirst && !isLast,
                 },
                 {
                   'bg-subtle': focusedIndex === index,
@@ -229,7 +253,6 @@ export const Select = <T extends string | number>({
               <span>{option.label}</span>
             </li>
           );
-
           return option.tooltip ? (
             <Tooltip key={option.value} content={option.tooltip} transient>
               {liEl}
@@ -238,7 +261,8 @@ export const Select = <T extends string | number>({
             liEl
           );
         })}
-    </ul>
+      </ul>
+    </div>
   );
 
   return (
@@ -251,7 +275,6 @@ export const Select = <T extends string | number>({
         ) : (
           label
         ))}
-
       <div
         ref={triggerRef}
         className="relative w-full"
