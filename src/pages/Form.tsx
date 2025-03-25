@@ -159,8 +159,6 @@ const getRequiredFields = (schema: z.ZodObject<any>) => {
 
 const requiredFields = getRequiredFields(schema);
 
-console.log(requiredFields);
-
 type FormData = z.infer<typeof schema>;
 
 export function Form() {

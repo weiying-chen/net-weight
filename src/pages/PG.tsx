@@ -13,7 +13,7 @@ export function PG() {
         label="Select an option"
         value="1"
         options={options}
-        searchable
+        hasSearch
         onChange={(val) => console.log('Selected:', val)}
       />
     </div>
