@@ -30,6 +30,7 @@ export type SelectProps<T> = {
   error?: string;
   className?: string;
   onChange: (value: T) => void;
+  onSearchChange?: (query: string) => void;
   onFocus?: () => void;
   onBlur?: () => void;
   required?: boolean;
@@ -38,6 +39,7 @@ export type SelectProps<T> = {
   small?: boolean;
   hasSearch?: boolean;
   muted?: boolean;
+  isLoading?: boolean; // <-- NEW PROP
 };
 
 export const Select = <T extends string | number>({
@@ -48,6 +50,7 @@ export const Select = <T extends string | number>({
   error,
   className,
   onChange,
+  onSearchChange,
   onFocus,
   onBlur,
   required,
@@ -56,6 +59,7 @@ export const Select = <T extends string | number>({
   small = false,
   hasSearch = false,
   muted = false,
+  isLoading = false, // <-- DEFAULT
   ...props
 }: SelectProps<T>) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -215,36 +219,27 @@ export const Select = <T extends string | number>({
         tabIndex={0}
         error={error}
         disabled={disabled}
-        className={cn(
-          'flex cursor-text items-center shadow',
-          {
-            'focus-visible:ring-0 focus-visible:ring-offset-0': isOpen,
-            'hover:shadow-dark': !disabled,
-            'h-5 px-2 py-1 text-xs': small,
-          },
-          // className,
-        )}
+        className={cn('flex cursor-text items-center shadow', {
+          'focus-visible:ring-0 focus-visible:ring-offset-0': isOpen,
+          'hover:shadow-dark': !disabled,
+          'h-5 px-2 py-1 text-xs': small,
+        })}
       >
         <IconSearch className="text-muted" size={16} />
         <input
           placeholder={placeholder}
           value={isOpen ? searchQuery : (selected?.label ?? '')}
           onChange={(e) => {
-            if (!isOpen) {
-              openDropdown();
-            }
+            if (!isOpen) openDropdown();
             setSearchQuery(e.target.value);
+            onSearchChange?.(e.target.value);
           }}
           onClick={() => {
-            if (!isOpen) {
-              openDropdown();
-            }
+            if (!isOpen) openDropdown();
           }}
           onKeyDown={handleKeyDown}
           onFocus={() => {
-            if (!isOpen) {
-              openDropdown();
-            }
+            if (!isOpen) openDropdown();
           }}
           disabled={disabled}
           className="flex-1 border-none bg-transparent outline-none"
@@ -301,6 +296,23 @@ export const Select = <T extends string | number>({
   );
 
   const renderDropdown = () => {
+    if (isLoading) {
+      return (
+        <div
+          ref={dropdownRef}
+          className={cn(
+            'absolute z-50 overflow-hidden rounded border border-border bg-background shadow',
+            dropdownPosition === 'top' ? 'bottom-full mb-1' : 'top-full mt-1',
+            isIconTrigger
+              ? 'left-0 right-auto w-auto'
+              : 'left-0 right-0 w-full',
+          )}
+        >
+          <div className="p-3 text-sm text-muted">Loading...</div>
+        </div>
+      );
+    }
+
     if (filteredOptions.length === 0) {
       return null;
     }
