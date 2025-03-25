@@ -5,6 +5,7 @@ import {
   ReactNode,
   KeyboardEvent as ReactKeyboardEvent,
   MouseEvent as ReactMouseEvent,
+  useEffect,
 } from 'react';
 import { Col } from '@/components/Col';
 import { Row } from '@/components/Row';
@@ -78,6 +79,12 @@ export const Select = <T extends string | number>({
       option.label.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
+  useEffect(() => {
+    if (isOpen) {
+      setFocusedIndex(filteredOptions.length > 0 ? 0 : null);
+    }
+  }, [searchQuery, isOpen, filteredOptions.length]);
+
   const openDropdown = () => {
     setIsOpen(true);
     setSearchQuery('');
@@ -113,7 +120,7 @@ export const Select = <T extends string | number>({
     if (disabled) return;
 
     if (!isOpen && event.key === 'Enter') {
-      event.preventDefault();
+      event.preventDefault(); // Prevent form submission
       openDropdown();
       return;
     }
@@ -133,6 +140,7 @@ export const Select = <T extends string | number>({
         );
         break;
       case 'Enter':
+        event.preventDefault(); // Prevent form submission here as well
         if (focusedIndex !== null && filteredOptions[focusedIndex]) {
           handleOptionClick(filteredOptions[focusedIndex], event as any);
         }
