@@ -59,7 +59,7 @@ export const LabelStatus = <T extends string | number>({
           disabled={isSelectedDisabled}
           isIconTrigger
           small
-          className="border-0 bg-subtle shadow-none"
+          muted
         />
       )}
       {verified && (

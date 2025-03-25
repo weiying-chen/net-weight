@@ -14,15 +14,9 @@ export const HeadingStatus = <T extends string | number>({
 }: HeadingStatusProps<T>) => {
   return (
     <>
-      {/* <Row alignItems="center" className={className} locked fluid> */}
       <Row alignItems="center" className={cn('w-auto', className)} locked>
         {heading && <Heading size="sm">{heading}</Heading>}
-        <Select
-          {...props}
-          isIconTrigger
-          small
-          className="border-0 bg-subtle shadow-none"
-        />
+        <Select {...props} isIconTrigger small muted />
       </Row>
     </>
   );

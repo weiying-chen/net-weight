@@ -9,7 +9,7 @@ import { IconBlendMode } from '@tabler/icons-react';
 type SectionStatusProps<T extends string | number> = SelectProps<T> & {
   heading: string;
   isVisible?: boolean;
-  isMixed?: boolean; // Indicates whether the component starts in a "mixed" state
+  isMixed?: boolean;
   children: React.ReactNode;
 };
 
@@ -22,14 +22,14 @@ export const SectionStatus = <T extends string | number>({
   ...selectProps
 }: SectionStatusProps<T>) => {
   const [showMixed, setShowMixed] = useState<boolean>(isMixed);
-  const realSelectRef = useRef<HTMLDivElement>(null); // Reference for the real select
+  const realSelectRef = useRef<HTMLDivElement>(null);
 
   const handleTemporarySelectClick = () => {
-    setShowMixed(false); // Switch to the real Select
-    // Programmatically open the real select dropdown
+    setShowMixed(false);
+
     setTimeout(() => {
       realSelectRef.current?.click();
-    }, 0); // Slight delay to ensure state updates
+    }, 0);
   };
 
   return (
@@ -48,7 +48,6 @@ export const SectionStatus = <T extends string | number>({
       >
         <Heading size="sm">{heading}</Heading>
         {showMixed ? (
-          // Temporary Select to show "Mixed" option
           <div onClick={handleTemporarySelectClick}>
             <Select
               value="mixed"
@@ -58,22 +57,16 @@ export const SectionStatus = <T extends string | number>({
                   label: 'Mixed',
                   icon: <IconBlendMode size={18} />,
                 },
-              ]} // Temporary "Mixed" option
+              ]}
               isIconTrigger
               small
-              disabled // Disable the dropdown
-              onChange={() => {}} // No-op function
+              disabled
+              onChange={() => {}}
             />
           </div>
         ) : (
-          // Real Select
           <div ref={realSelectRef}>
-            <Select
-              {...selectProps}
-              isIconTrigger
-              small
-              className="border-0 bg-subtle shadow-none"
-            />
+            <Select {...selectProps} isIconTrigger small muted />
           </div>
         )}
       </Row>

@@ -37,6 +37,7 @@ export type SelectProps<T> = {
   isIconTrigger?: boolean;
   small?: boolean;
   hasSearch?: boolean;
+  muted?: boolean;
 };
 
 export const Select = <T extends string | number>({
@@ -54,6 +55,7 @@ export const Select = <T extends string | number>({
   isIconTrigger = false,
   small = false,
   hasSearch = false,
+  muted = false,
   ...props
 }: SelectProps<T>) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -204,7 +206,11 @@ export const Select = <T extends string | number>({
   }, [isOpen]);
 
   const renderRealInput = () => (
-    <div className="relative w-full" ref={triggerRef} {...props}>
+    <div
+      className={cn('relative w-full', className)}
+      ref={triggerRef}
+      {...props}
+    >
       <PseudoInput
         tabIndex={0}
         error={error}
@@ -216,7 +222,7 @@ export const Select = <T extends string | number>({
             'hover:shadow-dark': !disabled,
             'h-5 px-2 py-1 text-xs': small,
           },
-          className,
+          // className,
         )}
       >
         <IconSearch className="text-muted" size={16} />
@@ -251,7 +257,7 @@ export const Select = <T extends string | number>({
   const renderPseudoInput = () => (
     <div
       ref={triggerRef}
-      className="relative w-full"
+      className={cn('relative w-full', className)}
       onKeyDown={handleKeyDown}
       onClick={(e) => {
         if (!disabled) {
@@ -275,15 +281,12 @@ export const Select = <T extends string | number>({
         tabIndex={0}
         error={error}
         disabled={disabled}
-        className={cn(
-          'cursor-pointer justify-between shadow',
-          {
-            'focus-visible:ring-0 focus-visible:ring-offset-0': isOpen,
-            'hover:shadow-dark': !disabled,
-            'h-5 px-2 py-1 text-xs': small,
-          },
-          className,
-        )}
+        className={cn('cursor-pointer justify-between shadow', {
+          'focus-visible:ring-0 focus-visible:ring-offset-0': isOpen,
+          'hover:shadow-dark': !disabled,
+          'h-5 px-2 py-1 text-xs': small,
+          'border-0 bg-subtle shadow-none': muted,
+        })}
       >
         <Row alignItems="center">
           {selected?.icon && <span>{selected.icon}</span>}
