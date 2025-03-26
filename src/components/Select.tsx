@@ -318,31 +318,7 @@ export const Select = <T extends string | number>({
   );
 
   const renderDropdown = () => {
-    if (isLoading && !searchQuery) {
-      return null;
-    }
-
-    if (isLoading) {
-      return (
-        <div
-          ref={dropdownRef}
-          className={cn(
-            'absolute z-50 flex items-center justify-center rounded border border-border bg-background shadow',
-            dropdownPosition === 'top' ? 'bottom-full mb-1' : 'top-full mt-1',
-            isIconTrigger
-              ? 'left-0 right-auto w-auto'
-              : 'left-0 right-0 w-full',
-            'p-4',
-          )}
-        >
-          <IconLoader2 size={24} className="animate-spin" />
-        </div>
-      );
-    }
-
-    if (filteredOptions.length === 0) {
-      return null;
-    }
+    if (!isOpen) return null; // Only render when open
 
     return (
       <div
@@ -353,40 +329,48 @@ export const Select = <T extends string | number>({
           isIconTrigger ? 'left-0 right-auto w-auto' : 'left-0 right-0 w-full',
         )}
       >
-        <ul className="max-h-96 overflow-y-auto overflow-x-hidden">
-          {filteredOptions.map((option, index) => {
-            const isFirst = index === 0;
-            const isLast = index === filteredOptions.length - 1;
-            const liEl = (
-              <li
-                key={option.value}
-                className={cn(
-                  'flex cursor-pointer items-center gap-2 whitespace-nowrap px-3 py-2 text-sm',
-                  {
-                    'px-3 pb-2 pt-3': isFirst,
-                    'px-3 pb-3 pt-2': isLast,
-                    'bg-subtle': focusedIndex === index,
-                    'rounded-t': isFirst,
-                    'rounded-b': isLast,
-                  },
-                )}
-                onClick={(event) => handleOptionClick(option, event)}
-                onMouseEnter={() => setFocusedIndex(index)}
-                onMouseDown={(e) => e.preventDefault()}
-              >
-                {option.icon && <span>{option.icon}</span>}
-                <span>{option.label}</span>
-              </li>
-            );
-            return option.tooltip ? (
-              <Tooltip key={option.value} content={option.tooltip} transient>
-                {liEl}
-              </Tooltip>
-            ) : (
-              liEl
-            );
-          })}
-        </ul>
+        {isLoading && localSearchQuery.length > 0 ? (
+          <div className="flex items-center justify-center p-4">
+            <IconLoader2 size={24} className="animate-spin" />
+          </div>
+        ) : filteredOptions.length === 0 ? (
+          <div className="p-4 text-sm text-muted">No results found</div>
+        ) : (
+          <ul className="max-h-96 overflow-y-auto overflow-x-hidden">
+            {filteredOptions.map((option, index) => {
+              const isFirst = index === 0;
+              const isLast = index === filteredOptions.length - 1;
+              const liEl = (
+                <li
+                  key={option.value}
+                  className={cn(
+                    'flex cursor-pointer items-center gap-2 whitespace-nowrap px-3 py-2 text-sm',
+                    {
+                      'px-3 pb-2 pt-3': isFirst,
+                      'px-3 pb-3 pt-2': isLast,
+                      'bg-subtle': focusedIndex === index,
+                      'rounded-t': isFirst,
+                      'rounded-b': isLast,
+                    },
+                  )}
+                  onClick={(event) => handleOptionClick(option, event)}
+                  onMouseEnter={() => setFocusedIndex(index)}
+                  onMouseDown={(e) => e.preventDefault()}
+                >
+                  {option.icon && <span>{option.icon}</span>}
+                  <span>{option.label}</span>
+                </li>
+              );
+              return option.tooltip ? (
+                <Tooltip key={option.value} content={option.tooltip} transient>
+                  {liEl}
+                </Tooltip>
+              ) : (
+                liEl
+              );
+            })}
+          </ul>
+        )}
       </div>
     );
   };
