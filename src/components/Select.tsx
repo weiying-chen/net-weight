@@ -6,11 +6,12 @@ import {
   KeyboardEvent as ReactKeyboardEvent,
   MouseEvent as ReactMouseEvent,
   useEffect,
+  useMemo,
 } from 'react';
 import { Col } from '@/components/Col';
 import { Row } from '@/components/Row';
 import { cn } from '@/utils';
-import { IconChevronDown, IconSearch } from '@tabler/icons-react';
+import { IconChevronDown, IconSearch, IconLoader2 } from '@tabler/icons-react';
 import { PseudoInput } from '@/components/PseudoInput';
 import { Tooltip } from '@/components/Tooltip';
 
@@ -38,8 +39,9 @@ export type SelectProps<T> = {
   isIconTrigger?: boolean;
   small?: boolean;
   hasSearch?: boolean;
+  isLoading?: boolean;
   muted?: boolean;
-  isLoading?: boolean; // <-- NEW PROP
+  searchQuery?: string;
 };
 
 export const Select = <T extends string | number>({
@@ -58,8 +60,9 @@ export const Select = <T extends string | number>({
   isIconTrigger = false,
   small = false,
   hasSearch = false,
+  isLoading = false,
   muted = false,
-  isLoading = false, // <-- DEFAULT
+  searchQuery: extSearchQuery = '',
   ...props
 }: SelectProps<T>) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -68,10 +71,14 @@ export const Select = <T extends string | number>({
   const [dropdownPosition, setDropdownPosition] = useState<'top' | 'bottom'>(
     'bottom',
   );
-  const [searchQuery, setSearchQuery] = useState('');
-
+  const [localSearchQuery, setLocalSearchQuery] = useState('');
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const triggerRef = useRef<HTMLDivElement | null>(null);
+
+  const searchQuery = useMemo(
+    () => (extSearchQuery || localSearchQuery).trim(),
+    [extSearchQuery, localSearchQuery],
+  );
 
   useLayoutEffect(() => {
     const newSelected =
@@ -79,21 +86,30 @@ export const Select = <T extends string | number>({
     setSelected(newSelected);
   }, [value, options]);
 
-  const filteredOptions = options.filter(
-    (option) =>
-      !option.isHidden &&
-      option.label.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  const [filteredOptions, setFilteredOptions] = useState<SelectOption<T>[]>([]);
+
+  useEffect(() => {
+    if (!isLoading) {
+      const filtered = options.filter((option) => {
+        const labelLower = option.label.toLowerCase();
+        const searchLower = searchQuery.toLowerCase();
+        return !option.isHidden && labelLower.includes(searchLower);
+      });
+      setFilteredOptions(filtered);
+    } else {
+      setFilteredOptions([]);
+    }
+  }, [isLoading, options, extSearchQuery, localSearchQuery]);
 
   useEffect(() => {
     if (isOpen) {
       setFocusedIndex(filteredOptions.length > 0 ? 0 : null);
     }
-  }, [searchQuery, isOpen, filteredOptions.length]);
+  }, [localSearchQuery, isOpen, filteredOptions.length]);
 
   const openDropdown = () => {
     setIsOpen(true);
-    setSearchQuery('');
+    // setLocalSearchQuery('');
     if (selected) {
       const idx = options.findIndex((o) => o.value === selected.value);
       setFocusedIndex(idx !== -1 ? idx : null);
@@ -106,7 +122,7 @@ export const Select = <T extends string | number>({
   const closeDropdown = () => {
     setIsOpen(false);
     setFocusedIndex(null);
-    setSearchQuery('');
+    // setLocalSearchQuery('');
     onBlur?.();
   };
 
@@ -117,6 +133,7 @@ export const Select = <T extends string | number>({
     event.stopPropagation();
     setSelected(option);
     onChange(option.value);
+    setLocalSearchQuery('');
     closeDropdown();
   };
 
@@ -126,7 +143,7 @@ export const Select = <T extends string | number>({
     if (disabled) return;
 
     if (!isOpen && event.key === 'Enter') {
-      event.preventDefault(); // Prevent form submission
+      event.preventDefault();
       openDropdown();
       return;
     }
@@ -219,19 +236,24 @@ export const Select = <T extends string | number>({
         tabIndex={0}
         error={error}
         disabled={disabled}
-        className={cn('flex cursor-text items-center shadow', {
+        className={cn('flex cursor-text items-center', {
           'focus-visible:ring-0 focus-visible:ring-offset-0': isOpen,
-          'hover:shadow-dark': !disabled,
           'h-5 px-2 py-1 text-xs': small,
         })}
       >
         <IconSearch className="text-muted" size={16} />
         <input
           placeholder={placeholder}
-          value={isOpen ? searchQuery : (selected?.label ?? '')}
+          // value={isOpen ? localSearchQuery : (selected?.label ?? '')}
+          // value={localSearchQuery || selected?.label || ''}
+          value={
+            isOpen
+              ? localSearchQuery
+              : localSearchQuery || selected?.label || ''
+          }
           onChange={(e) => {
             if (!isOpen) openDropdown();
-            setSearchQuery(e.target.value);
+            setLocalSearchQuery(e.target.value);
             onSearchChange?.(e.target.value);
           }}
           onClick={() => {
@@ -296,19 +318,24 @@ export const Select = <T extends string | number>({
   );
 
   const renderDropdown = () => {
+    if (isLoading && !searchQuery) {
+      return null;
+    }
+
     if (isLoading) {
       return (
         <div
           ref={dropdownRef}
           className={cn(
-            'absolute z-50 overflow-hidden rounded border border-border bg-background shadow',
+            'absolute z-50 flex items-center justify-center rounded border border-border bg-background shadow',
             dropdownPosition === 'top' ? 'bottom-full mb-1' : 'top-full mt-1',
             isIconTrigger
               ? 'left-0 right-auto w-auto'
               : 'left-0 right-0 w-full',
+            'p-4',
           )}
         >
-          <div className="p-3 text-sm text-muted">Loading...</div>
+          <IconLoader2 size={24} className="animate-spin" />
         </div>
       );
     }
