@@ -90,12 +90,17 @@ export const Select = <T extends string | number>({
 
   useEffect(() => {
     if (!isLoading) {
-      const filtered = options.filter((option) => {
-        const labelLower = option.label.toLowerCase();
-        const searchLower = searchQuery.toLowerCase();
-        return !option.isHidden && labelLower.includes(searchLower);
-      });
-      setFilteredOptions(filtered);
+      if (extSearchQuery) {
+        // API already filtered, so just use the options directly
+        setFilteredOptions(options);
+      } else {
+        const filtered = options.filter((option) => {
+          const labelLower = option.label.toLowerCase();
+          const searchLower = searchQuery.toLowerCase();
+          return !option.isHidden && labelLower.includes(searchLower);
+        });
+        setFilteredOptions(filtered);
+      }
     } else {
       setFilteredOptions([]);
     }
@@ -264,7 +269,7 @@ export const Select = <T extends string | number>({
             if (!isOpen) openDropdown();
           }}
           disabled={disabled}
-          className="flex-1 border-none bg-transparent outline-none"
+          className="flex-1 border-none bg-transparent outline-none placeholder:text-muted"
         />
       </PseudoInput>
       {isOpen && renderDropdown()}
@@ -305,7 +310,7 @@ export const Select = <T extends string | number>({
           'border-0 bg-subtle shadow-none': muted,
         })}
       >
-        <Row alignItems="center">
+        <Row alignItems="center" className="text-muted">
           {selected?.icon && <span>{selected.icon}</span>}
           {!isIconTrigger && (
             <span>{selected ? selected.label : placeholder}</span>
