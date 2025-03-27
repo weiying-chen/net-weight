@@ -56,7 +56,7 @@ export function XButton({
 
   return ReactDOM.createPortal(
     <div
-      className="absolute z-50 transition-opacity duration-200"
+      className="pointer-events-auto absolute z-40 transition-opacity duration-200"
       style={{
         top: coords.top,
         left: coords.left,

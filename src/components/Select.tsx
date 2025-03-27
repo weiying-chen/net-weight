@@ -106,11 +106,12 @@ export const Select = <T extends string | number>({
     }
   }, [isLoading, options, extSearchQuery, localSearchQuery]);
 
+  // Needs to run when options update, not just when opening the dropdown.
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && hasSearch) {
       setFocusedIndex(filteredOptions.length > 0 ? 0 : null);
     }
-  }, [localSearchQuery, isOpen, filteredOptions.length]);
+  }, [localSearchQuery, isOpen, filteredOptions.length, hasSearch]);
 
   const openDropdown = () => {
     setIsOpen(true);
@@ -310,10 +311,12 @@ export const Select = <T extends string | number>({
           'border-0 bg-subtle shadow-none': muted,
         })}
       >
-        <Row alignItems="center" className="text-muted">
+        <Row alignItems="center">
           {selected?.icon && <span>{selected.icon}</span>}
           {!isIconTrigger && (
-            <span>{selected ? selected.label : placeholder}</span>
+            <span className={selected ? '' : 'text-muted'}>
+              {selected ? selected.label : placeholder}
+            </span>
           )}
         </Row>
         {!isIconTrigger && <IconChevronDown size={small ? 16 : 20} />}
