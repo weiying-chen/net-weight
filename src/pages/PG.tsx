@@ -3,7 +3,7 @@ import { Col } from '@/components/Col';
 import { FlexFields, FlexField } from '@/components/FlexFields';
 
 export function PG() {
-  // 1) Mappings for Value options
+  // Mappings for Value options
   const datasheetValueOptions = [
     { value: 'Manufacturers', label: 'Manufacturers' },
     { value: 'Serial Number', label: 'Serial Number' },
@@ -26,7 +26,7 @@ export function PG() {
     { value: 'Secret Key', label: 'Secret Key' },
   ];
 
-  // 2) Function to generate the next key
+  // Function to generate the next key
   const getNextKey = (currentFields: FlexField[]) => {
     const maxKey = currentFields.reduce((max, field) => {
       const num = parseInt(field.key, 10);
@@ -35,7 +35,8 @@ export function PG() {
     return String(maxKey + 1);
   };
 
-  // 3) Helper function to create a new field
+  // Helper function to create a new field
+  // Note: Since the default Type is "Rack", we initialize Method options with only "Datasheet"
   const createField = (currentFields: FlexField[]): FlexField => ({
     key: getNextKey(currentFields),
     inputs: [
@@ -50,56 +51,64 @@ export function PG() {
         ],
       },
       {
-        // Now let's have "Datasheet" and "Network" as method options
         label: 'Method',
-        value: 'Datasheet', // Default to "Datasheet"
+        value: 'Datasheet', // Default to Datasheet
         type: 'select',
-        options: [
-          { value: 'Datasheet', label: 'Datasheet' },
-          { value: 'Network', label: 'Network' },
-        ],
+        options: [{ value: 'Datasheet', label: 'Datasheet' }],
       },
       {
         label: 'Value',
         value: '',
         type: 'select',
-        // By default, if Method is "Datasheet", we show datasheetValueOptions
+        // Default Value options based on the default Method ("Datasheet")
         options: datasheetValueOptions,
       },
     ],
   });
 
-  // 4) Initialize state with a single field
+  // Initialize the state with a single field
   const [fields, setFields] = useState<FlexField[]>([createField([])]);
 
-  // 5) We'll dynamically update "Value" options whenever "Method" changes
+  // Update Method and Value options based on the selected Type and Method
   const handleFieldsChange = (updatedFields: FlexField[]) => {
     const newFields = updatedFields.map((field) => {
+      // Find the relevant inputs
+      const typeInput = field.inputs.find((i) => i.label === 'Type');
       const methodInput = field.inputs.find((i) => i.label === 'Method');
       const valueInput = field.inputs.find((i) => i.label === 'Value');
-      if (!methodInput || !valueInput) return field; // Safety check
+      if (!typeInput || !methodInput || !valueInput) return field;
 
-      // Based on the current Method, set the Value field's options
+      // If Type is "Rack", only allow "Datasheet" as a Method.
+      if (typeInput.value === 'Rack') {
+        methodInput.options = [{ value: 'Datasheet', label: 'Datasheet' }];
+        // Force the value to "Datasheet" if it's not already set
+        if (methodInput.value !== 'Datasheet') {
+          methodInput.value = 'Datasheet';
+        }
+      } else {
+        // For other Types, allow both Datasheet and Network
+        methodInput.options = [
+          { value: 'Datasheet', label: 'Datasheet' },
+          { value: 'Network', label: 'Network' },
+        ];
+      }
+
+      // Update Value options based on the selected Method
       if (methodInput.value === 'Datasheet') {
         valueInput.options = datasheetValueOptions;
       } else if (methodInput.value === 'Network') {
         valueInput.options = networkValueOptions;
       } else {
-        // Fallback, if needed
         valueInput.options = [];
       }
 
-      // Return the updated field
-      return {
-        ...field,
-        inputs: [...field.inputs], // ensure we have a new array
-      };
+      return { ...field, inputs: [...field.inputs] };
     });
 
     setFields(newFields);
   };
 
-  // 6) Field template for new fields
+  // Field template for new fields (using the current state to generate the next key)
   const fieldTemplate = createField(fields);
 
   return (
@@ -108,7 +117,7 @@ export function PG() {
         label="Attributes"
         fields={fields}
         fieldTemplate={fieldTemplate}
-        onChange={handleFieldsChange} // Use the dynamic onChange
+        onChange={handleFieldsChange}
       />
     </Col>
   );
