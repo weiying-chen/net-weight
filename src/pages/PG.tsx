@@ -81,7 +81,7 @@ export function PG() {
       // If Type is "Rack", only allow "Datasheet" as a Method.
       if (typeInput.value === 'Rack') {
         methodInput.options = [{ value: 'Datasheet', label: 'Datasheet' }];
-        // Force the value to "Datasheet" if it's not already set
+        // Force the method value to "Datasheet" if it's not already set
         if (methodInput.value !== 'Datasheet') {
           methodInput.value = 'Datasheet';
         }
@@ -100,6 +100,13 @@ export function PG() {
         valueInput.options = networkValueOptions;
       } else {
         valueInput.options = [];
+      }
+
+      // Reset the Value if it doesn't match any of the new options
+      if (
+        !valueInput.options.find((option) => option.value === valueInput.value)
+      ) {
+        valueInput.value = '';
       }
 
       return { ...field, inputs: [...field.inputs] };
