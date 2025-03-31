@@ -101,15 +101,49 @@ export function PG() {
         valueInput.value = '';
       }
 
-      // Remove Username & Password fields first
-      field.inputs = field.inputs.filter(
-        (i) => i.label !== 'Username' && i.label !== 'Password',
-      );
+      // --- Handle "Username, Password" Fields ---
+      // Track if Username & Password were already present
+      const hasUsername = field.inputs.some((i) => i.label === 'Username');
+      const hasPassword = field.inputs.some((i) => i.label === 'Password');
 
-      // If "Username, Password" is selected, add Username & Password inputs
-      if (valueInput.value === 'Username, Password') {
-        field.inputs.push({ label: 'Username', value: '', type: 'text' });
-        field.inputs.push({ label: 'Password', value: '', type: 'text' });
+      // If the selected value is NOT "Username, Password", remove them
+      if (valueInput.value !== 'Username, Password') {
+        field.inputs = field.inputs.filter(
+          (i) => i.label !== 'Username' && i.label !== 'Password',
+        );
+      } else {
+        // If "Username, Password" is selected but fields don't exist, add them
+        if (!hasUsername) {
+          field.inputs.push({ label: 'Username', value: '', type: 'text' });
+        }
+        if (!hasPassword) {
+          field.inputs.push({ label: 'Password', value: '', type: 'text' });
+        }
+      }
+
+      // --- Handle "Dimensions (W x D x H)" Fields ---
+      // Check if the dimension fields are already present
+      const hasWidth = field.inputs.some((i) => i.label === 'Width');
+      const hasDepth = field.inputs.some((i) => i.label === 'Depth');
+      const hasHeight = field.inputs.some((i) => i.label === 'Height');
+
+      // If the selected value is NOT "Dimensions (W x D x H)", remove these inputs
+      if (valueInput.value !== 'Dimensions (W x D x H)') {
+        field.inputs = field.inputs.filter(
+          (i) =>
+            i.label !== 'Width' && i.label !== 'Depth' && i.label !== 'Height',
+        );
+      } else {
+        // If selected and not present, add the dimension fields
+        if (!hasWidth) {
+          field.inputs.push({ label: 'Width', value: '', type: 'text' });
+        }
+        if (!hasDepth) {
+          field.inputs.push({ label: 'Depth', value: '', type: 'text' });
+        }
+        if (!hasHeight) {
+          field.inputs.push({ label: 'Height', value: '', type: 'text' });
+        }
       }
 
       return { ...field, inputs: [...field.inputs] };
