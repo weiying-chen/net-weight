@@ -30,8 +30,8 @@ export type FlexFieldsProps = {
   label?: string;
   fields?: FlexField[];
   addFieldLabel?: string;
-  // NEW: The default structure for a new field.
-  defaultField?: FlexField;
+  // NEW: The template structure for a new field.
+  fieldTemplate?: FlexField;
   onChange: (fields: FlexField[]) => void;
 };
 
@@ -39,7 +39,7 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
   label,
   fields: initialFields = [],
   addFieldLabel = 'Add Field',
-  defaultField,
+  fieldTemplate,
   onChange,
 }) => {
   const [fields, setFields] = useState<FlexField[]>(initialFields);
@@ -71,11 +71,11 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
   };
 
   const handleAddField = () => {
-    // Use the defaultField prop if provided; otherwise, fall back to a basic default.
-    const newField: FlexField = defaultField
-      ? { ...defaultField }
+    // Use the fieldTemplate prop if provided; otherwise, fall back to a basic default.
+    const newField: FlexField = fieldTemplate
+      ? { ...fieldTemplate }
       : {
-          key: 'New Field',
+          key: 'newField',
           inputs: [{ label: 'Value', value: '', type: 'text' as ValueType }],
         };
     updateFields([...fields, newField]);
