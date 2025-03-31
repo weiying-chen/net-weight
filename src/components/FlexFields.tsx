@@ -147,7 +147,7 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
           {/* Static field key */}
           <div className="mr-2 font-bold">{field.key}</div>
           {field.inputs.map((input, inputIndex) => (
-            <div key={inputIndex} className="mr-2 flex-1">
+            <div key={inputIndex} className="w-full">
               {renderInput(index, input, inputIndex)}
             </div>
           ))}
