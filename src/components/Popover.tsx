@@ -11,10 +11,12 @@ import { cn } from '@/utils';
 import { IconChevronDown } from '@tabler/icons-react';
 import { PseudoInput } from '@/components/PseudoInput';
 import { Row } from '@/components/Row';
+import { Tooltip } from '@/components/Tooltip';
 
 export type PopoverProps = {
   label: ReactNode;
   asContent: ReactNode;
+  tooltip?: ReactNode;
   className?: string;
   disabled?: boolean;
   small?: boolean;
@@ -25,13 +27,13 @@ export type PopoverProps = {
 export const Popover = ({
   label,
   asContent,
+  tooltip,
   className,
   disabled = false,
   small = false,
   open,
   onOpenChange,
 }: PopoverProps) => {
-  // Use controlled state if "open" is provided, otherwise fallback to internal state
   const [internalOpen, setInternalOpen] = useState(false);
   const isOpen = open !== undefined ? open : internalOpen;
 
@@ -93,7 +95,6 @@ export const Popover = ({
     const handleOutsideClick = (event: globalThis.MouseEvent) => {
       const target = event.target as HTMLElement;
 
-      // Prevent closing if clicking on an element with `data-state="open"`
       if (target.closest('[data-state="open"]')) {
         return;
       }
@@ -137,9 +138,18 @@ export const Popover = ({
             className,
           )}
         >
-          <Row alignItems="center" className="font-medium" locked>
-            {label}
-          </Row>
+          {/* Wrap the label with Tooltip if tooltip content is provided */}
+          {tooltip ? (
+            <Tooltip content={tooltip}>
+              <Row alignItems="center" className="font-medium" locked fluid>
+                {label}
+              </Row>
+            </Tooltip>
+          ) : (
+            <Row alignItems="center" className="font-medium" locked fluid>
+              {label}
+            </Row>
+          )}
           <IconChevronDown size={small ? 16 : 20} />
         </PseudoInput>
 

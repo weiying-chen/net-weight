@@ -14,6 +14,7 @@ import { cn } from '@/utils';
 import { IconChevronDown, IconSearch, IconLoader2 } from '@tabler/icons-react';
 import { PseudoInput } from '@/components/PseudoInput';
 import { Tooltip } from '@/components/Tooltip';
+import { Input } from '@/components/Input';
 
 type SelectOption<T> = {
   label: string;
@@ -238,41 +239,26 @@ export const Select = <T extends string | number>({
       ref={triggerRef}
       {...props}
     >
-      <PseudoInput
-        tabIndex={0}
-        error={error}
+      <Input
+        icon={<IconSearch className="text-muted" size={16} />}
+        placeholder={placeholder}
+        value={
+          isOpen ? localSearchQuery : localSearchQuery || selected?.label || ''
+        }
+        onChange={(e) => {
+          if (!isOpen) openDropdown();
+          setLocalSearchQuery(e.target.value);
+          onSearchChange?.(e.target.value);
+        }}
+        onClick={() => {
+          if (!isOpen) openDropdown();
+        }}
+        onKeyDown={handleKeyDown}
+        onFocus={() => {
+          if (!isOpen) openDropdown();
+        }}
         disabled={disabled}
-        className={cn('flex cursor-text items-center', {
-          'focus-visible:ring-0 focus-visible:ring-offset-0': isOpen,
-          'h-5 px-2 py-1 text-xs': small,
-        })}
-      >
-        <IconSearch className="text-muted" size={16} />
-        <input
-          placeholder={placeholder}
-          // value={isOpen ? localSearchQuery : (selected?.label ?? '')}
-          // value={localSearchQuery || selected?.label || ''}
-          value={
-            isOpen
-              ? localSearchQuery
-              : localSearchQuery || selected?.label || ''
-          }
-          onChange={(e) => {
-            if (!isOpen) openDropdown();
-            setLocalSearchQuery(e.target.value);
-            onSearchChange?.(e.target.value);
-          }}
-          onClick={() => {
-            if (!isOpen) openDropdown();
-          }}
-          onKeyDown={handleKeyDown}
-          onFocus={() => {
-            if (!isOpen) openDropdown();
-          }}
-          disabled={disabled}
-          className="flex-1 border-none bg-transparent outline-none placeholder:text-muted"
-        />
-      </PseudoInput>
+      />
       {isOpen && renderDropdown()}
     </div>
   );

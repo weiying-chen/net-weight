@@ -10,6 +10,7 @@ type ModalProps = {
   className?: string;
   size?: 'md' | 'lg';
   locked?: boolean;
+  position?: 'center' | 'top';
 };
 
 export function Modal({
@@ -19,6 +20,7 @@ export function Modal({
   className,
   size = 'md',
   locked = false,
+  position = 'center',
 }: ModalProps) {
   const [isMounted, setIsMounted] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -58,13 +60,14 @@ export function Modal({
     lg: 'max-w-screen-md',
   };
 
+  // Change vertical alignment based on the position prop.
+  const containerClasses =
+    position === 'top'
+      ? 'fixed inset-x-0 top-0 z-50 flex items-start justify-center'
+      : 'fixed inset-0 z-50 flex items-center justify-center';
+
   return (
-    <div
-      className={cn(
-        'fixed inset-0 z-50 flex items-center justify-center',
-        className,
-      )}
-    >
+    <div className={cn(containerClasses, className)}>
       <div
         className={cn(
           'fixed inset-0 bg-black bg-opacity-50 transition-opacity duration-200',

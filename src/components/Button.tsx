@@ -2,12 +2,21 @@ import { ButtonHTMLAttributes, forwardRef } from 'react';
 import { IconLoader2 } from '@tabler/icons-react';
 import { cn } from '@/utils';
 
+type ButtonVariant =
+  | 'primary'
+  | 'secondary'
+  | 'success'
+  | 'danger'
+  | 'link'
+  | 'icon';
+
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: 'primary' | 'secondary' | 'success' | 'danger' | 'link';
+  variant?: ButtonVariant;
   isLoading?: boolean;
   locked?: boolean;
   isFull?: boolean;
   circular?: boolean;
+  square?: boolean;
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -18,6 +27,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       locked = false,
       isFull = false,
       circular = false,
+      square = false,
       className,
       children,
       type = 'button',
@@ -25,12 +35,16 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref,
   ) => {
-    const cnFromVariant = {
-      primary: 'text-background bg-primary',
-      secondary: 'text-foreground bg-secondary',
-      success: 'text-background bg-success',
-      danger: 'text-white bg-danger',
+    const baseStyles =
+      'flex items-center justify-center whitespace-nowrap rounded border border-border font-medium shadow ring-foreground hover:shadow-dark ring-offset-2 ring-offset-background focus:outline-none focus-visible:ring-2';
+
+    const cnFromVariant: Record<ButtonVariant, string> = {
+      primary: 'text-background bg-primary px-4 py-2 text-sm h-10',
+      secondary: 'text-foreground bg-secondary px-4 py-2 text-sm h-10',
+      success: 'text-background bg-success px-4 py-2 text-sm h-10',
+      danger: 'text-white bg-danger px-4 py-2 text-sm h-10',
       link: 'h-auto border-none bg-transparent px-0 py-0 text-foreground shadow-none',
+      icon: 'h-10 w-10 md:w-10 px-0 py-0 border-none shadow-none hover:shadow',
     };
 
     return (
@@ -38,12 +52,15 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         type={type}
         className={cn(
-          'flex h-10 items-center justify-center gap-2 whitespace-nowrap rounded border border-border px-4 py-2 text-sm font-medium shadow ring-foreground ring-offset-2 ring-offset-background hover:shadow-dark focus:outline-none focus-visible:ring-2',
+          baseStyles,
           cnFromVariant[variant],
           {
-            'w-full md:w-auto': !locked,
-            'w-full md:w-full': isFull,
-            'h-10 w-10 shrink-0 rounded-full px-0 py-0 md:w-10': circular,
+            'w-full md:w-auto':
+              !locked && variant !== 'icon' && variant !== 'link',
+            'w-full md:w-full':
+              isFull && variant !== 'icon' && variant !== 'link',
+            'rounded-full': circular,
+            'h-10 w-10 px-0 py-0 md:w-10': square,
             'pointer-events-none opacity-50': props.disabled || isLoading,
           },
           className,

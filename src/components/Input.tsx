@@ -6,10 +6,11 @@ type InputProps = InputHTMLAttributes<HTMLInputElement> & {
   label?: ReactNode;
   error?: string;
   required?: boolean;
+  icon?: ReactNode;
 };
 
 const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
-  { label, disabled, className, error, required, ...props },
+  { label, disabled, className, error, required, icon, ...props },
   ref,
 ) {
   return (
@@ -22,18 +23,26 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         ) : (
           label
         ))}
-      <input
-        ref={ref}
-        disabled={disabled}
-        className={cn(
-          'h-10 w-full rounded border border-border bg-background px-3 py-2 text-sm outline-none ring-foreground ring-offset-2 ring-offset-background focus-visible:ring-2',
-          {
-            'border-danger': error,
-            'pointer-events-none opacity-50': disabled,
-          },
+      <div className="relative w-full">
+        {icon && (
+          <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
+            {icon}
+          </span>
         )}
-        {...props}
-      />
+        <input
+          ref={ref}
+          disabled={disabled}
+          className={cn(
+            'h-10 w-full rounded border border-border bg-background px-3 py-2 text-sm outline-none ring-foreground ring-offset-2 ring-offset-background placeholder:text-muted focus-visible:ring-2',
+            icon && 'pl-9',
+            {
+              'border-danger': error,
+              'pointer-events-none opacity-50': disabled,
+            },
+          )}
+          {...props}
+        />
+      </div>
       {error && <span className="text-sm text-danger">{error}</span>}
     </Col>
   );
