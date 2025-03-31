@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Col } from '@/components/Col';
 import { Row } from '@/components/Row';
 import { Button } from '@/components/Button';
@@ -19,6 +19,7 @@ export type FlexFieldInput = {
   value: string | number | boolean;
   type: ValueType; // Determines which input is shown
   options?: Option[]; // For type 'select'
+  unit?: string; // Optional unit string to display (e.g., "cm", "USD")
 };
 
 export type FlexField = {
@@ -30,7 +31,7 @@ export type FlexFieldsProps = {
   label?: string;
   fields?: FlexField[];
   addFieldLabel?: string;
-  // NEW: The template structure for a new field.
+  // Template structure for a new field.
   fieldTemplate?: FlexField;
   onChange: (fields: FlexField[]) => void;
 };
@@ -85,58 +86,71 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
     updateFields(fields.filter((_, i) => i !== fieldIndex));
   };
 
+  // Helper function to render an input with its label and unit displayed above the input.
   const renderInput = (
     fieldIndex: number,
     input: FlexFieldInput,
     inputIndex: number,
   ) => {
-    const inputLabel = input.label || 'Value';
-    switch (input.type) {
-      case 'number':
-        return (
-          <Input
-            label={inputLabel}
-            type="number"
-            value={String(input.value)}
-            onChange={(e) =>
-              handleInputChange(fieldIndex, inputIndex, Number(e.target.value))
-            }
-          />
-        );
-      case 'switch':
-        return (
-          <Switch
-            label={inputLabel}
-            checked={Boolean(input.value)}
-            onChange={(checked) =>
-              handleInputChange(fieldIndex, inputIndex, checked)
-            }
-          />
-        );
-      case 'select':
-        return (
-          <Select
-            label={inputLabel}
-            value={String(input.value)}
-            options={input.options || []}
-            onChange={(value) =>
-              handleInputChange(fieldIndex, inputIndex, value)
-            }
-          />
-        );
-      default:
-        // 'text'
-        return (
-          <Input
-            label={inputLabel}
-            type="text"
-            value={String(input.value)}
-            onChange={(e) =>
-              handleInputChange(fieldIndex, inputIndex, e.target.value)
-            }
-          />
-        );
-    }
+    const baseLabel = input.label || 'Value';
+    return (
+      <div className="w-full">
+        <label className="block text-sm font-medium">
+          {baseLabel}
+          {input.unit && (
+            <span className="ml-1 text-xs text-muted">{input.unit}</span>
+          )}
+        </label>
+        {(() => {
+          switch (input.type) {
+            case 'number':
+              return (
+                <Input
+                  type="number"
+                  value={String(input.value)}
+                  onChange={(e) =>
+                    handleInputChange(
+                      fieldIndex,
+                      inputIndex,
+                      Number(e.target.value),
+                    )
+                  }
+                />
+              );
+            case 'switch':
+              return (
+                <Switch
+                  checked={Boolean(input.value)}
+                  onChange={(checked) =>
+                    handleInputChange(fieldIndex, inputIndex, checked)
+                  }
+                />
+              );
+            case 'select':
+              return (
+                <Select
+                  value={String(input.value)}
+                  options={input.options || []}
+                  onChange={(value) =>
+                    handleInputChange(fieldIndex, inputIndex, value)
+                  }
+                />
+              );
+            default:
+              // 'text'
+              return (
+                <Input
+                  type="text"
+                  value={String(input.value)}
+                  onChange={(e) =>
+                    handleInputChange(fieldIndex, inputIndex, e.target.value)
+                  }
+                />
+              );
+          }
+        })()}
+      </div>
+    );
   };
 
   return (

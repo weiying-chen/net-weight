@@ -1,17 +1,31 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Col } from '@/components/Col';
 import { FlexFields, FlexField, FlexFieldInput } from '@/components/FlexFields';
 
-// Configuration for extra fields based on Value selection
+// Configuration for extra fields based on Value selection,
+// now with unit properties added.
 const extraFieldsMapping: Record<string, FlexFieldInput[]> = {
   'Username, Password': [
     { label: 'Username', value: '', type: 'text' },
     { label: 'Password', value: '', type: 'text' },
   ],
   'Dimensions (W x D x H)': [
-    { label: 'Width', value: '', type: 'text' },
-    { label: 'Depth', value: '', type: 'text' },
-    { label: 'Height', value: '', type: 'text' },
+    { label: 'Width', value: '', type: 'number', unit: 'cm' },
+    { label: 'Depth', value: '', type: 'number', unit: 'cm' },
+    { label: 'Height', value: '', type: 'number', unit: 'cm' },
+  ],
+  Price: [
+    { label: 'Amount', value: '', type: 'number', unit: 'USD' },
+    {
+      label: 'Currency',
+      value: 'USD',
+      type: 'select',
+      options: [
+        { value: 'USD', label: 'USD' },
+        { value: 'EUR', label: 'EUR' },
+        { value: 'GBP', label: 'GBP' },
+      ],
+    },
   ],
 };
 
@@ -127,7 +141,7 @@ export function PG() {
 
       if (!typeInput || !methodInput || !valueInput) return field;
 
-      // Restrict Methods based on Type
+      // Restrict Methods based on Type.
       if (typeInput.value === 'Rack') {
         methodInput.options = [{ value: 'Datasheet', label: 'Datasheet' }];
         if (methodInput.value !== 'Datasheet') {
@@ -140,13 +154,13 @@ export function PG() {
         ];
       }
 
-      // Update Value options based on Method
+      // Update Value options based on Method.
       valueInput.options =
         methodInput.value === 'Datasheet'
           ? datasheetValueOptions
           : networkValueOptions;
 
-      // Reset Value if not valid in the new options
+      // Reset Value if not valid in the new options.
       if (
         !valueInput.options.find((option) => option.value === valueInput.value)
       ) {
@@ -154,8 +168,20 @@ export function PG() {
       }
 
       // Update extra fields based on the selected Value.
-      // Casting to string since value can be string | number | boolean.
       const updatedField = updateExtraFields(field, String(valueInput.value));
+
+      // --- NEW: If "Price" is selected, update the Amount field's unit based on Currency.
+      if (String(valueInput.value) === 'Price') {
+        const currencyInput = updatedField.inputs.find(
+          (inp) => inp.label === 'Currency',
+        );
+        if (currencyInput) {
+          const newCurrency = String(currencyInput.value);
+          updatedField.inputs = updatedField.inputs.map((inp) =>
+            inp.label === 'Amount' ? { ...inp, unit: newCurrency } : inp,
+          );
+        }
+      }
 
       return { ...updatedField, inputs: [...updatedField.inputs] };
     });
@@ -164,6 +190,10 @@ export function PG() {
   };
 
   const fieldTemplate = createField(fields);
+
+  useEffect(() => {
+    console.log('fields:', fields);
+  }, [fields]);
 
   return (
     <Col>
