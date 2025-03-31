@@ -36,7 +36,6 @@ export function PG() {
   };
 
   // Helper function to create a new field
-  // Note: Since the default Type is "Rack", we initialize Method options with only "Datasheet"
   const createField = (currentFields: FlexField[]): FlexField => ({
     key: getNextKey(currentFields),
     inputs: [
@@ -52,7 +51,7 @@ export function PG() {
       },
       {
         label: 'Method',
-        value: 'Datasheet', // Default to Datasheet
+        value: 'Datasheet',
         type: 'select',
         options: [{ value: 'Datasheet', label: 'Datasheet' }],
       },
@@ -60,53 +59,57 @@ export function PG() {
         label: 'Value',
         value: '',
         type: 'select',
-        // Default Value options based on the default Method ("Datasheet")
         options: datasheetValueOptions,
       },
     ],
   });
 
-  // Initialize the state with a single field
   const [fields, setFields] = useState<FlexField[]>([createField([])]);
 
   // Update Method and Value options based on the selected Type and Method
   const handleFieldsChange = (updatedFields: FlexField[]) => {
     const newFields = updatedFields.map((field) => {
-      // Find the relevant inputs
       const typeInput = field.inputs.find((i) => i.label === 'Type');
       const methodInput = field.inputs.find((i) => i.label === 'Method');
       const valueInput = field.inputs.find((i) => i.label === 'Value');
+
       if (!typeInput || !methodInput || !valueInput) return field;
 
-      // If Type is "Rack", only allow "Datasheet" as a Method.
+      // Restrict Methods based on Type
       if (typeInput.value === 'Rack') {
         methodInput.options = [{ value: 'Datasheet', label: 'Datasheet' }];
-        // Force the method value to "Datasheet" if it's not already set
         if (methodInput.value !== 'Datasheet') {
           methodInput.value = 'Datasheet';
         }
       } else {
-        // For other Types, allow both Datasheet and Network
         methodInput.options = [
           { value: 'Datasheet', label: 'Datasheet' },
           { value: 'Network', label: 'Network' },
         ];
       }
 
-      // Update Value options based on the selected Method
-      if (methodInput.value === 'Datasheet') {
-        valueInput.options = datasheetValueOptions;
-      } else if (methodInput.value === 'Network') {
-        valueInput.options = networkValueOptions;
-      } else {
-        valueInput.options = [];
-      }
+      // Update Value options based on Method
+      valueInput.options =
+        methodInput.value === 'Datasheet'
+          ? datasheetValueOptions
+          : networkValueOptions;
 
-      // Reset the Value if it doesn't match any of the new options
+      // Reset Value if not valid in the new options
       if (
         !valueInput.options.find((option) => option.value === valueInput.value)
       ) {
         valueInput.value = '';
+      }
+
+      // Remove Username & Password fields first
+      field.inputs = field.inputs.filter(
+        (i) => i.label !== 'Username' && i.label !== 'Password',
+      );
+
+      // If "Username, Password" is selected, add Username & Password inputs
+      if (valueInput.value === 'Username, Password') {
+        field.inputs.push({ label: 'Username', value: '', type: 'text' });
+        field.inputs.push({ label: 'Password', value: '', type: 'text' });
       }
 
       return { ...field, inputs: [...field.inputs] };
@@ -115,7 +118,6 @@ export function PG() {
     setFields(newFields);
   };
 
-  // Field template for new fields (using the current state to generate the next key)
   const fieldTemplate = createField(fields);
 
   return (
