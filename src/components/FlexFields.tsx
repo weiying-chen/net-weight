@@ -30,6 +30,8 @@ export type FlexFieldsProps = {
   label?: string;
   fields?: FlexField[];
   addFieldLabel?: string;
+  // NEW: The default structure for a new field.
+  defaultField?: FlexField;
   onChange: (fields: FlexField[]) => void;
 };
 
@@ -37,6 +39,7 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
   label,
   fields: initialFields = [],
   addFieldLabel = 'Add Field',
+  defaultField,
   onChange,
 }) => {
   const [fields, setFields] = useState<FlexField[]>(initialFields);
@@ -68,13 +71,14 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
   };
 
   const handleAddField = () => {
-    updateFields([
-      ...fields,
-      {
-        key: 'New Field',
-        inputs: [{ label: 'Value', value: '', type: 'text' }],
-      },
-    ]);
+    // Use the defaultField prop if provided; otherwise, fall back to a basic default.
+    const newField: FlexField = defaultField
+      ? { ...defaultField }
+      : {
+          key: 'New Field',
+          inputs: [{ label: 'Value', value: '', type: 'text' as ValueType }],
+        };
+    updateFields([...fields, newField]);
   };
 
   const handleRemoveField = (fieldIndex: number) => {

@@ -81,9 +81,41 @@ export function PG() {
     },
   ]);
 
+  // Default new field structure
+  const defaultField: FlexField = {
+    key: 'New Field',
+    inputs: [
+      {
+        label: 'Type',
+        value: 'Rack',
+        type: 'select',
+        options: [
+          { value: 'Rack', label: 'Rack' },
+          { value: 'Switch', label: 'Switch' },
+          { value: 'Router', label: 'Router' },
+        ],
+      },
+      {
+        label: 'Method',
+        value: 'Datasheet',
+        type: 'select',
+        options: [
+          { value: 'Datasheet', label: 'Datasheet' },
+          { value: 'Router', label: 'Router' },
+        ],
+      },
+      { label: 'Value', value: '', type: 'text' },
+    ],
+  };
+
   return (
     <Col>
-      <FlexFields label="Attributes" fields={fields} onChange={setFields} />
+      <FlexFields
+        label="Attributes"
+        fields={fields}
+        defaultField={defaultField}
+        onChange={setFields}
+      />
     </Col>
   );
 }
