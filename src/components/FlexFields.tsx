@@ -15,14 +15,14 @@ export type Option = {
 };
 
 export type FlexFieldInput = {
-  label?: string; // Optional label for the input (defaults to "Value" if not provided)
+  label?: string; // Optional label for the input (defaults to "Value")
   value: string | number | boolean;
   type: ValueType; // Determines which input is shown
-  options?: Option[]; // For type 'select', options for the dropdown.
+  options?: Option[]; // For type 'select'
 };
 
 export type FlexField = {
-  key: string; // Field group name (displayed as a static label)
+  key: string; // Field group name, displayed as a static label
   inputs: FlexFieldInput[]; // One or more inputs in this field
 };
 
@@ -68,10 +68,12 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
   };
 
   const handleAddField = () => {
-    // Add a new field with one default input (adjust defaults as needed)
     updateFields([
       ...fields,
-      { key: 'New Field', inputs: [{ label: '', value: '', type: 'text' }] },
+      {
+        key: 'New Field',
+        inputs: [{ label: 'Value', value: '', type: 'text' }],
+      },
     ]);
   };
 
@@ -119,6 +121,7 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
           />
         );
       default:
+        // 'text'
         return (
           <Input
             label={inputLabel}
@@ -133,28 +136,26 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
   };
 
   return (
-    <Col>
+    <Col className="w-full">
       {label && <label className="text-sm font-semibold">{label}</label>}
-      {fields.map((field, fieldIndex) => (
-        <div key={fieldIndex} className="my-2 rounded border p-3">
-          {/* Display the field's key as a static group label */}
-          <div className="mb-2 font-bold">{field.key}</div>
-          <Row alignItems="center">
-            {field.inputs.map((input, inputIndex) => (
-              <div key={inputIndex} className="mr-2">
-                {renderInput(fieldIndex, input, inputIndex)}
-              </div>
-            ))}
-            <Button
-              type="button"
-              variant="secondary"
-              className="md:mt-7"
-              onClick={() => handleRemoveField(fieldIndex)}
-            >
-              <IconTrash size={20} />
-            </Button>
-          </Row>
-        </div>
+      {fields.map((field, index) => (
+        <Row alignItems="center" key={index} className="mb-2 w-full">
+          {/* Static field key */}
+          <div className="mr-2 font-bold">{field.key}</div>
+          {field.inputs.map((input, inputIndex) => (
+            <div key={inputIndex} className="mr-2 flex-1">
+              {renderInput(index, input, inputIndex)}
+            </div>
+          ))}
+          <Button
+            type="button"
+            variant="secondary"
+            className="md:mt-7"
+            onClick={() => handleRemoveField(index)}
+          >
+            <IconTrash size={20} />
+          </Button>
+        </Row>
       ))}
       <Button type="button" onClick={handleAddField} className="self-start">
         {addFieldLabel}
