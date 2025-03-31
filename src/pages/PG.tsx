@@ -7,25 +7,76 @@ export function PG() {
     {
       key: '1',
       inputs: [
-        { label: 'Type', value: '', type: 'string' },
-        { label: 'Method', value: '', type: 'string' },
-        { label: 'Value', value: '', type: 'string' },
+        {
+          label: 'Type',
+          value: 'Rack',
+          type: 'select',
+          options: [
+            { value: 'Rack', label: 'Rack' },
+            { value: 'Switch', label: 'Switch' },
+            { value: 'Router', label: 'Router' },
+          ],
+        },
+        {
+          label: 'Method',
+          value: 'Datasheet',
+          type: 'select',
+          options: [
+            { value: 'Datasheet', label: 'Datasheet' },
+            { value: 'Router', label: 'Router' },
+          ],
+        },
+        { label: 'Value', value: '', type: 'text' },
       ],
     },
     {
       key: '2',
       inputs: [
-        { label: 'Type', value: '', type: 'string' },
-        { label: 'Method', value: '', type: 'string' },
-        { label: 'Value', value: '', type: 'string' },
+        {
+          label: 'Type',
+          value: 'Switch',
+          type: 'select',
+          options: [
+            { value: 'Rack', label: 'Rack' },
+            { value: 'Switch', label: 'Switch' },
+            { value: 'Router', label: 'Router' },
+          ],
+        },
+        {
+          label: 'Method',
+          value: 'Router',
+          type: 'select',
+          options: [
+            { value: 'Datasheet', label: 'Datasheet' },
+            { value: 'Router', label: 'Router' },
+          ],
+        },
+        { label: 'Value', value: '', type: 'text' },
       ],
     },
     {
       key: '3',
       inputs: [
-        { label: 'Type', value: '', type: 'string' },
-        { label: 'Method', value: '', type: 'string' },
-        { label: 'Value', value: '', type: 'string' },
+        {
+          label: 'Type',
+          value: 'Router',
+          type: 'select',
+          options: [
+            { value: 'Rack', label: 'Rack' },
+            { value: 'Switch', label: 'Switch' },
+            { value: 'Router', label: 'Router' },
+          ],
+        },
+        {
+          label: 'Method',
+          value: 'Datasheet',
+          type: 'select',
+          options: [
+            { value: 'Datasheet', label: 'Datasheet' },
+            { value: 'Router', label: 'Router' },
+          ],
+        },
+        { label: 'Value', value: '', type: 'text' },
       ],
     },
   ]);
