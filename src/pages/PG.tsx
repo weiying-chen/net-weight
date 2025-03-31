@@ -1,6 +1,58 @@
 import { useState } from 'react';
 import { Col } from '@/components/Col';
-import { FlexFields, FlexField } from '@/components/FlexFields';
+import { FlexFields, FlexField, FlexFieldInput } from '@/components/FlexFields';
+
+// Configuration for extra fields based on Value selection
+const extraFieldsMapping: Record<string, FlexFieldInput[]> = {
+  'Username, Password': [
+    { label: 'Username', value: '', type: 'text' },
+    { label: 'Password', value: '', type: 'text' },
+  ],
+  'Dimensions (W x D x H)': [
+    { label: 'Width', value: '', type: 'text' },
+    { label: 'Depth', value: '', type: 'text' },
+    { label: 'Height', value: '', type: 'text' },
+  ],
+};
+
+function updateExtraFields(field: FlexField, selectedValue: string): FlexField {
+  // Get all possible extra field labels from the mapping
+  const allExtraLabels = Object.values(extraFieldsMapping)
+    .flat()
+    .map((input) => input.label);
+
+  // If the current value doesn't require extra fields,
+  // remove any extra fields from the inputs.
+  if (!extraFieldsMapping[selectedValue]) {
+    return {
+      ...field,
+      inputs: field.inputs.filter(
+        (input) => !allExtraLabels.includes(input.label),
+      ),
+    };
+  }
+
+  // Otherwise, get the required extra fields for this value.
+  const requiredExtraFields = extraFieldsMapping[selectedValue];
+  const requiredLabels = requiredExtraFields.map((input) => input.label);
+
+  // Preserve non-extra fields and extra fields that belong to the active selection.
+  let preservedInputs = field.inputs.filter((input) => {
+    // If input is not an extra field at all, keep it.
+    if (!allExtraLabels.includes(input.label)) return true;
+    // Otherwise, keep it only if it belongs to the required set.
+    return requiredLabels.includes(input.label);
+  });
+
+  // For each required extra field, if it's not already present, add it.
+  requiredExtraFields.forEach((required) => {
+    if (!preservedInputs.find((input) => input.label === required.label)) {
+      preservedInputs.push({ ...required });
+    }
+  });
+
+  return { ...field, inputs: preservedInputs };
+}
 
 export function PG() {
   // Mappings for Value options
@@ -101,52 +153,11 @@ export function PG() {
         valueInput.value = '';
       }
 
-      // --- Handle "Username, Password" Fields ---
-      // Track if Username & Password were already present
-      const hasUsername = field.inputs.some((i) => i.label === 'Username');
-      const hasPassword = field.inputs.some((i) => i.label === 'Password');
+      // Update extra fields based on the selected Value.
+      // Casting to string since value can be string | number | boolean.
+      const updatedField = updateExtraFields(field, String(valueInput.value));
 
-      // If the selected value is NOT "Username, Password", remove them
-      if (valueInput.value !== 'Username, Password') {
-        field.inputs = field.inputs.filter(
-          (i) => i.label !== 'Username' && i.label !== 'Password',
-        );
-      } else {
-        // If "Username, Password" is selected but fields don't exist, add them
-        if (!hasUsername) {
-          field.inputs.push({ label: 'Username', value: '', type: 'text' });
-        }
-        if (!hasPassword) {
-          field.inputs.push({ label: 'Password', value: '', type: 'text' });
-        }
-      }
-
-      // --- Handle "Dimensions (W x D x H)" Fields ---
-      // Check if the dimension fields are already present
-      const hasWidth = field.inputs.some((i) => i.label === 'Width');
-      const hasDepth = field.inputs.some((i) => i.label === 'Depth');
-      const hasHeight = field.inputs.some((i) => i.label === 'Height');
-
-      // If the selected value is NOT "Dimensions (W x D x H)", remove these inputs
-      if (valueInput.value !== 'Dimensions (W x D x H)') {
-        field.inputs = field.inputs.filter(
-          (i) =>
-            i.label !== 'Width' && i.label !== 'Depth' && i.label !== 'Height',
-        );
-      } else {
-        // If selected and not present, add the dimension fields
-        if (!hasWidth) {
-          field.inputs.push({ label: 'Width', value: '', type: 'text' });
-        }
-        if (!hasDepth) {
-          field.inputs.push({ label: 'Depth', value: '', type: 'text' });
-        }
-        if (!hasHeight) {
-          field.inputs.push({ label: 'Height', value: '', type: 'text' });
-        }
-      }
-
-      return { ...field, inputs: [...field.inputs] };
+      return { ...updatedField, inputs: [...updatedField.inputs] };
     });
 
     setFields(newFields);
