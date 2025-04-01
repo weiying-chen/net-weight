@@ -46,7 +46,7 @@ export const networkOptions: Record<
   string,
   { value: string; label: string }[]
 > = {
-  Rack: [],
+  // Rack: [],
   Switch: [
     { value: 'Ethernet', label: 'Ethernet' },
     { value: 'Optical', label: 'Optical' },
@@ -89,7 +89,6 @@ export const extraInputs: Record<string, FlexFieldInput[]> = {
   'MAC address': [{ label: 'MAC address', value: '', type: 'text' }],
 };
 
-// Extracted default field inputs constant
 export const defaultInputs: FlexFieldInput[] = [
   {
     label: 'Type',
@@ -104,10 +103,8 @@ export const defaultInputs: FlexFieldInput[] = [
     label: 'Method',
     value: 'Datasheet',
     type: 'select',
-    options: [
-      { value: 'Datasheet', label: 'Datasheet' },
-      { value: 'Network', label: 'Network' },
-    ],
+    // Only "Datasheet" by default if Type = "Rack"
+    options: [{ value: 'Datasheet', label: 'Datasheet' }],
   },
   {
     label: 'Item',

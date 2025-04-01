@@ -25,19 +25,21 @@ function updateExtraFields(field: FlexField, selectedItem: string): FlexField {
   const staticInputs = field.inputs.filter(
     (input) => !extraLabels.includes(input.label),
   );
-  if (!selectedItem) return { ...field, inputs: staticInputs };
+
+  if (!selectedItem) {
+    return { ...field, inputs: staticInputs };
+  }
+
   if (extraInputs[selectedItem]) {
     const inputsToAdd = extraInputs[selectedItem].map((extra) => {
-      const existing = field.inputs.find(
-        (input) => input.label === extra.label,
-      );
+      const existing = field.inputs.find((inp) => inp.label === extra.label);
       return existing ? { ...extra, value: existing.value } : { ...extra };
     });
     return { ...field, inputs: [...staticInputs, ...inputsToAdd] };
   }
-  const genericInput = field.inputs.find(
-    (input) => input.label === 'Value',
-  ) || {
+
+  // Fallback to a generic "Value" input if no extra fields
+  const genericInput = field.inputs.find((inp) => inp.label === 'Value') || {
     label: 'Value',
     value: '',
     type: 'text',
@@ -54,6 +56,7 @@ export function PG() {
       ) + 1,
     );
 
+  // Create a new field using the defaultInputs constant
   const createField = (currentFields: FlexField[]): FlexField => ({
     key: getNextKey(currentFields),
     inputs: [...defaultInputs],
@@ -70,15 +73,27 @@ export function PG() {
 
         if (!typeInput || !methodInput || !itemInput) return field;
 
-        // Ensure type safety by converting values to strings
         const typeValue = String(typeInput.value);
-        const methodValue = String(methodInput.value);
+        let methodValue = String(methodInput.value);
         let itemValue = String(itemInput.value);
 
-        // Get valid item options based on the selected Type and Method
+        // If Type is "Rack", force Method to only show "Datasheet"
+        if (typeValue === 'Rack') {
+          methodInput.options = [{ value: 'Datasheet', label: 'Datasheet' }];
+          methodInput.value = 'Datasheet';
+          methodValue = 'Datasheet';
+        } else {
+          // Otherwise, Method can be either "Datasheet" or "Network"
+          methodInput.options = [
+            { value: 'Datasheet', label: 'Datasheet' },
+            { value: 'Network', label: 'Network' },
+          ];
+        }
+
+        // Get valid item options based on the (possibly updated) type & method
         itemInput.options = getItemOptions(typeValue, methodValue);
 
-        // Reset item value if it is not in the updated options
+        // Reset item value if it's not in the updated list
         if (!itemInput.options.some((opt) => opt.value === itemValue)) {
           itemValue = '';
           itemInput.value = itemValue;
