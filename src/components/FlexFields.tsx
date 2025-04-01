@@ -159,20 +159,22 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
       {fields.map((field, index) => (
         <Row alignItems="center" key={index} className="mb-2 w-full">
           {/* Static field key */}
-          <div className="mr-2 font-bold">{field.key}</div>
+          {/* <div className="mr-2 font-bold">{field.key}</div> */}
           {field.inputs.map((input, inputIndex) => (
             <div key={inputIndex} className="w-full">
               {renderInput(index, input, inputIndex)}
             </div>
           ))}
-          <Button
-            type="button"
-            variant="secondary"
-            className="md:mt-7"
-            onClick={() => handleRemoveField(index)}
-          >
-            <IconTrash size={20} />
-          </Button>
+          {/* Align the trash icon to the bottom of the row */}
+          <div className="self-end">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => handleRemoveField(index)}
+            >
+              <IconTrash size={20} />
+            </Button>
+          </div>
         </Row>
       ))}
       <Button type="button" onClick={handleAddField} className="self-start">

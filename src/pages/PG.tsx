@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Col } from '@/components/Col';
 import { FlexFields, FlexField } from '@/components/FlexFields';
 import {
@@ -88,6 +88,10 @@ export function PG() {
       }),
     );
   };
+
+  useEffect(() => {
+    console.log('f:', fields);
+  }, [fields]);
 
   return (
     <Col>
