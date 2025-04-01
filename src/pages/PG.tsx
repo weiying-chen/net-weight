@@ -2,20 +2,18 @@ import { useEffect, useState } from 'react';
 import { Col } from '@/components/Col';
 import { FlexFields, FlexField, FlexFieldInput } from '@/components/FlexFields';
 
-// Configuration for extra fields based on Value selection,
-// now with unit properties added.
 const extraFieldsMapping: Record<string, FlexFieldInput[]> = {
   'Username, Password': [
     { label: 'Username', value: '', type: 'text' },
     { label: 'Password', value: '', type: 'text' },
   ],
-  'Dimensions (W x D x H)': [
-    { label: 'Width', value: '', type: 'number', unit: 'cm' },
-    { label: 'Depth', value: '', type: 'number', unit: 'cm' },
-    { label: 'Height', value: '', type: 'number', unit: 'cm' },
+  Dimensions: [
+    { label: 'Width', value: 0, type: 'number', unit: 'cm' },
+    { label: 'Depth', value: 0, type: 'number', unit: 'cm' },
+    { label: 'Height', value: 0, type: 'number', unit: 'cm' },
   ],
   Price: [
-    { label: 'Amount', value: '', type: 'number', unit: 'USD' },
+    { label: 'Amount', value: 0, type: 'number', unit: 'USD' },
     {
       label: 'Currency',
       value: 'USD',
@@ -29,54 +27,50 @@ const extraFieldsMapping: Record<string, FlexFieldInput[]> = {
   ],
 };
 
-function updateExtraFields(field: FlexField, selectedValue: string): FlexField {
-  // Get all possible extra field labels from the mapping
+function updateExtraFields(field: FlexField, selectedItem: string): FlexField {
+  // Get all extra field labels from the mapping
   const allExtraLabels = Object.values(extraFieldsMapping)
     .flat()
     .map((input) => input.label);
 
-  // If the current value doesn't require extra fields,
-  // remove any extra fields from the inputs.
-  if (!extraFieldsMapping[selectedValue]) {
+  // Remove any extra fields and any generic "Value" field
+  const filteredInputs = field.inputs.filter(
+    (input) => !allExtraLabels.includes(input.label) && input.label !== 'Value',
+  );
+
+  if (extraFieldsMapping[selectedItem]) {
+    // Merge existing values for extra inputs, if they exist
+    const extraInputs = extraFieldsMapping[selectedItem].map((extra) => {
+      const existing = field.inputs.find(
+        (input) => input.label === extra.label,
+      );
+      return existing ? { ...extra, value: existing.value } : { ...extra };
+    });
     return {
       ...field,
-      inputs: field.inputs.filter(
-        (input) => !allExtraLabels.includes(input.label),
-      ),
+      inputs: [...filteredInputs, ...extraInputs],
+    };
+  } else {
+    // Handle the generic "Value" field by preserving its value if it exists.
+    let genericInput = field.inputs.find((input) => input.label === 'Value');
+    if (!genericInput) {
+      genericInput = { label: 'Value', value: '', type: 'text' };
+    }
+    return {
+      ...field,
+      inputs: [...filteredInputs, genericInput],
     };
   }
-
-  // Otherwise, get the required extra fields for this value.
-  const requiredExtraFields = extraFieldsMapping[selectedValue];
-  const requiredLabels = requiredExtraFields.map((input) => input.label);
-
-  // Preserve non-extra fields and extra fields that belong to the active selection.
-  let preservedInputs = field.inputs.filter((input) => {
-    // If input is not an extra field at all, keep it.
-    if (!allExtraLabels.includes(input.label)) return true;
-    // Otherwise, keep it only if it belongs to the required set.
-    return requiredLabels.includes(input.label);
-  });
-
-  // For each required extra field, if it's not already present, add it.
-  requiredExtraFields.forEach((required) => {
-    if (!preservedInputs.find((input) => input.label === required.label)) {
-      preservedInputs.push({ ...required });
-    }
-  });
-
-  return { ...field, inputs: preservedInputs };
 }
 
 export function PG() {
-  // Mappings for Value options
-  const datasheetValueOptions = [
+  const datasheetItemOptions = [
     { value: 'Manufacturers', label: 'Manufacturers' },
     { value: 'Serial Number', label: 'Serial Number' },
     { value: 'MAC address', label: 'MAC address' },
     { value: 'Framework', label: 'Framework' },
     { value: 'Power', label: 'Power' },
-    { value: 'Dimensions (W x D x H)', label: 'Dimensions (W x D x H)' },
+    { value: 'Dimensions', label: 'Dimensions' },
     { value: 'Weight', label: 'Weight' },
     { value: 'Unit', label: 'Unit' },
     { value: 'Acquisition date', label: 'Acquisition date' },
@@ -84,7 +78,7 @@ export function PG() {
     { value: 'Price', label: 'Price' },
   ];
 
-  const networkValueOptions = [
+  const networkItemOptions = [
     { value: 'Ethernet', label: 'Ethernet' },
     { value: 'Optical', label: 'Optical' },
     { value: 'Username, Password', label: 'Username, Password' },
@@ -92,7 +86,6 @@ export function PG() {
     { value: 'Secret Key', label: 'Secret Key' },
   ];
 
-  // Function to generate the next key
   const getNextKey = (currentFields: FlexField[]) => {
     const maxKey = currentFields.reduce((max, field) => {
       const num = parseInt(field.key, 10);
@@ -101,7 +94,6 @@ export function PG() {
     return String(maxKey + 1);
   };
 
-  // Helper function to create a new field
   const createField = (currentFields: FlexField[]): FlexField => ({
     key: getNextKey(currentFields),
     inputs: [
@@ -122,26 +114,25 @@ export function PG() {
         options: [{ value: 'Datasheet', label: 'Datasheet' }],
       },
       {
-        label: 'Value',
+        label: 'Item',
         value: '',
         type: 'select',
-        options: datasheetValueOptions,
+        options: datasheetItemOptions,
       },
     ],
   });
 
   const [fields, setFields] = useState<FlexField[]>([createField([])]);
 
-  // Update Method and Value options based on the selected Type and Method
   const handleFieldsChange = (updatedFields: FlexField[]) => {
     const newFields = updatedFields.map((field) => {
       const typeInput = field.inputs.find((i) => i.label === 'Type');
       const methodInput = field.inputs.find((i) => i.label === 'Method');
-      const valueInput = field.inputs.find((i) => i.label === 'Value');
+      const itemInput = field.inputs.find((i) => i.label === 'Item');
 
-      if (!typeInput || !methodInput || !valueInput) return field;
+      if (!typeInput || !methodInput || !itemInput) return field;
 
-      // Restrict Methods based on Type.
+      // Adjust method options based on type
       if (typeInput.value === 'Rack') {
         methodInput.options = [{ value: 'Datasheet', label: 'Datasheet' }];
         if (methodInput.value !== 'Datasheet') {
@@ -154,24 +145,24 @@ export function PG() {
         ];
       }
 
-      // Update Value options based on Method.
-      valueInput.options =
+      // Change item options based on method
+      itemInput.options =
         methodInput.value === 'Datasheet'
-          ? datasheetValueOptions
-          : networkValueOptions;
+          ? datasheetItemOptions
+          : networkItemOptions;
 
-      // Reset Value if not valid in the new options.
+      // Reset item value if it doesn't exist in the current options
       if (
-        !valueInput.options.find((option) => option.value === valueInput.value)
+        !itemInput.options.find((option) => option.value === itemInput.value)
       ) {
-        valueInput.value = '';
+        itemInput.value = '';
       }
 
-      // Update extra fields based on the selected Value.
-      const updatedField = updateExtraFields(field, String(valueInput.value));
+      // Update extra fields based on the selected item
+      let updatedField = updateExtraFields(field, String(itemInput.value));
 
-      // --- NEW: If "Price" is selected, update the Amount field's unit based on Currency.
-      if (String(valueInput.value) === 'Price') {
+      // Handle the Price unit update if the selected item is Price
+      if (String(itemInput.value) === 'Price') {
         const currencyInput = updatedField.inputs.find(
           (inp) => inp.label === 'Currency',
         );
