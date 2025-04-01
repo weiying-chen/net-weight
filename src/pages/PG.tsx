@@ -8,15 +8,24 @@ import {
   networkOptions,
 } from '@/constants';
 
-// Returns valid options based on the selected type and method
+// Returns valid options for "Item" based on the selected type and method.
 const getItemOptions = (type: string, method: string) => {
-  if (method === 'Datasheet') {
-    return datasheetOptions[type] || datasheetOptions.Rack;
-  }
-  return networkOptions[type] || [];
+  return method === 'Datasheet'
+    ? datasheetOptions[type] || []
+    : networkOptions[type] || [];
 };
 
-// Updates extra fields based on the selected item
+// Centralizes the logic for available "Method" options based on the selected Type.
+const getMethodOptions = (type: string) => {
+  return type === 'Rack'
+    ? [{ value: 'Datasheet', label: 'Datasheet' }]
+    : [
+        { value: 'Datasheet', label: 'Datasheet' },
+        { value: 'Network', label: 'Network' },
+      ];
+};
+
+// Updates extra fields based on the selected item.
 function updateExtraFields(field: FlexField, selectedItem: string): FlexField {
   const extraLabels = Object.values(extraInputs)
     .flat()
@@ -38,7 +47,7 @@ function updateExtraFields(field: FlexField, selectedItem: string): FlexField {
     return { ...field, inputs: [...staticInputs, ...inputsToAdd] };
   }
 
-  // Fallback to a generic "Value" input if no extra fields
+  // Fallback to a generic "Value" input if no extra fields.
   const genericInput = field.inputs.find((inp) => inp.label === 'Value') || {
     label: 'Value',
     value: '',
@@ -56,7 +65,7 @@ export function PG() {
       ) + 1,
     );
 
-  // Create a new field using the defaultInputs constant
+  // Create a new field using the defaultInputs constant.
   const createField = (currentFields: FlexField[]): FlexField => ({
     key: getNextKey(currentFields),
     inputs: [...defaultInputs],
@@ -77,23 +86,20 @@ export function PG() {
         let methodValue = String(methodInput.value);
         let itemValue = String(itemInput.value);
 
-        // If Type is "Rack", force Method to only show "Datasheet"
-        if (typeValue === 'Rack') {
-          methodInput.options = [{ value: 'Datasheet', label: 'Datasheet' }];
-          methodInput.value = 'Datasheet';
-          methodValue = 'Datasheet';
-        } else {
-          // Otherwise, Method can be either "Datasheet" or "Network"
-          methodInput.options = [
-            { value: 'Datasheet', label: 'Datasheet' },
-            { value: 'Network', label: 'Network' },
-          ];
+        // Get proper method options based on the selected type.
+        const methodOptions = getMethodOptions(typeValue);
+        methodInput.options = methodOptions;
+
+        // If the current method is not valid for the selected type, reset it.
+        if (!methodOptions.some((opt) => opt.value === methodValue)) {
+          methodValue = methodOptions[0].value;
+          methodInput.value = methodValue;
         }
 
-        // Get valid item options based on the (possibly updated) type & method
+        // Get valid item options based on the selected type and method.
         itemInput.options = getItemOptions(typeValue, methodValue);
 
-        // Reset item value if it's not in the updated list
+        // Reset item value if it's not in the updated list.
         if (!itemInput.options.some((opt) => opt.value === itemValue)) {
           itemValue = '';
           itemInput.value = itemValue;

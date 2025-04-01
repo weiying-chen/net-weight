@@ -7,7 +7,7 @@ import { Select } from '@/components/Select';
 import { IconTrash } from '@tabler/icons-react';
 import { Switch } from '@/components/Switch';
 
-export type ValueType = 'text' | 'number' | 'switch' | 'select';
+export type ValueType = 'text' | 'number' | 'switch' | 'select' | 'password';
 
 export type Option = {
   value: string | number;
@@ -135,6 +135,16 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
                   disabled={!!input.options && input.options.length === 1}
                   onChange={(value) =>
                     handleInputChange(fieldIndex, inputIndex, value)
+                  }
+                />
+              );
+            case 'password':
+              return (
+                <Input
+                  type="password"
+                  value={String(input.value)}
+                  onChange={(e) =>
+                    handleInputChange(fieldIndex, inputIndex, e.target.value)
                   }
                 />
               );

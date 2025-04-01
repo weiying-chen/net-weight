@@ -87,6 +87,10 @@ export const extraInputs: Record<string, FlexFieldInput[]> = {
   Weight: [{ label: 'Weight', value: 0, type: 'number', unit: 'kg' }],
   Unit: [{ label: 'Unit', value: 'U', type: 'text' }],
   'MAC address': [{ label: 'MAC address', value: '', type: 'text' }],
+  'Username, Password': [
+    { label: 'Username', value: '', type: 'text' },
+    { label: 'Password', value: '', type: 'password' },
+  ],
 };
 
 export const defaultInputs: FlexFieldInput[] = [
