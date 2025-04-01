@@ -131,6 +131,8 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
                 <Select
                   value={String(input.value)}
                   options={input.options || []}
+                  // Disable if there is only one option available
+                  disabled={!!input.options && input.options.length === 1}
                   onChange={(value) =>
                     handleInputChange(fieldIndex, inputIndex, value)
                   }
