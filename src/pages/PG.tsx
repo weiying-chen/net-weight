@@ -2,11 +2,42 @@ import { useEffect, useState } from 'react';
 import { Col } from '@/components/Col';
 import { FlexFields, FlexField, FlexFieldInput } from '@/components/FlexFields';
 
-const extraFieldsMapping: Record<string, FlexFieldInput[]> = {
-  'Username, Password': [
-    { label: 'Username', value: '', type: 'text' },
-    { label: 'Password', value: '', type: 'text' },
-  ],
+// Separate Data Sheet item options for Rack and Switch.
+const rackDatasheetItemOptions = [
+  { value: 'Manufacturers', label: 'Manufacturers' },
+  { value: 'Serial Number', label: 'Serial Number' },
+  { value: 'Size', label: 'Size' },
+  { value: 'Dimensions', label: 'Dimensions' },
+  { value: 'Weight', label: 'Weight' },
+  { value: 'Acquisition date', label: 'Acquisition date' },
+  { value: 'Change Date', label: 'Change Date' },
+  { value: 'Price', label: 'Price' },
+];
+
+const switchDatasheetItemOptions = [
+  { value: 'Manufacturers', label: 'Manufacturers' },
+  { value: 'Serial Number', label: 'Serial Number' },
+  { value: 'MAC address', label: 'MAC address' },
+  { value: 'Framework', label: 'Framework' },
+  { value: 'Power', label: 'Power' },
+  { value: 'Dimensions', label: 'Dimensions' },
+  { value: 'Weight', label: 'Weight' },
+  { value: 'Unit', label: 'Unit' },
+  { value: 'Acquisition date', label: 'Acquisition date' },
+  { value: 'Change Date', label: 'Change Date' },
+  { value: 'Price', label: 'Price' },
+];
+
+const networkItemOptions = [
+  { value: 'Ethernet', label: 'Ethernet' },
+  { value: 'Optical', label: 'Optical' },
+  { value: 'Username, Password', label: 'Username, Password' },
+  { value: 'IP Range,IP Address', label: 'IP Range,IP Address' },
+  { value: 'Secret Key', label: 'Secret Key' },
+];
+
+// Global extra fields mapping: keys should match the Data Sheet item values
+const extraFieldsMappingByType: Record<string, FlexFieldInput[]> = {
   Dimensions: [
     { label: 'Width', value: 0, type: 'number', unit: 'cm' },
     { label: 'Depth', value: 0, type: 'number', unit: 'cm' },
@@ -25,22 +56,36 @@ const extraFieldsMapping: Record<string, FlexFieldInput[]> = {
       ],
     },
   ],
+  Size: [{ label: 'Size', value: 0, type: 'number', unit: 'U' }],
+  Weight: [{ label: 'Weight', value: 0, type: 'number', unit: 'kg' }],
+  Unit: [{ label: 'Unit', value: 'U', type: 'text' }],
+  'MAC address': [{ label: 'MAC address', value: '', type: 'text' }],
 };
 
+// Update extra fields based on the selected Item.
+// If no Item is selected, remove any extra fields.
 function updateExtraFields(field: FlexField, selectedItem: string): FlexField {
-  // Get all extra field labels from the mapping
-  const allExtraLabels = Object.values(extraFieldsMapping)
+  // Use the global mapping.
+  const mapping = extraFieldsMappingByType;
+  // Build a list of all extra field labels (plus a generic "Value").
+  const extraLabels = Object.values(mapping)
     .flat()
-    .map((input) => input.label);
+    .map((input) => input.label)
+    .concat('Value');
 
-  // Remove any extra fields and any generic "Value" field
-  const filteredInputs = field.inputs.filter(
-    (input) => !allExtraLabels.includes(input.label) && input.label !== 'Value',
+  // Keep static (non‑extra) inputs.
+  const staticInputs = field.inputs.filter(
+    (input) => !extraLabels.includes(input.label),
   );
 
-  if (extraFieldsMapping[selectedItem]) {
-    // Merge existing values for extra inputs, if they exist
-    const extraInputs = extraFieldsMapping[selectedItem].map((extra) => {
+  // If no Item is selected, just return static inputs.
+  if (!selectedItem) {
+    return { ...field, inputs: staticInputs };
+  }
+
+  if (mapping[selectedItem]) {
+    // If the selected Item has special mapped fields, merge their values.
+    const extraInputs = mapping[selectedItem].map((extra) => {
       const existing = field.inputs.find(
         (input) => input.label === extra.label,
       );
@@ -48,44 +93,18 @@ function updateExtraFields(field: FlexField, selectedItem: string): FlexField {
     });
     return {
       ...field,
-      inputs: [...filteredInputs, ...extraInputs],
+      inputs: [...staticInputs, ...extraInputs],
     };
   } else {
-    // Handle the generic "Value" field by preserving its value if it exists.
-    let genericInput = field.inputs.find((input) => input.label === 'Value');
-    if (!genericInput) {
-      genericInput = { label: 'Value', value: '', type: 'text' };
-    }
-    return {
-      ...field,
-      inputs: [...filteredInputs, genericInput],
-    };
+    // For unmapped items, always add a generic "Value" field.
+    const genericInput = field.inputs.find(
+      (input) => input.label === 'Value',
+    ) || { label: 'Value', value: '', type: 'text' };
+    return { ...field, inputs: [...staticInputs, genericInput] };
   }
 }
 
 export function PG() {
-  const datasheetItemOptions = [
-    { value: 'Manufacturers', label: 'Manufacturers' },
-    { value: 'Serial Number', label: 'Serial Number' },
-    { value: 'MAC address', label: 'MAC address' },
-    { value: 'Framework', label: 'Framework' },
-    { value: 'Power', label: 'Power' },
-    { value: 'Dimensions', label: 'Dimensions' },
-    { value: 'Weight', label: 'Weight' },
-    { value: 'Unit', label: 'Unit' },
-    { value: 'Acquisition date', label: 'Acquisition date' },
-    { value: 'Change Date', label: 'Change Date' },
-    { value: 'Price', label: 'Price' },
-  ];
-
-  const networkItemOptions = [
-    { value: 'Ethernet', label: 'Ethernet' },
-    { value: 'Optical', label: 'Optical' },
-    { value: 'Username, Password', label: 'Username, Password' },
-    { value: 'IP Range,IP Address', label: 'IP Range,IP Address' },
-    { value: 'Secret Key', label: 'Secret Key' },
-  ];
-
   const getNextKey = (currentFields: FlexField[]) => {
     const maxKey = currentFields.reduce((max, field) => {
       const num = parseInt(field.key, 10);
@@ -94,6 +113,7 @@ export function PG() {
     return String(maxKey + 1);
   };
 
+  // Create a field with default options. Default type is "Rack".
   const createField = (currentFields: FlexField[]): FlexField => ({
     key: getNextKey(currentFields),
     inputs: [
@@ -117,7 +137,8 @@ export function PG() {
         label: 'Item',
         value: '',
         type: 'select',
-        options: datasheetItemOptions,
+        // Default to Rack options
+        options: rackDatasheetItemOptions,
       },
     ],
   });
@@ -132,7 +153,7 @@ export function PG() {
 
       if (!typeInput || !methodInput || !itemInput) return field;
 
-      // Adjust method options based on type
+      // Adjust method options based on type.
       if (typeInput.value === 'Rack') {
         methodInput.options = [{ value: 'Datasheet', label: 'Datasheet' }];
         if (methodInput.value !== 'Datasheet') {
@@ -145,23 +166,29 @@ export function PG() {
         ];
       }
 
-      // Change item options based on method
-      itemInput.options =
-        methodInput.value === 'Datasheet'
-          ? datasheetItemOptions
-          : networkItemOptions;
+      // Set Data Sheet item options based on the Type and Method.
+      if (methodInput.value === 'Datasheet') {
+        itemInput.options =
+          typeInput.value === 'Rack'
+            ? rackDatasheetItemOptions
+            : typeInput.value === 'Switch'
+              ? switchDatasheetItemOptions
+              : rackDatasheetItemOptions; // fallback to Rack options
+      } else {
+        itemInput.options = networkItemOptions;
+      }
 
-      // Reset item value if it doesn't exist in the current options
+      // Reset the Item value if it's not in the current options.
       if (
         !itemInput.options.find((option) => option.value === itemInput.value)
       ) {
         itemInput.value = '';
       }
 
-      // Update extra fields based on the selected item
-      let updatedField = updateExtraFields(field, String(itemInput.value));
+      // Update extra fields based on the selected Item.
+      let updatedField = updateExtraFields(field, itemInput.value.toString());
 
-      // Handle the Price unit update if the selected item is Price
+      // Handle the Price unit update if the selected Item is Price.
       if (String(itemInput.value) === 'Price') {
         const currencyInput = updatedField.inputs.find(
           (inp) => inp.label === 'Currency',
