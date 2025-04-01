@@ -159,7 +159,7 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
     <Col className="w-full">
       {label && <label className="text-sm font-semibold">{label}</label>}
       {fields.map((field, index) => (
-        <Row alignItems="center" key={index} className="mb-2 w-full">
+        <Row alignItems="center" key={index}>
           {/* Static field key */}
           {/* <div className="mr-2 font-bold">{field.key}</div> */}
           {field.inputs.map((input, inputIndex) => (
