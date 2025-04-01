@@ -15,15 +15,16 @@ export type Option = {
 };
 
 export type FlexFieldInput = {
-  label?: string; // Optional label for the input (defaults to "Value")
+  key: string; // Internal identifier used for logic
+  label?: string; // Display label (can be localized)
   value: string | number | boolean;
-  type: ValueType; // Determines which input is shown
+  type: ValueType; // Determines which input is rendered
   options?: Option[]; // For type 'select'
-  unit?: string; // Optional unit string to display (e.g., "cm", "USD")
+  unit?: string; // Optional unit string (e.g., "cm", "USD")
 };
 
 export type FlexField = {
-  key: string; // Field group name, displayed as a static label
+  key: string; // Field group identifier
   inputs: FlexFieldInput[]; // One or more inputs in this field
 };
 
@@ -77,7 +78,14 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
       ? { ...fieldTemplate }
       : {
           key: 'newField',
-          inputs: [{ label: 'Value', value: '', type: 'text' as ValueType }],
+          inputs: [
+            {
+              key: 'value',
+              label: 'Value',
+              value: '',
+              type: 'text' as ValueType,
+            },
+          ],
         };
     updateFields([...fields, newField]);
   };
@@ -86,17 +94,17 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
     updateFields(fields.filter((_, i) => i !== fieldIndex));
   };
 
-  // Helper function to render an input with its label and unit displayed above the input.
+  // Helper function to render an input with its display label and unit.
   const renderInput = (
     fieldIndex: number,
     input: FlexFieldInput,
     inputIndex: number,
   ) => {
-    const baseLabel = input.label || 'Value';
+    const displayLabel = input.label || 'Value';
     return (
       <div className="w-full">
         <label className="block text-sm font-medium">
-          {baseLabel}
+          {displayLabel}
           {input.unit && (
             <span className="ml-1 text-xs text-muted">{input.unit}</span>
           )}
@@ -131,7 +139,7 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
                 <Select
                   value={String(input.value)}
                   options={input.options || []}
-                  // Disable if there is only one option available
+                  // Disable if there is only one option available.
                   disabled={!!input.options && input.options.length === 1}
                   onChange={(value) =>
                     handleInputChange(fieldIndex, inputIndex, value)
@@ -149,7 +157,6 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
                 />
               );
             default:
-              // 'text'
               return (
                 <Input
                   type="text"
@@ -168,21 +175,21 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
   return (
     <Col className="w-full">
       {label && <label className="text-sm font-semibold">{label}</label>}
-      {fields.map((field, index) => (
-        <Row alignItems="center" key={index}>
-          {/* Static field key */}
-          {/* <div className="mr-2 font-bold">{field.key}</div> */}
+      {fields.map((field, fieldIndex) => (
+        <Row alignItems="center" key={field.key}>
           {field.inputs.map((input, inputIndex) => (
-            <div key={inputIndex} className="w-full">
-              {renderInput(index, input, inputIndex)}
+            <div
+              key={`${field.key}-${input.key}-${inputIndex}`}
+              className="w-full"
+            >
+              {renderInput(fieldIndex, input, inputIndex)}
             </div>
           ))}
-          {/* Align the trash icon to the bottom of the row */}
           <div className="self-end">
             <Button
               type="button"
               variant="secondary"
-              onClick={() => handleRemoveField(index)}
+              onClick={() => handleRemoveField(fieldIndex)}
             >
               <IconTrash size={20} />
             </Button>

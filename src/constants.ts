@@ -46,7 +46,7 @@ export const networkOptions: Record<
   string,
   { value: string; label: string }[]
 > = {
-  // Rack: [],
+  // Rack is intentionally omitted.
   Switch: [
     { value: 'Ethernet', label: 'Ethernet' },
     { value: 'Optical', label: 'Optical' },
@@ -66,13 +66,14 @@ export const networkOptions: Record<
 
 export const extraInputs: Record<string, FlexFieldInput[]> = {
   Dimensions: [
-    { label: 'Width', value: 0, type: 'number', unit: 'cm' },
-    { label: 'Depth', value: 0, type: 'number', unit: 'cm' },
-    { label: 'Height', value: 0, type: 'number', unit: 'cm' },
+    { key: 'width', label: 'Width', value: 0, type: 'number', unit: 'cm' },
+    { key: 'depth', label: 'Depth', value: 0, type: 'number', unit: 'cm' },
+    { key: 'height', label: 'Height', value: 0, type: 'number', unit: 'cm' },
   ],
   Price: [
-    { label: 'Amount', value: 0, type: 'number', unit: 'USD' },
+    { key: 'amount', label: 'Amount', value: 0, type: 'number', unit: 'USD' },
     {
+      key: 'currency',
       label: 'Currency',
       value: 'USD',
       type: 'select',
@@ -83,18 +84,23 @@ export const extraInputs: Record<string, FlexFieldInput[]> = {
       ],
     },
   ],
-  Size: [{ label: 'Size', value: 0, type: 'number', unit: 'U' }],
-  Weight: [{ label: 'Weight', value: 0, type: 'number', unit: 'kg' }],
-  Unit: [{ label: 'Unit', value: 'U', type: 'text' }],
-  'MAC address': [{ label: 'MAC address', value: '', type: 'text' }],
+  Size: [{ key: 'size', label: 'Size', value: 0, type: 'number', unit: 'U' }],
+  Weight: [
+    { key: 'weight', label: 'Weight', value: 0, type: 'number', unit: 'kg' },
+  ],
+  Unit: [{ key: 'unit', label: 'Unit', value: 'U', type: 'text' }],
+  'MAC address': [
+    { key: 'macAddress', label: 'MAC address', value: '', type: 'text' },
+  ],
   'Username, Password': [
-    { label: 'Username', value: '', type: 'text' },
-    { label: 'Password', value: '', type: 'password' },
+    { key: 'username', label: 'Username', value: '', type: 'text' },
+    { key: 'password', label: 'Password', value: '', type: 'password' },
   ],
 };
 
 export const defaultInputs: FlexFieldInput[] = [
   {
+    key: 'type',
     label: 'Type',
     value: 'Rack',
     type: 'select',
@@ -104,6 +110,7 @@ export const defaultInputs: FlexFieldInput[] = [
     })),
   },
   {
+    key: 'method',
     label: 'Method',
     value: 'Datasheet',
     type: 'select',
@@ -111,6 +118,7 @@ export const defaultInputs: FlexFieldInput[] = [
     options: [{ value: 'Datasheet', label: 'Datasheet' }],
   },
   {
+    key: 'item',
     label: 'Item',
     value: '',
     type: 'select',

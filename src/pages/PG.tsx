@@ -27,12 +27,13 @@ const getMethodOptions = (type: string) => {
 
 // Updates extra fields based on the selected item.
 function updateExtraFields(field: FlexField, selectedItem: string): FlexField {
-  const extraLabels = Object.values(extraInputs)
+  // Use the internal key for extra inputs instead of label.
+  const extraKeys = Object.values(extraInputs)
     .flat()
-    .map((input) => input.label)
-    .concat('Value');
+    .map((input) => input.key)
+    .concat('value'); // fallback generic key for "Value"
   const staticInputs = field.inputs.filter(
-    (input) => !extraLabels.includes(input.label),
+    (input) => !extraKeys.includes(input.key),
   );
 
   if (!selectedItem) {
@@ -41,14 +42,14 @@ function updateExtraFields(field: FlexField, selectedItem: string): FlexField {
 
   if (extraInputs[selectedItem]) {
     const inputsToAdd = extraInputs[selectedItem].map((extra) => {
-      const existing = field.inputs.find((inp) => inp.label === extra.label);
+      const existing = field.inputs.find((inp) => inp.key === extra.key);
       return existing ? { ...extra, value: existing.value } : { ...extra };
     });
     return { ...field, inputs: [...staticInputs, ...inputsToAdd] };
   }
 
-  // Fallback to a generic "Value" input if no extra fields.
-  const genericInput = field.inputs.find((inp) => inp.label === 'Value') || {
+  const genericInput = field.inputs.find((inp) => inp.key === 'value') || {
+    key: 'value',
     label: 'Value',
     value: '',
     type: 'text',
@@ -66,6 +67,8 @@ export function PG() {
     );
 
   // Create a new field using the defaultInputs constant.
+  // defaultInputs should now include internal keys for each input:
+  // e.g. { key: 'type', label: 'Type', value: 'Rack', ... }
   const createField = (currentFields: FlexField[]): FlexField => ({
     key: getNextKey(currentFields),
     inputs: [...defaultInputs],
@@ -76,9 +79,9 @@ export function PG() {
   const handleFieldsChange = (updatedFields: FlexField[]) => {
     setFields(
       updatedFields.map((field) => {
-        const typeInput = field.inputs.find((i) => i.label === 'Type');
-        const methodInput = field.inputs.find((i) => i.label === 'Method');
-        const itemInput = field.inputs.find((i) => i.label === 'Item');
+        const typeInput = field.inputs.find((i) => i.key === 'type');
+        const methodInput = field.inputs.find((i) => i.key === 'method');
+        const itemInput = field.inputs.find((i) => i.key === 'item');
 
         if (!typeInput || !methodInput || !itemInput) return field;
 
