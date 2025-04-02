@@ -126,13 +126,13 @@ export const extraInputs: Record<string, FlexFieldInput[]> = {
       ],
     },
   ],
-  Size: [{ key: 'size', label: 'Size', value: 0, type: 'number', unit: 'U' }],
+  Size: [{ key: 'size', label: 'Value', value: 0, type: 'number', unit: 'U' }],
   Weight: [
-    { key: 'weight', label: 'Weight', value: 0, type: 'number', unit: 'kg' },
+    { key: 'weight', label: 'Value', value: 0, type: 'number', unit: 'kg' },
   ],
-  Unit: [{ key: 'unit', label: 'Unit', value: '', type: 'text', unit: 'U' }],
+  Unit: [{ key: 'unit', label: 'Value', value: '', type: 'text', unit: 'U' }],
   'MAC address': [
-    { key: 'macAddress', label: 'MAC address', value: '', type: 'text' },
+    { key: 'macAddress', label: 'Value', value: '', type: 'text' },
   ],
   'Username & password': [
     { key: 'username', label: 'Username', value: '', type: 'text' },
@@ -141,25 +141,25 @@ export const extraInputs: Record<string, FlexFieldInput[]> = {
   Processor: [
     {
       key: 'processor',
-      label: 'Processor',
+      label: 'Value',
       value: '',
       type: 'text',
       unit: 'CPU',
     },
   ],
   'RAM (memory)': [
-    { key: 'ram', label: 'RAM', value: 0, type: 'number', unit: 'GB' },
+    { key: 'ram', label: 'Value', value: 0, type: 'number', unit: 'GB' },
   ],
   Storage: [
-    { key: 'storage', label: 'Storage', value: 0, type: 'number', unit: 'GB' },
+    { key: 'storage', label: 'Value', value: 0, type: 'number', unit: 'GB' },
   ],
   'Service tag': [
-    { key: 'serviceTag', label: 'Service tag', value: '', type: 'text' },
+    { key: 'serviceTag', label: 'Value', value: '', type: 'text' },
   ],
   Power: [
     {
       key: 'power',
-      label: 'Power',
+      label: 'Value',
       value: '',
       type: 'select',
       options: [
