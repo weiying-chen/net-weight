@@ -6,8 +6,16 @@ import { Input } from '@/components/Input';
 import { Select } from '@/components/Select';
 import { IconTrash } from '@tabler/icons-react';
 import { Switch } from '@/components/Switch';
+import { DatePicker } from '@/components/DatePicker';
+import { format } from 'date-fns';
 
-export type ValueType = 'text' | 'number' | 'switch' | 'select' | 'password';
+export type ValueType =
+  | 'text'
+  | 'number'
+  | 'switch'
+  | 'select'
+  | 'password'
+  | 'date';
 
 export type Option = {
   value: string | number;
@@ -154,6 +162,22 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
                   onChange={(e) =>
                     handleInputChange(fieldIndex, inputIndex, e.target.value)
                   }
+                />
+              );
+            case 'date':
+              return (
+                <DatePicker
+                  value={
+                    input.value ? new Date(input.value as string) : undefined
+                  }
+                  onChange={(date) => {
+                    // Format the date to yyyy-MM-dd
+                    const formattedDate = date
+                      ? format(date, 'yyyy-MM-dd')
+                      : '';
+                    handleInputChange(fieldIndex, inputIndex, formattedDate);
+                  }}
+                  placeholder="Select a date"
                 />
               );
             default:

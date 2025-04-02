@@ -168,6 +168,12 @@ export const extraInputs: Record<string, FlexFieldInput[]> = {
       ],
     },
   ],
+  'Acquisition date': [
+    { key: 'acquisitionDate', label: 'Value', value: '', type: 'date' },
+  ],
+  'Change date': [
+    { key: 'changeDate', label: 'Value', value: '', type: 'date' },
+  ],
 };
 
 export const defaultInputs: FlexFieldInput[] = [
