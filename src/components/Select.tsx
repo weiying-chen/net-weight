@@ -31,6 +31,7 @@ export type SelectProps<T> = {
   placeholder?: string;
   error?: string;
   className?: string;
+  wrapperClassName?: string; // Top-level container classes
   onChange: (value: T) => void;
   onSearchChange?: (query: string) => void;
   onFocus?: () => void;
@@ -43,6 +44,8 @@ export type SelectProps<T> = {
   isLoading?: boolean;
   muted?: boolean;
   searchQuery?: string;
+  /** New prop to customize the chevron icon */
+  icon?: ReactNode;
 };
 
 export const Select = <T extends string | number>({
@@ -52,6 +55,7 @@ export const Select = <T extends string | number>({
   placeholder = 'Select an option',
   error,
   className,
+  wrapperClassName,
   onChange,
   onSearchChange,
   onFocus,
@@ -64,6 +68,7 @@ export const Select = <T extends string | number>({
   isLoading = false,
   muted = false,
   searchQuery: extSearchQuery = '',
+  icon,
   ...props
 }: SelectProps<T>) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -107,7 +112,6 @@ export const Select = <T extends string | number>({
     }
   }, [isLoading, options, extSearchQuery, localSearchQuery]);
 
-  // Needs to run when options update, not just when opening the dropdown.
   useEffect(() => {
     if (isOpen && hasSearch) {
       setFocusedIndex(filteredOptions.length > 0 ? 0 : null);
@@ -116,7 +120,6 @@ export const Select = <T extends string | number>({
 
   const openDropdown = () => {
     setIsOpen(true);
-    // setLocalSearchQuery('');
     if (selected) {
       const idx = options.findIndex((o) => o.value === selected.value);
       setFocusedIndex(idx !== -1 ? idx : null);
@@ -129,7 +132,6 @@ export const Select = <T extends string | number>({
   const closeDropdown = () => {
     setIsOpen(false);
     setFocusedIndex(null);
-    // setLocalSearchQuery('');
     onBlur?.();
   };
 
@@ -170,7 +172,7 @@ export const Select = <T extends string | number>({
         );
         break;
       case 'Enter':
-        event.preventDefault(); // Prevent form submission here as well
+        event.preventDefault();
         if (focusedIndex !== null && filteredOptions[focusedIndex]) {
           handleOptionClick(filteredOptions[focusedIndex], event as any);
         }
@@ -240,7 +242,7 @@ export const Select = <T extends string | number>({
       {...props}
     >
       <Input
-        icon={<IconSearch className="text-muted" size={16} />}
+        icon={<IconSearch size={16} className="text-muted" />}
         placeholder={placeholder}
         value={
           isOpen ? localSearchQuery : localSearchQuery || selected?.label || ''
@@ -305,14 +307,15 @@ export const Select = <T extends string | number>({
             </span>
           )}
         </Row>
-        {!isIconTrigger && <IconChevronDown size={small ? 16 : 20} />}
+        {/* Use the custom chevron if provided, otherwise default */}
+        {!isIconTrigger && (icon ?? <IconChevronDown size={small ? 16 : 20} />)}
       </PseudoInput>
       {isOpen && renderDropdown()}
     </div>
   );
 
   const renderDropdown = () => {
-    if (!isOpen) return null; // Only render when open
+    if (!isOpen) return null;
 
     return (
       <div
@@ -370,7 +373,7 @@ export const Select = <T extends string | number>({
   };
 
   return (
-    <Col className={cn({ 'w-auto': isIconTrigger })}>
+    <Col className={wrapperClassName}>
       {label &&
         (typeof label === 'string' ? (
           <label className="text-sm font-semibold">

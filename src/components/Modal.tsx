@@ -63,8 +63,8 @@ export function Modal({
   // Change vertical alignment based on the position prop.
   const containerClasses =
     position === 'top'
-      ? 'fixed inset-x-0 top-0 z-50 flex items-start justify-center'
-      : 'fixed inset-0 z-50 flex items-center justify-center';
+      ? 'fixed inset-x-0 top-0 z-[100] flex items-start justify-center'
+      : 'fixed inset-0 z-[100] flex items-center justify-center';
 
   return (
     <div className={cn(containerClasses, className)}>

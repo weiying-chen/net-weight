@@ -115,6 +115,28 @@ export const Popover = ({
     };
   }, []);
 
+  // Create the pseudo input content to be reused
+  const pseudoInputContent = (
+    <PseudoInput
+      tabIndex={0}
+      disabled={disabled}
+      className={cn(
+        'flex cursor-pointer items-center gap-2 shadow',
+        {
+          'focus-visible:ring-0 focus-visible:ring-offset-0': isOpen,
+          'hover:shadow-dark': !disabled,
+          'h-5 px-2 py-1 text-xs': small,
+        },
+        className,
+      )}
+    >
+      <Row alignItems="center" className="font-medium" locked fluid>
+        {label}
+      </Row>
+      <IconChevronDown size={small ? 16 : 20} />
+    </PseudoInput>
+  );
+
   return (
     <Col fluid>
       <div
@@ -125,33 +147,11 @@ export const Popover = ({
         tabIndex={0}
         role="button"
       >
-        <PseudoInput
-          tabIndex={0}
-          disabled={disabled}
-          className={cn(
-            'flex cursor-pointer items-center gap-2 shadow',
-            {
-              'focus-visible:ring-0 focus-visible:ring-offset-0': isOpen,
-              'hover:shadow-dark': !disabled,
-              'h-5 px-2 py-1 text-xs': small,
-            },
-            className,
-          )}
-        >
-          {/* Wrap the label with Tooltip if tooltip content is provided */}
-          {tooltip ? (
-            <Tooltip content={tooltip}>
-              <Row alignItems="center" className="font-medium" locked fluid>
-                {label}
-              </Row>
-            </Tooltip>
-          ) : (
-            <Row alignItems="center" className="font-medium" locked fluid>
-              {label}
-            </Row>
-          )}
-          <IconChevronDown size={small ? 16 : 20} />
-        </PseudoInput>
+        {tooltip && !isOpen ? (
+          <Tooltip content={tooltip}>{pseudoInputContent}</Tooltip>
+        ) : (
+          pseudoInputContent
+        )}
 
         {isOpen && (
           <div
