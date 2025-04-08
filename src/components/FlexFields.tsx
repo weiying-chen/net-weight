@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Col } from '@/components/Col';
 import { Row } from '@/components/Row';
 import { Button } from '@/components/Button';
@@ -12,6 +12,7 @@ import { format } from 'date-fns';
 export type ValueType =
   | 'text'
   | 'number'
+  | 'float'
   | 'switch'
   | 'select'
   | 'password'
@@ -23,26 +24,28 @@ export type Option = {
 };
 
 export type FlexFieldInput = {
-  key: string; // Internal identifier used for logic
-  label?: string; // Display label (can be localized)
+  key: string;
+  label?: string;
   value: string | number | boolean;
-  type: ValueType; // Determines which input is rendered
-  options?: Option[]; // For type 'select'
-  unit?: string; // Optional unit string (e.g., "cm", "USD")
+  type: ValueType;
+  options?: Option[];
+  unit?: string;
 };
 
 export type FlexField = {
-  key: string; // Field group identifier
-  inputs: FlexFieldInput[]; // One or more inputs in this field
+  key: string;
+  inputs: FlexFieldInput[];
 };
 
 export type FlexFieldsProps = {
   label?: string;
   fields?: FlexField[];
   addFieldLabel?: string;
-  // Template structure for a new field.
+
   fieldTemplate?: FlexField;
   onChange: (fields: FlexField[]) => void;
+  asLabel?: (label: string) => string;
+  asOption?: (option: Option) => Option;
 };
 
 export const FlexFields: React.FC<FlexFieldsProps> = ({
@@ -51,6 +54,8 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
   addFieldLabel = 'Add Field',
   fieldTemplate,
   onChange,
+  asLabel,
+  asOption,
 }) => {
   const [fields, setFields] = useState<FlexField[]>(initialFields);
 
@@ -81,7 +86,6 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
   };
 
   const handleAddField = () => {
-    // Use the fieldTemplate prop if provided; otherwise, fall back to a basic default.
     const newField: FlexField = fieldTemplate
       ? { ...fieldTemplate }
       : {
@@ -102,15 +106,19 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
     updateFields(fields.filter((_, i) => i !== fieldIndex));
   };
 
-  // Helper function to render an input with its display label and unit.
   const renderInput = (
     fieldIndex: number,
     input: FlexFieldInput,
     inputIndex: number,
   ) => {
-    const displayLabel = input.label || 'Value';
+    const displayLabel = input.label
+      ? asLabel
+        ? asLabel(input.label)
+        : input.label
+      : 'Value';
+
     return (
-      <div className="w-full">
+      <Col>
         <label className="block text-sm font-medium">
           {displayLabel}
           {input.unit && (
@@ -120,9 +128,11 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
         {(() => {
           switch (input.type) {
             case 'number':
+            case 'float':
               return (
                 <Input
                   type="number"
+                  step={input.type === 'float' ? '0.1' : undefined}
                   value={String(input.value)}
                   onChange={(e) =>
                     handleInputChange(
@@ -142,18 +152,21 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
                   }
                 />
               );
-            case 'select':
+            case 'select': {
+              const finalOptions = input.options
+                ? input.options.map((opt) => (asOption ? asOption(opt) : opt))
+                : [];
               return (
                 <Select
                   value={String(input.value)}
-                  options={input.options || []}
-                  // Disable if there is only one option available.
+                  options={finalOptions}
                   disabled={!!input.options && input.options.length === 1}
                   onChange={(value) =>
                     handleInputChange(fieldIndex, inputIndex, value)
                   }
                 />
               );
+            }
             case 'password':
               return (
                 <Input
@@ -171,7 +184,6 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
                     input.value ? new Date(input.value as string) : undefined
                   }
                   onChange={(date) => {
-                    // Format the date to yyyy-MM-dd
                     const formattedDate = date
                       ? format(date, 'yyyy-MM-dd')
                       : '';
@@ -192,7 +204,7 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
               );
           }
         })()}
-      </div>
+      </Col>
     );
   };
 

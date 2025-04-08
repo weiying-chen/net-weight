@@ -3,14 +3,7 @@ import { DayPicker } from 'react-day-picker';
 import { PseudoInput } from '@/components/PseudoInput';
 import { Col } from '@/components/Col';
 import { cn } from '@/utils';
-// import { format } from 'date-fns';
-// import { Button } from '@/components/Button';
-import {
-  // IconChevronLeft,
-  // IconChevronRight,
-  IconCalendarMonth,
-} from '@tabler/icons-react';
-// import { Row } from '@/components/Row';
+import { IconCalendarMonth } from '@tabler/icons-react';
 
 export type DatePickerProps = {
   label?: ReactNode;
@@ -39,6 +32,9 @@ export const DatePicker = ({
   const [dropdownPosition, setDropdownPosition] = useState<'top' | 'bottom'>(
     'bottom',
   );
+  const [horizontalPosition, setHorizontalPosition] = useState<
+    'left' | 'right'
+  >('left');
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
     externalValue,
   );
@@ -53,9 +49,32 @@ export const DatePicker = ({
     if (triggerRef.current && dropdownRef.current) {
       const triggerRect = triggerRef.current.getBoundingClientRect();
       const dropdownHeight = dropdownRef.current.scrollHeight;
+      const dropdownWidth = dropdownRef.current.scrollWidth;
       const viewportHeight = window.innerHeight;
-      const shouldFlip = triggerRect.bottom + dropdownHeight > viewportHeight;
-      setDropdownPosition(shouldFlip ? 'top' : 'bottom');
+      const viewportWidth = window.innerWidth;
+
+      // Vertical positioning: flip if not enough space below trigger.
+      const shouldFlipVertically =
+        triggerRect.bottom + dropdownHeight > viewportHeight;
+      setDropdownPosition(shouldFlipVertically ? 'top' : 'bottom');
+
+      // Horizontal positioning:
+      // Calculate available space on each side of the trigger.
+      const spaceOnRight = viewportWidth - triggerRect.right;
+      const spaceOnLeft = triggerRect.left;
+
+      // Check if either side can fully accommodate the dropdown's width.
+      if (spaceOnRight >= dropdownWidth && spaceOnRight >= spaceOnLeft) {
+        // There is enough space on the right.
+        setHorizontalPosition('left'); // align dropdown's left edge with trigger's left.
+      } else if (spaceOnLeft >= dropdownWidth) {
+        // There is enough space on the left.
+        setHorizontalPosition('right'); // align dropdown's right edge with trigger's right.
+      } else {
+        // Neither side can fully display the dropdown.
+        // Choose the side with the most available space.
+        setHorizontalPosition(spaceOnRight < spaceOnLeft ? 'right' : 'left');
+      }
     }
   };
 
@@ -83,7 +102,7 @@ export const DatePicker = ({
     };
   }, []);
 
-  // Update internal state when external value changes
+  // Update internal state when external value changes.
   useLayoutEffect(() => {
     setSelectedDate(externalValue);
     setDisplayedMonth(externalValue || new Date());
@@ -95,73 +114,16 @@ export const DatePicker = ({
     setIsOpen(false);
   };
 
-  // const renderNav = () => {
-  //   const { previousMonth, nextMonth, goToMonth } = useDayPicker();
-  //   return (
-  //     <Row fluid>
-  //       <Button
-  //         variant="link"
-  //         onClick={() => {
-  //           console.log('Custom Nav: Previous clicked');
-  //           previousMonth && goToMonth(previousMonth);
-  //         }}
-  //         className="p-1"
-  //       >
-  //         <IconChevronLeft />
-  //       </Button>
-  //       <Button
-  //         variant="link"
-  //         onClick={() => {
-  //           console.log('Custom Nav: Next clicked');
-  //           nextMonth && goToMonth(nextMonth);
-  //         }}
-  //         className="p-1"
-  //       >
-  //         <IconChevronRight />
-  //       </Button>
-  //     </Row>
-  //   );
-  // };
-
-  // Custom MonthCaption override with debugging
-  // const CustomMonthCaption = (props: MonthCaptionProps) => {
-  //   console.log('CustomMonthCaption props:', props);
-  //   return (
-  //     <Row align="between">
-  //       <h2 className="text-lg font-semibold text-red-500">
-  //         {format(props.calendarMonth.date, 'MMMM yyyy')}
-  //       </h2>
-  //       {renderNav()}
-  //     </Row>
-  //   );
-  // };
-
-  // Custom DayButton override with debugging
-  // const CustomDayButton = (props: any) => {
-  //   console.log('CustomDayButton props:', props);
-  //   const { modifiers, day, children, ...buttonProps } = props;
-  //   return (
-  //     <button
-  //       {...buttonProps}
-  //       className={cn(
-  //         'w-full rounded p-2 hover:shadow',
-  //         modifiers.selected && 'bg-primary text-background',
-  //         modifiers.today && 'bg-subtle',
-  //         modifiers.outside && 'text-muted',
-  //       )}
-  //     >
-  //       {children}
-  //     </button>
-  //   );
-  // };
-
   const renderDayPicker = () => (
     <div
       ref={dropdownRef}
       onClick={(e) => e.stopPropagation()}
       className={cn(
         'absolute z-10 rounded border border-border bg-background p-3 shadow',
+        // Vertical alignment: show above or below trigger.
         dropdownPosition === 'top' ? 'bottom-full mb-1' : 'top-full mt-1',
+        // Horizontal alignment: position based on computed side.
+        horizontalPosition === 'right' ? 'right-0' : 'left-0',
       )}
     >
       <DayPicker
@@ -171,16 +133,6 @@ export const DatePicker = ({
         onMonthChange={setDisplayedMonth}
         showOutsideDays
         onSelect={(date) => date && handleSelectDate(date)}
-        // components={{
-        //   // Enable custom overrides:
-        //   MonthCaption: (props) => (
-        //     <>
-        //       <CustomMonthCaption {...props} />
-        //       <div className="my-2 h-px bg-border" />
-        //     </>
-        //   ),
-        //   // DayButton: CustomDayButton,
-        // }}
         classNames={{
           root: 'rdp-root',
           months: 'rdp-months',
@@ -200,11 +152,6 @@ export const DatePicker = ({
           day_today: 'bg-subtle',
           day_outside: 'text-muted',
         }}
-        // components={{
-        //   DayButton: (props: DayButtonProps) => (
-        //     <DayButton {...props} className="text-red-400" />
-        //   ),
-        // }}
       />
     </div>
   );

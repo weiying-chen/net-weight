@@ -57,6 +57,12 @@ function updateExtraFields(field: FlexField, selectedItem: string): FlexField {
   return { ...field, inputs: [...staticInputs, genericInput] };
 }
 
+// Helper to deep clone a FlexFieldInput
+const cloneInput = (input: any) => ({
+  ...input,
+  options: input.options ? [...input.options] : input.options,
+});
+
 export function PG() {
   const getNextKey = (currentFields: FlexField[]) =>
     String(
@@ -66,55 +72,57 @@ export function PG() {
       ) + 1,
     );
 
-  // Create a new field using the defaultInputs constant.
-  // defaultInputs should now include internal keys for each input:
-  // e.g. { key: 'type', label: 'Type', value: 'Rack', ... }
+  // Create a new field using deep copies of defaultInputs.
+  // This prevents shared object references between fields.
   const createField = (currentFields: FlexField[]): FlexField => ({
     key: getNextKey(currentFields),
-    inputs: [...defaultInputs],
+    inputs: defaultInputs.map(cloneInput),
   });
 
   const [fields, setFields] = useState<FlexField[]>([createField([])]);
 
   const handleFieldsChange = (updatedFields: FlexField[]) => {
-    setFields(
-      updatedFields.map((field) => {
-        const typeInput = field.inputs.find((i) => i.key === 'type');
-        const methodInput = field.inputs.find((i) => i.key === 'method');
-        const itemInput = field.inputs.find((i) => i.key === 'item');
+    const newFields = updatedFields.map((field) => {
+      // Clone the field's inputs to avoid mutating shared objects.
+      const newField = { ...field, inputs: field.inputs.map(cloneInput) };
 
-        if (!typeInput || !methodInput || !itemInput) return field;
+      const typeInput = newField.inputs.find((i) => i.key === 'type');
+      const methodInput = newField.inputs.find((i) => i.key === 'method');
+      const itemInput = newField.inputs.find((i) => i.key === 'item');
 
-        const typeValue = String(typeInput.value);
-        let methodValue = String(methodInput.value);
-        let itemValue = String(itemInput.value);
+      if (!typeInput || !methodInput || !itemInput) return newField;
 
-        // Get proper method options based on the selected type.
-        const methodOptions = getMethodOptions(typeValue);
-        methodInput.options = methodOptions;
+      const typeValue = String(typeInput.value);
+      let methodValue = String(methodInput.value);
+      let itemValue = String(itemInput.value);
 
-        // If the current method is not valid for the selected type, reset it.
-        if (!methodOptions.some((opt) => opt.value === methodValue)) {
-          methodValue = methodOptions[0].value;
-          methodInput.value = methodValue;
-        }
+      // Update the method options based on type.
+      const methodOptions = getMethodOptions(typeValue);
+      methodInput.options = [...methodOptions];
 
-        // Get valid item options based on the selected type and method.
-        itemInput.options = getItemOptions(typeValue, methodValue);
+      // Reset method value if not valid.
+      if (!methodOptions.some((opt) => opt.value === methodValue)) {
+        methodValue = methodOptions[0].value;
+        methodInput.value = methodValue;
+      }
 
-        // Reset item value if it's not in the updated list.
-        if (!itemInput.options.some((opt) => opt.value === itemValue)) {
-          itemValue = '';
-          itemInput.value = itemValue;
-        }
+      // Update the item options based on type and method.
+      const newItemOptions = getItemOptions(typeValue, methodValue);
+      itemInput.options = [...newItemOptions];
 
-        return updateExtraFields(field, itemValue);
-      }),
-    );
+      // Reset item value if it's not valid.
+      if (!newItemOptions.some((opt) => opt.value === itemValue)) {
+        itemValue = '';
+        itemInput.value = itemValue;
+      }
+
+      return updateExtraFields(newField, itemValue);
+    });
+    setFields(newFields);
   };
 
   useEffect(() => {
-    console.log('f:', fields);
+    console.log('fields:', fields);
   }, [fields]);
 
   return (

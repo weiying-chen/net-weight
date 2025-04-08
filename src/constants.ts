@@ -113,7 +113,7 @@ export const extraInputs: Record<string, FlexFieldInput[]> = {
     { key: 'height', label: 'Height', value: 0, type: 'number', unit: 'cm' },
   ],
   Price: [
-    { key: 'amount', label: 'Amount', value: 0, type: 'number', unit: 'USD' },
+    { key: 'amount', label: 'Amount', value: 0, type: 'float', unit: 'USD' },
     {
       key: 'currency',
       label: 'Currency',
@@ -130,7 +130,7 @@ export const extraInputs: Record<string, FlexFieldInput[]> = {
   Weight: [
     { key: 'weight', label: 'Value', value: 0, type: 'number', unit: 'kg' },
   ],
-  Unit: [{ key: 'unit', label: 'Value', value: '', type: 'text', unit: 'U' }],
+  Unit: [{ key: 'unit', label: 'Value', value: 0, type: 'float', unit: 'U' }],
   'MAC address': [
     { key: 'macAddress', label: 'Value', value: '', type: 'text' },
   ],
