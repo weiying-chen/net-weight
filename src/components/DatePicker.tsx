@@ -1,9 +1,10 @@
 import { useState, useRef, useLayoutEffect, ReactNode } from 'react';
-import { DayPicker } from 'react-day-picker';
 import { PseudoInput } from '@/components/PseudoInput';
 import { Col } from '@/components/Col';
 import { cn } from '@/utils';
 import { IconCalendarMonth } from '@tabler/icons-react';
+// Import your custom DayPicker component.
+import { DayPicker } from '@/components/DayPicker';
 
 export type DatePickerProps = {
   label?: ReactNode;
@@ -38,9 +39,7 @@ export const DatePicker = ({
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
     externalValue,
   );
-  const [displayedMonth, setDisplayedMonth] = useState(
-    externalValue || new Date(),
-  );
+  // Our custom DayPicker manages its own month navigation so we no longer need a separate displayedMonth state.
 
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const triggerRef = useRef<HTMLDivElement | null>(null);
@@ -53,26 +52,19 @@ export const DatePicker = ({
       const viewportHeight = window.innerHeight;
       const viewportWidth = window.innerWidth;
 
-      // Vertical positioning: flip if not enough space below trigger.
+      // Flip vertical if not enough room.
       const shouldFlipVertically =
         triggerRect.bottom + dropdownHeight > viewportHeight;
       setDropdownPosition(shouldFlipVertically ? 'top' : 'bottom');
 
-      // Horizontal positioning:
-      // Calculate available space on each side of the trigger.
+      // Horizontal positioning.
       const spaceOnRight = viewportWidth - triggerRect.right;
       const spaceOnLeft = triggerRect.left;
-
-      // Check if either side can fully accommodate the dropdown's width.
       if (spaceOnRight >= dropdownWidth && spaceOnRight >= spaceOnLeft) {
-        // There is enough space on the right.
-        setHorizontalPosition('left'); // align dropdown's left edge with trigger's left.
+        setHorizontalPosition('left');
       } else if (spaceOnLeft >= dropdownWidth) {
-        // There is enough space on the left.
-        setHorizontalPosition('right'); // align dropdown's right edge with trigger's right.
+        setHorizontalPosition('right');
       } else {
-        // Neither side can fully display the dropdown.
-        // Choose the side with the most available space.
         setHorizontalPosition(spaceOnRight < spaceOnLeft ? 'right' : 'left');
       }
     }
@@ -95,17 +87,13 @@ export const DatePicker = ({
         setIsOpen(false);
       }
     };
-
     document.addEventListener('click', handleOutsideClick);
-    return () => {
-      document.removeEventListener('click', handleOutsideClick);
-    };
+    return () => document.removeEventListener('click', handleOutsideClick);
   }, []);
 
-  // Update internal state when external value changes.
+  // When an external value changes, update our internal selectedDate.
   useLayoutEffect(() => {
     setSelectedDate(externalValue);
-    setDisplayedMonth(externalValue || new Date());
   }, [externalValue]);
 
   const handleSelectDate = (date: Date) => {
@@ -120,39 +108,11 @@ export const DatePicker = ({
       onClick={(e) => e.stopPropagation()}
       className={cn(
         'absolute z-10 rounded border border-border bg-background p-3 shadow',
-        // Vertical alignment: show above or below trigger.
         dropdownPosition === 'top' ? 'bottom-full mb-1' : 'top-full mt-1',
-        // Horizontal alignment: position based on computed side.
         horizontalPosition === 'right' ? 'right-0' : 'left-0',
       )}
     >
-      <DayPicker
-        mode="single"
-        selected={selectedDate}
-        month={displayedMonth}
-        onMonthChange={setDisplayedMonth}
-        showOutsideDays
-        onSelect={(date) => date && handleSelectDate(date)}
-        classNames={{
-          root: 'rdp-root',
-          months: 'rdp-months',
-          month: 'rdp-month',
-          caption:
-            'rdp-caption flex justify-between items-center mb-2 border-b pb-2 border-border',
-          caption_label: 'rdp-caption-label text-lg font-semibold',
-          nav: 'rdp-nav flex items-center gap-2',
-          table: 'rdp-table',
-          head: 'rdp-head',
-          head_row: 'rdp-head_row',
-          head_cell: 'rdp-head_cell text-sm font-medium',
-          row: 'rdp-row',
-          cell: 'rdp-cell',
-          day: 'rdp-day text-center w-10 h-10 p-2 rounded hover:shadow',
-          day_selected: 'bg-primary text-background',
-          day_today: 'bg-subtle',
-          day_outside: 'text-muted',
-        }}
-      />
+      <DayPicker value={selectedDate} onChange={handleSelectDate} />
     </div>
   );
 
@@ -170,9 +130,7 @@ export const DatePicker = ({
         ref={triggerRef}
         className="relative w-full"
         onClick={() => {
-          if (!disabled) {
-            setIsOpen((prev) => !prev);
-          }
+          if (!disabled) setIsOpen((prev) => !prev);
         }}
       >
         <PseudoInput

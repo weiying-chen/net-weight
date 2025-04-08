@@ -184,6 +184,8 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
                     input.value ? new Date(input.value as string) : undefined
                   }
                   onChange={(date) => {
+                    console.log('Picked date:', date);
+
                     const formattedDate = date
                       ? format(date, 'yyyy-MM-dd')
                       : '';
