@@ -11,7 +11,7 @@ function getStartDayOfMonth(year: number, month: number) {
   return new Date(year, month, 1).getDay(); // 0 = Sunday
 }
 
-type CalendarDay = {
+export type CalendarDay = {
   year: number;
   month: number;
   dayNumber: number;
@@ -35,7 +35,7 @@ function buildCalendarDays(year: number, month: number): CalendarDay[] {
   const calendarDays: CalendarDay[] = [];
 
   for (let i = 0; i < TOTAL_CELLS; i++) {
-    const dayIndex = i - startDay; // offset relative to current month's first day
+    const dayIndex = i - startDay; // offset relative to the first day of current month
     let dayNumber: number;
     let itemYear: number;
     let itemMonth: number;
@@ -54,12 +54,11 @@ function buildCalendarDays(year: number, month: number): CalendarDay[] {
       itemMonth = nextMonth;
       isCurrentMonth = false;
     } else {
-      // Current month.
+      // Days from current month.
       dayNumber = dayIndex + 1;
       itemYear = year;
       itemMonth = month;
     }
-
     calendarDays.push({
       year: itemYear,
       month: itemMonth,
@@ -67,24 +66,41 @@ function buildCalendarDays(year: number, month: number): CalendarDay[] {
       isCurrentMonth,
     });
   }
+
   return calendarDays;
 }
 
-type DayPickerProps = {
+export type DayPickerProps = {
   value?: Date;
   onChange?: (date: Date) => void;
+  /**
+   * Optional custom formatter for the month label.
+   * If not provided, defaults to "MMMM yyyy" (e.g., "May 2025").
+   */
+  monthLabel?: (date: Date) => string;
+  /**
+   * Optional custom formatter for weekday labels.
+   * Receives the default weekday label and its index.
+   * If not provided, the default labels (['Su', 'Mo', 'Tu', ...]) are used.
+   */
+  weekdayLabel?: (weekday: string, index: number) => string;
 };
 
-export function DayPicker({ value, onChange }: DayPickerProps) {
+export function DayPicker({
+  value,
+  onChange,
+  monthLabel,
+  weekdayLabel,
+}: DayPickerProps) {
   const today = new Date();
   const initialDate = value ?? today;
 
-  // Store the full selected Date
+  // Store the full selected Date.
   const [selectedDate, setSelectedDate] = useState<Date | null>(value ?? null);
   const [year, setYear] = useState(initialDate.getFullYear());
   const [month, setMonth] = useState(initialDate.getMonth());
 
-  // Build a fixed 42-cell grid for the calendar.
+  // Build a fixed 42-cell calendar grid.
   const calendarDays = buildCalendarDays(year, month);
 
   const handleDayClick = (dayNumber: number) => {
@@ -113,12 +129,19 @@ export function DayPicker({ value, onChange }: DayPickerProps) {
     // Let selectedDate remain
   };
 
+  // Default weekday labels
+  const defaultWeekdays = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+
   return (
-    // Removed explicit border, padding, and shadow. You can wrap this div or apply your own styles.
+    // Container styling is left minimal so you can add your own styles.
     <div className="w-72">
       {/* Header: Month label on left, navigation arrows on right */}
       <div className="mb-2 flex items-center justify-between">
-        <Heading>{format(new Date(year, month), 'MMMM yyyy')}</Heading>
+        <Heading>
+          {monthLabel
+            ? monthLabel(new Date(year, month))
+            : format(new Date(year, month), 'MMMM yyyy')}
+        </Heading>
         <div className="flex gap-1">
           <button
             className="rounded p-1 text-muted hover:bg-subtle"
@@ -135,13 +158,15 @@ export function DayPicker({ value, onChange }: DayPickerProps) {
         </div>
       </div>
 
-      {/* Divider: Remove if you wish */}
+      {/* Divider */}
       <div className="mb-2 h-px w-full bg-border" />
 
       {/* Weekday headers */}
       <div className="mb-1 grid grid-cols-7 text-center text-xs text-muted">
-        {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => (
-          <div key={d}>{d}</div>
+        {defaultWeekdays.map((label, i) => (
+          <div key={i}>
+            {weekdayLabel ? weekdayLabel(label, i) : label}
+          </div>
         ))}
       </div>
 

@@ -16,6 +16,21 @@ export type DatePickerProps = {
   required?: boolean;
   disabled?: boolean;
   small?: boolean;
+  /**
+   * Optional custom formatter for the month label.
+   * For example, for Chinese you might use a formatter that returns "2025年5月".
+   */
+  monthLabel?: (date: Date) => string;
+  /**
+   * Optional custom formatter for weekday labels.
+   * Receives the default weekday string and its index.
+   */
+  weekdayLabel?: (weekday: string, index: number) => string;
+  /**
+   * Optional custom formatter for the displayed date value in the input.
+   * If not provided, defaults to date.toLocaleDateString().
+   */
+  valueLabel?: (date: Date) => string;
 };
 
 export const DatePicker = ({
@@ -28,6 +43,9 @@ export const DatePicker = ({
   required,
   disabled,
   small = false,
+  monthLabel,
+  weekdayLabel,
+  valueLabel,
 }: DatePickerProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState<'top' | 'bottom'>(
@@ -88,7 +106,9 @@ export const DatePicker = ({
       }
     };
     document.addEventListener('click', handleOutsideClick);
-    return () => document.removeEventListener('click', handleOutsideClick);
+    return () => {
+      document.removeEventListener('click', handleOutsideClick);
+    };
   }, []);
 
   // When an external value changes, update our internal selectedDate.
@@ -112,7 +132,12 @@ export const DatePicker = ({
         horizontalPosition === 'right' ? 'right-0' : 'left-0',
       )}
     >
-      <DayPicker value={selectedDate} onChange={handleSelectDate} />
+      <DayPicker
+        value={selectedDate}
+        onChange={handleSelectDate}
+        monthLabel={monthLabel}
+        weekdayLabel={weekdayLabel}
+      />
     </div>
   );
 
@@ -143,7 +168,11 @@ export const DatePicker = ({
             'h-6 px-2 py-1 text-xs': small,
           })}
         >
-          {selectedDate ? selectedDate.toLocaleDateString() : placeholder}
+          {selectedDate
+            ? valueLabel
+              ? valueLabel(selectedDate)
+              : selectedDate.toLocaleDateString()
+            : placeholder}
           <IconCalendarMonth size={20} />
         </PseudoInput>
         {isOpen && renderDayPicker()}

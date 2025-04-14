@@ -46,6 +46,8 @@ export type SelectProps<T> = {
   searchQuery?: string;
   /** New prop to customize the chevron icon */
   icon?: ReactNode;
+  /** New prop to customize the no-results label */
+  noResultsLabel?: ReactNode;
 };
 
 export const Select = <T extends string | number>({
@@ -69,6 +71,7 @@ export const Select = <T extends string | number>({
   muted = false,
   searchQuery: extSearchQuery = '',
   icon,
+  noResultsLabel, // Destructure the new prop
   ...props
 }: SelectProps<T>) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -193,9 +196,7 @@ export const Select = <T extends string | number>({
       const availableSpaceAbove = Math.min(spaceAbove, dropdownMaxHeight);
       const shouldFlip = availableSpaceAbove > availableSpaceBelow;
 
-      dropdownRef.current.style.maxHeight = `${
-        shouldFlip ? availableSpaceAbove : availableSpaceBelow
-      }px`;
+      dropdownRef.current.style.maxHeight = `${shouldFlip ? availableSpaceAbove : availableSpaceBelow}px`;
       setDropdownPosition(shouldFlip ? 'top' : 'bottom');
     }
   };
@@ -331,7 +332,9 @@ export const Select = <T extends string | number>({
             <IconLoader2 size={24} className="animate-spin" />
           </div>
         ) : filteredOptions.length === 0 ? (
-          <div className="p-4 text-sm text-muted">No results found</div>
+          <div className="p-4 text-sm text-muted">
+            {noResultsLabel || 'No results found'}
+          </div>
         ) : (
           <ul className="max-h-96 overflow-y-auto overflow-x-hidden">
             {filteredOptions.map((option, index) => {

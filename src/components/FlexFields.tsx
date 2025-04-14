@@ -25,7 +25,7 @@ export type Option = {
 
 export type FlexFieldInput = {
   key: string;
-  label?: string;
+  label: string;
   value: string | number | boolean;
   type: ValueType;
   options?: Option[];
@@ -33,7 +33,7 @@ export type FlexFieldInput = {
 };
 
 export type FlexField = {
-  key: string;
+  id: string;
   inputs: FlexFieldInput[];
 };
 
@@ -41,11 +41,17 @@ export type FlexFieldsProps = {
   label?: string;
   fields?: FlexField[];
   addFieldLabel?: string;
-
   fieldTemplate?: FlexField;
   onChange: (fields: FlexField[]) => void;
   asLabel?: (label: string) => string;
   asOption?: (option: Option) => Option;
+  asUnit?: (unit?: string) => string | undefined;
+  monthLabel?: (date: Date) => string;
+  weekdayLabel?: (weekday: string, index: number) => string;
+  dateValueLabel?: (date: Date) => string;
+  selectPlaceholder?: string;
+  datePlaceholder?: string;
+  errors?: Array<{ [key: string]: string }>;
 };
 
 export const FlexFields: React.FC<FlexFieldsProps> = ({
@@ -56,6 +62,13 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
   onChange,
   asLabel,
   asOption,
+  asUnit,
+  monthLabel,
+  weekdayLabel,
+  dateValueLabel,
+  selectPlaceholder,
+  datePlaceholder,
+  errors,
 }) => {
   const [fields, setFields] = useState<FlexField[]>(initialFields);
 
@@ -89,7 +102,7 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
     const newField: FlexField = fieldTemplate
       ? { ...fieldTemplate }
       : {
-          key: 'newField',
+          id: crypto.randomUUID().slice(0, 8),
           inputs: [
             {
               key: 'value',
@@ -117,12 +130,17 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
         : input.label
       : 'Value';
 
+    // Simply derive the error (if any) from the errors passed in the props.
+    const errorMsg = errors?.[fieldIndex]?.[input.key];
+
     return (
-      <Col>
-        <label className="block text-sm font-medium">
+      <Col className="flex-1">
+        <label className="text-sm font-medium">
           {displayLabel}
           {input.unit && (
-            <span className="ml-1 text-xs text-muted">{input.unit}</span>
+            <span className="ml-1 text-xs text-muted">
+              {asUnit ? asUnit(input.unit) : input.unit}
+            </span>
           )}
         </label>
         {(() => {
@@ -141,6 +159,7 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
                       Number(e.target.value),
                     )
                   }
+                  error={errorMsg}
                 />
               );
             case 'switch':
@@ -150,6 +169,8 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
                   onChange={(checked) =>
                     handleInputChange(fieldIndex, inputIndex, checked)
                   }
+                  label={displayLabel}
+                  error={errorMsg}
                 />
               );
             case 'select': {
@@ -160,10 +181,12 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
                 <Select
                   value={String(input.value)}
                   options={finalOptions}
+                  placeholder={selectPlaceholder}
                   disabled={!!input.options && input.options.length === 1}
                   onChange={(value) =>
                     handleInputChange(fieldIndex, inputIndex, value)
                   }
+                  error={errorMsg}
                 />
               );
             }
@@ -175,6 +198,7 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
                   onChange={(e) =>
                     handleInputChange(fieldIndex, inputIndex, e.target.value)
                   }
+                  error={errorMsg}
                 />
               );
             case 'date':
@@ -184,14 +208,16 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
                     input.value ? new Date(input.value as string) : undefined
                   }
                   onChange={(date) => {
-                    console.log('Picked date:', date);
-
                     const formattedDate = date
                       ? format(date, 'yyyy-MM-dd')
                       : '';
                     handleInputChange(fieldIndex, inputIndex, formattedDate);
                   }}
-                  placeholder="Select a date"
+                  placeholder={datePlaceholder}
+                  monthLabel={monthLabel}
+                  weekdayLabel={weekdayLabel}
+                  valueLabel={dateValueLabel}
+                  error={errorMsg}
                 />
               );
             default:
@@ -202,6 +228,7 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
                   onChange={(e) =>
                     handleInputChange(fieldIndex, inputIndex, e.target.value)
                   }
+                  error={errorMsg}
                 />
               );
           }
@@ -212,18 +239,18 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
 
   return (
     <Col className="w-full">
-      {label && <label className="text-sm font-semibold">{label}</label>}
+      {label && <label className="mb-2 text-sm font-semibold">{label}</label>}
       {fields.map((field, fieldIndex) => (
-        <Row alignItems="center" key={field.key}>
+        <Row alignItems="start" key={field.id}>
           {field.inputs.map((input, inputIndex) => (
             <div
-              key={`${field.key}-${input.key}-${inputIndex}`}
-              className="w-full"
+              key={`${field.id}-${input.key}-${inputIndex}`}
+              className="flex-1"
             >
               {renderInput(fieldIndex, input, inputIndex)}
             </div>
           ))}
-          <div className="self-end">
+          <div className="self-start md:mt-7">
             <Button
               type="button"
               variant="secondary"
