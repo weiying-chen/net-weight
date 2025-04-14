@@ -15,13 +15,15 @@ export function XButton({
   onRemoveFile: (index: number) => void;
   containerRef: React.RefObject<HTMLDivElement>;
   hovered: boolean;
-  layout: 'grid' | 'avatar' | 'banner';
+  layout: 'grid' | 'avatar' | 'banner' | 'avatarBottom';
   imageLoaded?: boolean;
 }) {
   const portalContainer = usePortalContainer();
   const [coords, setCoords] = useState({ top: 0, left: 0 });
+
   const borderWidth = 1;
-  const isRectangle = layout === 'grid' || layout === 'banner';
+  const isRectangle =
+    layout === 'grid' || layout === 'banner' || layout === 'avatarBottom';
   const offsetTop = (isRectangle ? 4 : 20) + borderWidth;
   const offsetRight = (isRectangle ? 28 : 20) + borderWidth;
 
@@ -35,11 +37,11 @@ export function XButton({
 
   useEffect(() => {
     updatePosition();
-    function handleScrollResize() {
-      updatePosition();
-    }
+
+    const handleScrollResize = () => updatePosition();
     window.addEventListener('scroll', handleScrollResize);
     window.addEventListener('resize', handleScrollResize);
+
     return () => {
       window.removeEventListener('scroll', handleScrollResize);
       window.removeEventListener('resize', handleScrollResize);

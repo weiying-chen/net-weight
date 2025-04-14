@@ -130,8 +130,18 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
         : input.label
       : 'Value';
 
-    // Simply derive the error (if any) from the errors passed in the props.
-    const errorMsg = errors?.[fieldIndex]?.[input.key];
+    const fieldErrors = errors?.[fieldIndex] || {};
+    let errorMsg = fieldErrors[input.key];
+
+    // Example fallback logic: only apply if input.key is "currency"
+    // (Or use the label, or some other condition to identify the correct select).
+    if (!errorMsg && input.type === 'select' && input.key !== 'value') {
+      if (input.key === 'currency' && fieldErrors.value) {
+        errorMsg = fieldErrors.value;
+      }
+      // you could else if more custom selects (if needed)
+      // else if (input.key === 'someOtherKey' && fieldErrors.value) { ... }
+    }
 
     return (
       <Col className="flex-1">

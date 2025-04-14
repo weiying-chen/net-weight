@@ -7,12 +7,13 @@ import { FileData } from '@/components/FileUpload';
 import { getFileUrl } from '@/helpers';
 import { XButton } from '@/components/FilePreviews/XButton';
 
-type FilePreviewsProps = {
+export type FilePreviewsProps = {
   files: FileData[];
   onRemoveFile?: (index: number) => void;
   onEditClick?: (index: number) => void;
-  layout?: 'grid' | 'avatar' | 'banner';
+  layout?: 'grid' | 'avatar' | 'banner' | 'avatarBottom';
   className?: string;
+  defaultPreviewMessage?: string;
 };
 
 type FilePreviewItemProps = {
@@ -20,7 +21,7 @@ type FilePreviewItemProps = {
   index: number;
   onRemoveFile?: (index: number) => void;
   onEditClick?: (index: number) => void;
-  layout: 'grid' | 'avatar' | 'banner';
+  layout: 'grid' | 'avatar' | 'banner' | 'avatarBottom';
 };
 
 function FilePreviewItem({
@@ -51,7 +52,6 @@ function FilePreviewItem({
       </div>
     ) : null;
 
-  // Show filename only in grid mode.
   const renderFilename = (file: FileData) =>
     layout === 'grid' ? (
       <Row
@@ -73,12 +73,10 @@ function FilePreviewItem({
         'group relative overflow-hidden border border-border bg-background',
         onEditClick && 'cursor-pointer',
         {
-          // Grid mode: same as before.
           'aspect-w-1 aspect-h-1 w-full rounded-md pb-7': layout === 'grid',
-          // Avatar mode: same as before.
+          // For both avatar and avatarBottom, use the same styling.
           'flex h-32 w-32 items-center justify-center rounded-full':
-            layout === 'avatar',
-          // Banner mode: full width, rounded, with no fixed aspect ratio.
+            layout === 'avatar' || layout === 'avatarBottom',
           'w-full rounded-md': layout === 'banner',
         },
       )}
@@ -102,30 +100,26 @@ function FilePreviewItem({
       {renderOverlay()}
 
       {previewUrl ? (
-        layout === 'grid' || layout === 'banner' ? (
-          <div className="relative box-border h-full w-full p-1">
-            <img
-              src={previewUrl}
-              alt={`Preview ${index + 1}`}
-              className="h-full w-full object-contain"
-              onLoad={() => setImageLoaded(true)}
-            />
-          </div>
-        ) : (
-          <img
-            src={previewUrl}
-            alt={`Preview ${index + 1}`}
-            className="h-full w-full object-cover"
-            onLoad={() => setImageLoaded(true)}
-          />
-        )
+        <img
+          src={previewUrl}
+          alt={`Preview ${index + 1}`}
+          className={cn('object-cover', {
+            'h-full w-full object-contain':
+              layout === 'grid' || layout === 'banner',
+            'h-32 w-32 rounded-full':
+              layout === 'avatar' || layout === 'avatarBottom',
+          })}
+          onLoad={() => setImageLoaded(true)}
+        />
       ) : (
         <Col
           align="center"
           alignItems="center"
-          className={cn('h-full w-full', {
-            'rounded-md': layout === 'grid' || layout === 'banner',
-            'rounded-full': layout === 'avatar',
+          className={cn({
+            'h-full w-full rounded-md':
+              layout === 'grid' || layout === 'banner',
+            'h-32 w-32 rounded-full':
+              layout === 'avatar' || layout === 'avatarBottom',
           })}
         >
           <IconFileDescription size={60} stroke={1} />
@@ -143,16 +137,32 @@ export function FilePreviews({
   onEditClick,
   layout = 'grid',
   className,
+  defaultPreviewMessage,
 }: FilePreviewsProps) {
+  if (files.length === 0 && defaultPreviewMessage) {
+    return (
+      <Row
+        align="center"
+        alignItems="center"
+        className={cn('rounded bg-subtle p-3', className)}
+      >
+        <Col align="center" alignItems="center">
+          <IconFileDescription size={60} stroke={1} />
+          <p className="text-sm text-muted">{defaultPreviewMessage}</p>
+        </Col>
+      </Row>
+    );
+  }
+
   return (
     <div
       className={cn(
         'w-full gap-2 rounded bg-subtle p-3',
         {
-          // Grid: same as before.
           'grid grid-cols-4 md:grid-cols-8': layout === 'grid',
-          // Avatar and Banner: use flex to center the image.
+          // For avatar and banner, use flex; for avatarBottom, use a column layout.
           'flex justify-center': layout === 'avatar' || layout === 'banner',
+          'flex flex-col items-center': layout === 'avatarBottom',
         },
         className,
       )}

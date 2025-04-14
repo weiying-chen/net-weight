@@ -3,14 +3,14 @@ import { Col } from '@/components/Col';
 import { Row } from '@/components/Row';
 import { cn } from '@/utils';
 
-type FieldBlockProps = {
+type DetailRowProps = {
   label?: ReactNode;
   unit?: string;
   value: ReactNode;
   className?: string;
 };
 
-export const FieldBlock: React.FC<FieldBlockProps> = ({
+export const DetailRow: React.FC<DetailRowProps> = ({
   label,
   unit,
   value,

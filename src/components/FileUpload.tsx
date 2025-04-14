@@ -19,11 +19,12 @@ type FileUploadProps = {
   onChange: (files: FileData[]) => void;
   files?: FileData[];
   maxSize?: number;
-  layout?: 'grid' | 'avatar' | 'banner';
+  layout?: 'grid' | 'avatar' | 'banner' | 'avatarBottom';
   accept?: { [key: string]: string[] };
   acceptText?: string;
   required?: boolean;
   onEditClick?: (index: number) => void;
+  defaultPreviewMessage?: string;
 };
 
 export function FileUpload({
@@ -44,9 +45,11 @@ export function FileUpload({
   acceptText = 'Accepted file type(s): ',
   required,
   onEditClick,
+  defaultPreviewMessage,
 }: FileUploadProps) {
   const [files, setFiles] = useState<FileData[]>(initialFiles);
-  const isPreviewGrid = layout === 'grid' || layout === 'banner';
+  const isPreviewGrid =
+    layout === 'grid' || layout === 'banner' || layout === 'avatarBottom';
   const allowMultiple = layout === 'grid';
 
   const updateFiles = (newFiles: FileData[]) => {
@@ -125,18 +128,19 @@ export function FileUpload({
         className={cn(
           'flex w-full',
           isPreviewGrid
-            ? 'flex-col gap-4'
+            ? 'flex-col gap-2'
             : 'flex-col items-stretch gap-2 md:flex-row',
         )}
       >
         {renderDropzone()}
-        {files.length > 0 && (
+        {(files.length > 0 || defaultPreviewMessage) && (
           <FilePreviews
             files={files}
             layout={layout}
             className={cn({ 'order-first md:w-1/3': !isPreviewGrid })}
             onRemoveFile={handleRemoveFile}
             onEditClick={onEditClick}
+            defaultPreviewMessage={defaultPreviewMessage}
           />
         )}
       </div>
