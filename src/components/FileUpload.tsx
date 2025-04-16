@@ -24,7 +24,8 @@ type FileUploadProps = {
   acceptText?: string;
   required?: boolean;
   onEditClick?: (index: number) => void;
-  defaultPreviewMessage?: string;
+  noFileText?: string;
+  previewClassName?: string; // New prop for controlling preview container styling
 };
 
 export function FileUpload({
@@ -45,7 +46,8 @@ export function FileUpload({
   acceptText = 'Accepted file type(s): ',
   required,
   onEditClick,
-  defaultPreviewMessage,
+  noFileText,
+  previewClassName,
 }: FileUploadProps) {
   const [files, setFiles] = useState<FileData[]>(initialFiles);
   const isPreviewGrid =
@@ -133,14 +135,17 @@ export function FileUpload({
         )}
       >
         {renderDropzone()}
-        {(files.length > 0 || defaultPreviewMessage) && (
+        {(files.length > 0 || noFileText) && (
           <FilePreviews
             files={files}
             layout={layout}
-            className={cn({ 'order-first md:w-1/3': !isPreviewGrid })}
+            className={cn(
+              { 'order-first md:w-1/3': !isPreviewGrid },
+              previewClassName,
+            )}
             onRemoveFile={handleRemoveFile}
             onEditClick={onEditClick}
-            defaultPreviewMessage={defaultPreviewMessage}
+            noFileText={noFileText}
           />
         )}
       </div>

@@ -260,6 +260,7 @@ export const Select = <T extends string | number>({
         onFocus={() => {
           if (!isOpen) openDropdown();
         }}
+        autoComplete="off"
         disabled={disabled}
       />
       {isOpen && renderDropdown()}

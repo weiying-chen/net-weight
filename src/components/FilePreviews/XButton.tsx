@@ -22,8 +22,7 @@ export function XButton({
   const [coords, setCoords] = useState({ top: 0, left: 0 });
 
   const borderWidth = 1;
-  const isRectangle =
-    layout === 'grid' || layout === 'banner' || layout === 'avatarBottom';
+  const isRectangle = layout === 'grid' || layout === 'banner';
   const offsetTop = (isRectangle ? 4 : 20) + borderWidth;
   const offsetRight = (isRectangle ? 28 : 20) + borderWidth;
 

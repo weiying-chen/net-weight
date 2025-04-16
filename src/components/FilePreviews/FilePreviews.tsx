@@ -1,5 +1,9 @@
 import { useRef, useState, useEffect, useMemo } from 'react';
-import { IconFileDescription, IconEdit } from '@tabler/icons-react';
+import {
+  IconFileDescription,
+  IconEdit,
+  IconFileOff,
+} from '@tabler/icons-react';
 import { Row } from '@/components/Row';
 import { Col } from '@/components/Col';
 import { cn } from '@/utils';
@@ -13,7 +17,8 @@ export type FilePreviewsProps = {
   onEditClick?: (index: number) => void;
   layout?: 'grid' | 'avatar' | 'banner' | 'avatarBottom';
   className?: string;
-  defaultPreviewMessage?: string;
+  noFileText?: string;
+  previewClassName?: string;
 };
 
 type FilePreviewItemProps = {
@@ -74,10 +79,11 @@ function FilePreviewItem({
         onEditClick && 'cursor-pointer',
         {
           'aspect-w-1 aspect-h-1 w-full rounded-md pb-7': layout === 'grid',
-          // For both avatar and avatarBottom, use the same styling.
+
           'flex h-32 w-32 items-center justify-center rounded-full':
             layout === 'avatar' || layout === 'avatarBottom',
-          'w-full rounded-md': layout === 'banner',
+
+          'w-full': layout === 'banner',
         },
       )}
       onMouseEnter={() => setHovered(true)}
@@ -103,19 +109,25 @@ function FilePreviewItem({
         <img
           src={previewUrl}
           alt={`Preview ${index + 1}`}
-          className={cn('object-cover', {
-            'h-full w-full object-contain':
-              layout === 'grid' || layout === 'banner',
-            'h-32 w-32 rounded-full':
-              layout === 'avatar' || layout === 'avatarBottom',
-          })}
+          className={cn(
+            {
+              'rounded-full': layout === 'avatar' || layout === 'avatarBottom',
+              'rounded-md': layout === 'grid',
+            },
+            {
+              'h-full w-full object-contain':
+                layout === 'grid' || layout === 'banner',
+              'h-32 w-32': layout === 'avatar' || layout === 'avatarBottom',
+            },
+            'object-cover',
+          )}
           onLoad={() => setImageLoaded(true)}
         />
       ) : (
         <Col
           align="center"
           alignItems="center"
-          className={cn({
+          className={cn('text-center', {
             'h-full w-full rounded-md':
               layout === 'grid' || layout === 'banner',
             'h-32 w-32 rounded-full':
@@ -137,18 +149,23 @@ export function FilePreviews({
   onEditClick,
   layout = 'grid',
   className,
-  defaultPreviewMessage,
+  noFileText,
+  previewClassName,
 }: FilePreviewsProps) {
-  if (files.length === 0 && defaultPreviewMessage) {
+  if (files.length === 0 && noFileText) {
     return (
       <Row
         align="center"
         alignItems="center"
-        className={cn('rounded bg-subtle p-3', className)}
+        className={cn(
+          'rounded bg-subtle p-3',
+          className,
+          previewClassName,
+        )}
       >
         <Col align="center" alignItems="center">
-          <IconFileDescription size={60} stroke={1} />
-          <p className="text-sm text-muted">{defaultPreviewMessage}</p>
+          <IconFileOff size={40} stroke={1} className="text-muted" />
+          <p className="text-sm text-muted">{noFileText}</p>
         </Col>
       </Row>
     );
@@ -160,11 +177,15 @@ export function FilePreviews({
         'w-full gap-2 rounded bg-subtle p-3',
         {
           'grid grid-cols-4 md:grid-cols-8': layout === 'grid',
-          // For avatar and banner, use flex; for avatarBottom, use a column layout.
-          'flex justify-center': layout === 'avatar' || layout === 'banner',
-          'flex flex-col items-center': layout === 'avatarBottom',
+
+          'flex items-center justify-center': [
+            'avatar',
+            'banner',
+            'avatarBottom',
+          ].includes(layout),
         },
         className,
+        previewClassName,
       )}
     >
       {files.map((file, index) => (
