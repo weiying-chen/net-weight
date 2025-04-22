@@ -3,6 +3,7 @@ import { useDropzone } from 'react-dropzone';
 import { Col } from '@/components/Col';
 import { cn } from '@/utils';
 import { FilePreviews } from '@/components/FilePreviews';
+import { Accordion } from '@/components/Accordion'; // <-- import Accordion!
 
 export type FileData = {
   url?: string;
@@ -25,7 +26,7 @@ type FileUploadProps = {
   required?: boolean;
   onEditClick?: (index: number) => void;
   noFileText?: string;
-  previewClassName?: string; // New prop for controlling preview container styling
+  previewClassName?: string;
 };
 
 export function FileUpload({
@@ -50,7 +51,7 @@ export function FileUpload({
   previewClassName,
 }: FileUploadProps) {
   const [files, setFiles] = useState<FileData[]>(initialFiles);
-  const isPreviewGrid =
+  const isPreviewBottom =
     layout === 'grid' || layout === 'banner' || layout === 'avatarBottom';
   const allowMultiple = layout === 'grid';
 
@@ -129,25 +130,43 @@ export function FileUpload({
       <div
         className={cn(
           'flex w-full',
-          isPreviewGrid
+          isPreviewBottom
             ? 'flex-col gap-2'
             : 'flex-col items-stretch gap-2 md:flex-row',
         )}
       >
         {renderDropzone()}
-        {(files.length > 0 || noFileText) && (
-          <FilePreviews
-            files={files}
-            layout={layout}
-            className={cn(
-              { 'order-first md:w-1/3': !isPreviewGrid },
-              previewClassName,
-            )}
-            onRemoveFile={handleRemoveFile}
-            onEditClick={onEditClick}
-            noFileText={noFileText}
-          />
-        )}
+        {(files.length > 0 || noFileText) &&
+          (isPreviewBottom && layout === 'grid' && files.length > 10 ? ( // << now 10
+            <Accordion
+              initialCollapsed={true}
+              peekHeight={240}
+              className={cn(
+                { 'order-first md:w-1/3': !isPreviewBottom },
+                previewClassName,
+              )}
+            >
+              <FilePreviews
+                files={files}
+                layout={layout}
+                onRemoveFile={handleRemoveFile}
+                onEditClick={onEditClick}
+                noFileText={noFileText}
+              />
+            </Accordion>
+          ) : (
+            <FilePreviews
+              files={files}
+              layout={layout}
+              className={cn(
+                { 'order-first md:w-1/3': !isPreviewBottom },
+                previewClassName,
+              )}
+              onRemoveFile={handleRemoveFile}
+              onEditClick={onEditClick}
+              noFileText={noFileText}
+            />
+          ))}
       </div>
       {error && <span className="text-sm text-danger">{error}</span>}
     </Col>

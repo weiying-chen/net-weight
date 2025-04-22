@@ -1,16 +1,16 @@
+import { useState, useRef, ReactNode } from 'react';
 import { Col } from '@/components/Col';
 import { Row } from '@/components/Row';
-import { Select, SelectProps } from '@/components/Select';
 import { Heading } from '@/components/Heading';
-import { cn } from '@/utils';
-import { useState, useRef } from 'react';
+import { Select, SelectProps } from '@/components/Select';
 import { IconBlendMode } from '@tabler/icons-react';
+import { cn } from '@/utils';
 
 type SectionStatusProps<T extends string | number> = SelectProps<T> & {
   heading: string;
   isVisible?: boolean;
   isMixed?: boolean;
-  children: React.ReactNode;
+  children: ReactNode;
 };
 
 export const SectionStatus = <T extends string | number>({
@@ -34,16 +34,13 @@ export const SectionStatus = <T extends string | number>({
 
   return (
     <Col
-      className={cn(
-        {
-          'gap-0': !isVisible,
-        },
-        'transition-all duration-300 ease-in-out',
-      )}
+      className={cn('transition-all duration-300 ease-in-out', {
+        'gap-0': !isVisible,
+      })}
     >
       <Row
         alignItems="center"
-        className={`border-b border-border pb-2 ${className}`}
+        className={cn('border-b border-border pb-2', className)}
         locked
       >
         <Heading size="sm">{heading}</Heading>

@@ -36,7 +36,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref,
   ) => {
     const baseStyles =
-      'flex items-center justify-center whitespace-nowrap rounded border border-border font-medium shadow ring-foreground hover:shadow-dark ring-offset-2 ring-offset-background focus:outline-none focus-visible:ring-2';
+      'flex items-center justify-center gap-2 whitespace-nowrap rounded border border-border font-medium shadow ring-foreground hover:shadow-dark ring-offset-2 ring-offset-background focus:outline-none focus-visible:ring-2';
 
     const cnFromVariant: Record<ButtonVariant, string> = {
       primary: 'text-background bg-primary px-4 py-2 text-sm h-10',

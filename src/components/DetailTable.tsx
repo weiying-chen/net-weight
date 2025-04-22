@@ -2,7 +2,6 @@ import { ReactNode } from 'react';
 import { Col } from '@/components/Col';
 import { Row } from '@/components/Row';
 
-// Column type (unchanged)
 type Column<T> = {
   header: ReactNode;
   render: (item: T) => ReactNode;
@@ -15,7 +14,7 @@ type DetailTableProps<T> = {
 
 export function DetailTable<T>({ data, columns }: DetailTableProps<T>) {
   return (
-    <Col className="overflow-hidden rounded-sm border border-subtle text-sm">
+    <Col className="border-b border-subtle text-sm">
       <Row className="border-b border-subtle bg-subtle px-4 py-2 font-semibold">
         <div className="w-12 text-center">#</div>
         {columns.map((col, i) => (

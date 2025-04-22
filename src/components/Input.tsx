@@ -1,12 +1,14 @@
 import { forwardRef, InputHTMLAttributes, ReactNode } from 'react';
 import { Col } from '@/components/Col';
 import { cn } from '@/utils';
+import { IconLoader2 } from '@tabler/icons-react';
 
 type InputProps = InputHTMLAttributes<HTMLInputElement> & {
   label?: ReactNode;
   error?: string;
   required?: boolean;
   icon?: ReactNode;
+  isLoading?: boolean;
   /** Makes the input act as a read-only trigger with hover and shadow styles */
   triggerOnly?: boolean;
 };
@@ -19,6 +21,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
     error,
     required,
     icon,
+    isLoading,
     triggerOnly,
     readOnly,
     ...props
@@ -35,7 +38,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
       {label &&
         (typeof label === 'string' ? (
           <label className="text-sm font-semibold">
-            {label} {required && <span className="text-danger"> *</span>}
+            {label} {required && <span className="text-danger">*</span>}
           </label>
         ) : (
           label
@@ -56,6 +59,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
               'ring-foreground ring-offset-2 ring-offset-background focus-visible:ring-2',
             triggerOnly && 'cursor-pointer shadow hover:shadow-dark',
             icon && 'pl-9',
+            isLoading && 'pr-9',
             {
               'border-danger': error,
               'pointer-events-none opacity-50': disabled,
@@ -63,6 +67,11 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           )}
           {...props}
         />
+        {isLoading && (
+          <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+            <IconLoader2 size={16} className="animate-spin text-muted" />
+          </span>
+        )}
       </div>
       {error && <span className="text-sm text-danger">{error}</span>}
     </Col>

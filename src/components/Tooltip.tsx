@@ -30,13 +30,8 @@ export const Tooltip: React.FC<TooltipProps> = ({
   const triggerRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
 
-  const handleMouseEnter = () => {
-    setIsVisible(true);
-  };
-
-  const handleMouseLeave = () => {
-    setIsVisible(false);
-  };
+  const handleMouseEnter = () => setIsVisible(true);
+  const handleMouseLeave = () => setIsVisible(false);
 
   const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
     requestAnimationFrame(() => {
@@ -46,11 +41,10 @@ export const Tooltip: React.FC<TooltipProps> = ({
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
 
-      // Calculate initial position in document coordinates by adding the scroll offsets
       let top = event.clientY + window.scrollY + TOOLTIP_OFFSET.y;
       let left = event.clientX + window.scrollX + TOOLTIP_OFFSET.x;
 
-      // Adjust if the tooltip goes off the bottom of the viewport
+      // Prevent bottom overflow
       if (
         event.clientY + TOOLTIP_OFFSET.y + tooltipRect.height >
         viewportHeight
@@ -61,26 +55,19 @@ export const Tooltip: React.FC<TooltipProps> = ({
           TOOLTIP_OFFSET.y -
           tooltipRect.height;
       }
-
-      // Adjust if the tooltip goes off the right edge of the viewport
+      // Prevent right overflow
       if (
         event.clientX + TOOLTIP_OFFSET.x + tooltipRect.width >
         viewportWidth
       ) {
         left = window.scrollX + viewportWidth - tooltipRect.width - 5;
       }
-
-      // Ensure the tooltip is not positioned off the left edge
+      // Prevent left overflow
       if (left < window.scrollX) {
         left = window.scrollX + 5;
       }
 
-      setStyle((prev) => ({
-        ...prev,
-        top,
-        left,
-      }));
-
+      setStyle((prev) => ({ ...prev, top, left }));
       setIsMeasured(true);
     });
   };
@@ -89,8 +76,8 @@ export const Tooltip: React.FC<TooltipProps> = ({
     if (isVisible) {
       setShouldRender(true);
     } else {
-      const timeoutId = setTimeout(() => setShouldRender(false), 200);
-      return () => clearTimeout(timeoutId);
+      const timeout = setTimeout(() => setShouldRender(false), 200);
+      return () => clearTimeout(timeout);
     }
   }, [isVisible]);
 
@@ -119,7 +106,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
             style={style}
             className={cn(
               'pointer-events-none transform rounded bg-foreground px-3 py-2 text-sm text-background shadow',
-              'whitespace-nowrap transition duration-200 ease-in-out',
+              'max-w-[250px] whitespace-pre-line transition duration-200 ease-in-out',
               isVisible && isMeasured
                 ? 'scale-100 opacity-100'
                 : 'scale-95 opacity-0',
