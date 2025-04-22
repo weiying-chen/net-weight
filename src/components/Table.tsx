@@ -1,4 +1,4 @@
-import React, { useState, useRef, useLayoutEffect, useEffect } from 'react';
+import { useState, useRef, useLayoutEffect, useEffect } from 'react';
 import { IconArrowUp, IconArrowDown } from '@tabler/icons-react';
 import { Tooltip } from '@/components/Tooltip';
 
@@ -27,7 +27,6 @@ export function Table<T>({
   asActions?: (item: T) => React.ReactNode;
   asTooltip?: (item: T) => React.ReactNode;
 }) {
-  // — state & refs —
   const [sortConfig, setSortConfig] = useState<{
     index: number;
     direction: 'asc' | 'desc';
@@ -38,8 +37,6 @@ export function Table<T>({
     right: number;
   } | null>(null);
   const hideTimeout = useRef<number | null>(null);
-
-  // this tracks any mouse-down (anywhere in the document)
   const isMouseDown = useRef(false);
 
   const [widths, setWidths] = useState<{ [i: number]: number }>({});
@@ -47,11 +44,10 @@ export function Table<T>({
   const bodyRefs = useRef<(HTMLDivElement | null)[][]>([]);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  // once on mount, toggle isMouseDown on any document mousedown/up
   useEffect(() => {
     const onDown = () => {
       isMouseDown.current = true;
-      if (hideTimeout.current) window.clearTimeout(hideTimeout.current);
+      hideTimeout.current && window.clearTimeout(hideTimeout.current);
       setHoveredRow(null);
     };
     const onUp = () => {
@@ -65,20 +61,14 @@ export function Table<T>({
     };
   }, []);
 
-  // — sorting logic (unchanged) —
   const sortedData = [...data].sort((a, b) => {
     if (!sortConfig) return 0;
     const { index, direction } = sortConfig;
     const sa = String(cols[index].render(a) ?? '');
     const sb = String(cols[index].render(b) ?? '');
     if (sa === '[object Object]' || sb === '[object Object]') return 0;
-    return sa < sb
-      ? direction === 'asc'
-        ? -1
-        : 1
-      : direction === 'asc'
-        ? 1
-        : -1;
+    if (direction === 'asc') return sa < sb ? -1 : sa > sb ? 1 : 0;
+    return sa > sb ? -1 : sa < sb ? 1 : 0;
   });
   const handleSort = (i: number) => {
     const sample = cols[i].render(data[0]);
@@ -90,32 +80,28 @@ export function Table<T>({
     setSortConfig({ index: i, direction: dir });
   };
 
-  // — hover logic: also bail if isMouseDown.current —
   const handleMouseEnterRow = (ri: number, e: React.MouseEvent) => {
     if (isMouseDown.current) return;
-    if (hideTimeout.current) window.clearTimeout(hideTimeout.current);
+    hideTimeout.current && window.clearTimeout(hideTimeout.current);
     setHoveredRow(ri);
     const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
     const cont = containerRef.current?.getBoundingClientRect();
-    if (cont) {
+    cont &&
       setHoverPosition({
         top: rect.top + rect.height / 2,
         right: document.documentElement.clientWidth - cont.right,
       });
-    }
   };
   const handleMouseLeaveRow = () => {
     hideTimeout.current = window.setTimeout(() => setHoveredRow(null), 100);
   };
   const handleMouseMoveRow = (ri: number) => {
     if (hoveredRow !== ri) return;
-    if (hideTimeout.current) window.clearTimeout(hideTimeout.current);
+    hideTimeout.current && window.clearTimeout(hideTimeout.current);
   };
 
-  // — column resizing (unchanged) —
   const startResizing = (ci: number, e: React.MouseEvent) => {
     e.preventDefault();
-    // global mousedown already flipped isMouseDown
     const startX = e.clientX;
     const startW = widths[ci] || MIN_COL_WIDTH;
     const onMove = (ev: MouseEvent) => {
@@ -133,7 +119,6 @@ export function Table<T>({
     document.addEventListener('mouseup', onUp);
   };
 
-  // — initial auto-size (include padding + divider) —
   useLayoutEffect(() => {
     if (!data.length) return;
     const newW: { [i: number]: number } = {};
@@ -148,7 +133,6 @@ export function Table<T>({
         MIN_COL_WIDTH,
       );
       const base = Math.max(hW, bW, MIN_COL_WIDTH);
-
       let pl = 0,
         pr = 0;
       const el = headerRefs.current[i];
@@ -157,13 +141,11 @@ export function Table<T>({
         pl = parseFloat(st.paddingLeft);
         pr = parseFloat(st.paddingRight);
       }
-
       newW[i] = Math.min(base + pl + pr + 2, MAX_COL_WIDTH);
     });
     setWidths(newW);
   }, [data, cols]);
 
-  // — row selection —
   const handleRowSelect = (ri: number) => {
     const itm = data[ri];
     const next = selectedItems.includes(itm)
@@ -176,11 +158,9 @@ export function Table<T>({
       el.indeterminate =
         selectedItems.length > 0 && selectedItems.length < data.length;
   };
-  const handleSelectAll = () => {
+  const handleSelectAll = () =>
     onRowSelect?.(selectedItems.length === data.length ? [] : [...data]);
-  };
 
-  // — render header/body/hover —
   const renderHeader = () => (
     <div className="flex bg-subtle">
       {onRowSelect && (
@@ -210,9 +190,9 @@ export function Table<T>({
             <span className="block w-full truncate">{col.header}</span>
             {sortConfig?.index === i &&
               (sortConfig.direction === 'asc' ? (
-                <IconArrowUp size={16} className="shrink-0" />
+                <IconArrowUp size={16} />
               ) : (
-                <IconArrowDown size={16} className="shrink-0" />
+                <IconArrowDown size={16} />
               ))}
           </div>
           <div
@@ -228,18 +208,10 @@ export function Table<T>({
 
   const renderBody = () =>
     sortedData.map((item, ri) => {
-      const row = (
-        <div
-          key={ri}
-          className={`flex cursor-pointer border-b border-subtle ${hoveredRow === ri ? 'bg-subtle' : ''}`}
-          onClick={(e) => {
-            console.log('Row clicked:', item);
-            onRowClick?.(e, item);
-          }}
-          onMouseEnter={(e) => handleMouseEnterRow(ri, e)}
-          onMouseLeave={handleMouseLeaveRow}
-          onMouseMove={() => handleMouseMoveRow(ri)}
-        >
+      const wrap = !!(asTooltip && !isMouseDown.current);
+
+      const cells = (
+        <>
           {onRowSelect && (
             <div className="flex items-center justify-center px-4 py-2">
               <input
@@ -266,14 +238,33 @@ export function Table<T>({
               <span className="block w-full truncate">{col.render(item)}</span>
             </div>
           ))}
+        </>
+      );
+
+      // Use `onMouseDown` so the very first click always fires
+      const row = (
+        <div
+          key={ri}
+          style={{ pointerEvents: 'auto' }}
+          className={`flex cursor-pointer border-b border-subtle ${hoveredRow === ri ? 'bg-subtle' : ''}`}
+          onMouseDown={(e) => {
+            onRowClick?.(e, item);
+          }}
+          onMouseEnter={(e) => {
+            handleMouseEnterRow(ri, e);
+          }}
+          onMouseLeave={handleMouseLeaveRow}
+          onMouseMove={() => handleMouseMoveRow(ri)}
+        >
+          {cells}
         </div>
       );
 
-      // ← key change: only wrap in Tooltip if mouse is up
-      if (asTooltip && !isMouseDown.current) {
+      if (wrap) {
         return (
-          <Tooltip key={ri} content={asTooltip(item)}>
-            {row}
+          <Tooltip key={ri} content={asTooltip!(item)}>
+            {/* Parent blocks pointer events */}
+            <div style={{ pointerEvents: 'none' }}>{row}</div>
           </Tooltip>
         );
       }
