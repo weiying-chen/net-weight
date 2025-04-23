@@ -19,6 +19,7 @@ export type FilePreviewsProps = {
   className?: string;
   noFileText?: string;
   previewClassName?: string;
+  xZIndex?: number;
 };
 
 type FilePreviewItemProps = {
@@ -27,6 +28,7 @@ type FilePreviewItemProps = {
   onRemoveFile?: (index: number) => void;
   onEditClick?: (index: number) => void;
   layout: 'grid' | 'avatar' | 'banner' | 'avatarBottom';
+  xZIndex?: number;
 };
 
 function FilePreviewItem({
@@ -35,6 +37,7 @@ function FilePreviewItem({
   onRemoveFile,
   onEditClick,
   layout,
+  xZIndex,
 }: FilePreviewItemProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [hovered, setHovered] = useState(false);
@@ -79,10 +82,8 @@ function FilePreviewItem({
         onEditClick && 'cursor-pointer',
         {
           'aspect-w-1 aspect-h-1 w-full rounded-md pb-7': layout === 'grid',
-
           'flex h-32 w-32 items-center justify-center rounded-full':
             layout === 'avatar' || layout === 'avatarBottom',
-
           'w-full': layout === 'banner',
         },
       )}
@@ -100,6 +101,7 @@ function FilePreviewItem({
           hovered={hovered}
           layout={layout}
           imageLoaded={imageLoaded}
+          xZIndex={xZIndex}
         />
       )}
 
@@ -151,17 +153,14 @@ export function FilePreviews({
   className,
   noFileText,
   previewClassName,
+  xZIndex = 100,
 }: FilePreviewsProps) {
   if (files.length === 0 && noFileText) {
     return (
       <Row
         align="center"
         alignItems="center"
-        className={cn(
-          'rounded bg-subtle p-3',
-          className,
-          previewClassName,
-        )}
+        className={cn('rounded bg-subtle p-3', className, previewClassName)}
       >
         <Col align="center" alignItems="center">
           <IconFileOff size={40} stroke={1} className="text-muted" />
@@ -177,7 +176,6 @@ export function FilePreviews({
         'w-full gap-2 rounded bg-subtle p-3',
         {
           'grid grid-cols-4 md:grid-cols-8': layout === 'grid',
-
           'flex items-center justify-center': [
             'avatar',
             'banner',
@@ -196,6 +194,7 @@ export function FilePreviews({
           onRemoveFile={onRemoveFile}
           onEditClick={onEditClick}
           layout={layout}
+          xZIndex={xZIndex}
         />
       ))}
     </div>

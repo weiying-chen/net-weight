@@ -3,7 +3,7 @@ import { useDropzone } from 'react-dropzone';
 import { Col } from '@/components/Col';
 import { cn } from '@/utils';
 import { FilePreviews } from '@/components/FilePreviews';
-import { Accordion } from '@/components/Accordion'; // <-- import Accordion!
+import { Peeker } from '@/components/Peeker';
 
 export type FileData = {
   url?: string;
@@ -27,6 +27,7 @@ type FileUploadProps = {
   onEditClick?: (index: number) => void;
   noFileText?: string;
   previewClassName?: string;
+  xZIndex?: number;
 };
 
 export function FileUpload({
@@ -49,6 +50,7 @@ export function FileUpload({
   onEditClick,
   noFileText,
   previewClassName,
+  xZIndex = 100,
 }: FileUploadProps) {
   const [files, setFiles] = useState<FileData[]>(initialFiles);
   const isPreviewBottom =
@@ -137,10 +139,9 @@ export function FileUpload({
       >
         {renderDropzone()}
         {(files.length > 0 || noFileText) &&
-          (isPreviewBottom && layout === 'grid' && files.length > 10 ? ( // << now 10
-            <Accordion
-              initialCollapsed={true}
-              peekHeight={240}
+          (isPreviewBottom && layout === 'grid' && files.length > 10 ? (
+            <Peeker
+              peekHeight={200}
               className={cn(
                 { 'order-first md:w-1/3': !isPreviewBottom },
                 previewClassName,
@@ -152,8 +153,9 @@ export function FileUpload({
                 onRemoveFile={handleRemoveFile}
                 onEditClick={onEditClick}
                 noFileText={noFileText}
+                xZIndex={xZIndex}
               />
-            </Accordion>
+            </Peeker>
           ) : (
             <FilePreviews
               files={files}
@@ -165,6 +167,7 @@ export function FileUpload({
               onRemoveFile={handleRemoveFile}
               onEditClick={onEditClick}
               noFileText={noFileText}
+              xZIndex={xZIndex}
             />
           ))}
       </div>

@@ -10,6 +10,7 @@ export function XButton({
   hovered,
   layout,
   imageLoaded,
+  xZIndex = 100,
 }: {
   index: number;
   onRemoveFile: (index: number) => void;
@@ -17,6 +18,7 @@ export function XButton({
   hovered: boolean;
   layout: 'grid' | 'avatar' | 'banner' | 'avatarBottom';
   imageLoaded?: boolean;
+  xZIndex?: number;
 }) {
   const portalContainer = usePortalContainer();
   const [coords, setCoords] = useState({ top: 0, left: 0 });
@@ -29,39 +31,46 @@ export function XButton({
   const updatePosition = useCallback(() => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
-    const top = rect.top + window.scrollY + offsetTop;
-    const left = rect.right + window.scrollX - offsetRight;
-    setCoords({ top, left });
+    setCoords({
+      top: rect.top + window.scrollY + offsetTop,
+      left: rect.right + window.scrollX - offsetRight,
+    });
   }, [containerRef, offsetTop, offsetRight]);
 
+  // 1) on mount & on scroll/resize
   useEffect(() => {
     updatePosition();
-
-    const handleScrollResize = () => updatePosition();
-    window.addEventListener('scroll', handleScrollResize);
-    window.addEventListener('resize', handleScrollResize);
-
+    const handleSR = () => updatePosition();
+    window.addEventListener('scroll', handleSR);
+    window.addEventListener('resize', handleSR);
     return () => {
-      window.removeEventListener('scroll', handleScrollResize);
-      window.removeEventListener('resize', handleScrollResize);
+      window.removeEventListener('scroll', handleSR);
+      window.removeEventListener('resize', handleSR);
     };
   }, [updatePosition]);
 
+  // 2) recalc whenever the image loads
   useEffect(() => {
-    if (imageLoaded) {
+    if (imageLoaded) updatePosition();
+  }, [imageLoaded, updatePosition]);
+
+  // 3) **NEW** recalc on hover so the coords match the new preview dimensions
+  useEffect(() => {
+    if (hovered) {
       updatePosition();
     }
-  }, [imageLoaded, updatePosition]);
+  }, [hovered, updatePosition]);
 
   if (!portalContainer) return null;
 
   return ReactDOM.createPortal(
     <div
-      className="pointer-events-auto absolute z-40 transition-opacity duration-200"
+      className="pointer-events-auto absolute transition-opacity duration-200"
       style={{
         top: coords.top,
         left: coords.left,
         opacity: hovered ? 1 : 0,
+        zIndex: xZIndex,
       }}
     >
       <button
