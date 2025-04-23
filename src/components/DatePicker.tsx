@@ -3,33 +3,21 @@ import { PseudoInput } from '@/components/PseudoInput';
 import { Col } from '@/components/Col';
 import { cn } from '@/utils';
 import { IconCalendarMonth } from '@tabler/icons-react';
-// Import your custom DayPicker component.
 import { DayPicker } from '@/components/DayPicker';
+import { MonthPicker } from '@/components/MonthPicker';
 
 export type DatePickerProps = {
   label?: ReactNode;
-  value?: Date; // Optional external control
-  onChange?: (value: Date) => void; // Notify parent on change
+  value?: Date;
+  onChange?: (value: Date) => void;
   placeholder?: string;
   error?: string;
   className?: string;
   required?: boolean;
   disabled?: boolean;
   small?: boolean;
-  /**
-   * Optional custom formatter for the month label.
-   * For example, for Chinese you might use a formatter that returns "2025年5月".
-   */
   monthLabel?: (date: Date) => string;
-  /**
-   * Optional custom formatter for weekday labels.
-   * Receives the default weekday string and its index.
-   */
   weekdayLabel?: (weekday: string, index: number) => string;
-  /**
-   * Optional custom formatter for the displayed date value in the input.
-   * If not provided, defaults to date.toLocaleDateString().
-   */
   valueLabel?: (date: Date) => string;
 };
 
@@ -48,6 +36,7 @@ export const DatePicker = ({
   valueLabel,
 }: DatePickerProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'day' | 'month'>('day');
   const [dropdownPosition, setDropdownPosition] = useState<'top' | 'bottom'>(
     'bottom',
   );
@@ -57,72 +46,63 @@ export const DatePicker = ({
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
     externalValue,
   );
-  // Our custom DayPicker manages its own month navigation so we no longer need a separate displayedMonth state.
 
-  const dropdownRef = useRef<HTMLDivElement | null>(null);
-  const triggerRef = useRef<HTMLDivElement | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
 
   const adjustDropdownPosition = () => {
-    if (triggerRef.current && dropdownRef.current) {
-      const triggerRect = triggerRef.current.getBoundingClientRect();
-      const dropdownHeight = dropdownRef.current.scrollHeight;
-      const dropdownWidth = dropdownRef.current.scrollWidth;
-      const viewportHeight = window.innerHeight;
-      const viewportWidth = window.innerWidth;
+    if (!triggerRef.current || !dropdownRef.current) return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    const dd = dropdownRef.current;
+    const ddH = dd.scrollHeight;
+    const ddW = dd.scrollWidth;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
 
-      // Flip vertical if not enough room.
-      const shouldFlipVertically =
-        triggerRect.bottom + dropdownHeight > viewportHeight;
-      setDropdownPosition(shouldFlipVertically ? 'top' : 'bottom');
-
-      // Horizontal positioning.
-      const spaceOnRight = viewportWidth - triggerRect.right;
-      const spaceOnLeft = triggerRect.left;
-      if (spaceOnRight >= dropdownWidth && spaceOnRight >= spaceOnLeft) {
-        setHorizontalPosition('left');
-      } else if (spaceOnLeft >= dropdownWidth) {
-        setHorizontalPosition('right');
-      } else {
-        setHorizontalPosition(spaceOnRight < spaceOnLeft ? 'right' : 'left');
-      }
+    // vertical
+    setDropdownPosition(rect.bottom + ddH > vh ? 'top' : 'bottom');
+    // horizontal
+    const spaceRight = vw - rect.right;
+    const spaceLeft = rect.left;
+    if (spaceRight >= ddW && spaceRight >= spaceLeft) {
+      setHorizontalPosition('left');
+    } else if (spaceLeft >= ddW) {
+      setHorizontalPosition('right');
+    } else {
+      setHorizontalPosition(spaceRight < spaceLeft ? 'right' : 'left');
     }
   };
 
   useLayoutEffect(() => {
-    if (isOpen) {
-      adjustDropdownPosition();
-    }
+    if (isOpen) adjustDropdownPosition();
   }, [isOpen]);
 
   useLayoutEffect(() => {
-    const handleOutsideClick = (event: MouseEvent) => {
+    const onClick = (e: MouseEvent) => {
       if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node) &&
-        triggerRef.current &&
-        !triggerRef.current.contains(event.target as Node)
+        !dropdownRef.current?.contains(e.target as Node) &&
+        !triggerRef.current?.contains(e.target as Node)
       ) {
         setIsOpen(false);
+        setViewMode('day');
       }
     };
-    document.addEventListener('click', handleOutsideClick);
-    return () => {
-      document.removeEventListener('click', handleOutsideClick);
-    };
+    document.addEventListener('click', onClick);
+    return () => document.removeEventListener('click', onClick);
   }, []);
 
-  // When an external value changes, update our internal selectedDate.
   useLayoutEffect(() => {
     setSelectedDate(externalValue);
   }, [externalValue]);
 
-  const handleSelectDate = (date: Date) => {
+  const handleSelect = (date: Date) => {
     setSelectedDate(date);
     onChange?.(date);
     setIsOpen(false);
+    setViewMode('day');
   };
 
-  const renderDayPicker = () => (
+  const renderPicker = () => (
     <div
       ref={dropdownRef}
       onClick={(e) => e.stopPropagation()}
@@ -132,12 +112,46 @@ export const DatePicker = ({
         horizontalPosition === 'right' ? 'right-0' : 'left-0',
       )}
     >
-      <DayPicker
-        value={selectedDate}
-        onChange={handleSelectDate}
-        monthLabel={monthLabel}
-        weekdayLabel={weekdayLabel}
-      />
+      {/* Mode toggle */}
+      <div className="mb-2 flex justify-end space-x-2">
+        <button
+          className={cn('rounded px-2 py-1 text-xs', {
+            'bg-primary text-white': viewMode === 'day',
+            'hover:bg-subtle': viewMode !== 'day',
+          })}
+          onClick={() => setViewMode('day')}
+        >
+          Day
+        </button>
+        <button
+          className={cn('rounded px-2 py-1 text-xs', {
+            'bg-primary text-white': viewMode === 'month',
+            'hover:bg-subtle': viewMode !== 'month',
+          })}
+          onClick={() => setViewMode('month')}
+        >
+          Month
+        </button>
+      </div>
+
+      {viewMode === 'day' ? (
+        <DayPicker
+          value={selectedDate}
+          onChange={handleSelect}
+          monthLabel={monthLabel}
+          weekdayLabel={weekdayLabel}
+        />
+      ) : (
+        <MonthPicker
+          value={selectedDate}
+          onChange={handleSelect}
+          year={selectedDate?.getFullYear()}
+          onYearChange={(y) =>
+            setSelectedDate(new Date(y, selectedDate?.getMonth() ?? 0, 1))
+          }
+          monthLabel={monthLabel}
+        />
+      )}
     </div>
   );
 
@@ -146,7 +160,7 @@ export const DatePicker = ({
       {label &&
         (typeof label === 'string' ? (
           <label className="text-sm font-semibold">
-            {label} {required && <span className="text-danger"> *</span>}
+            {label} {required && <span className="text-danger">*</span>}
           </label>
         ) : (
           label
@@ -154,9 +168,7 @@ export const DatePicker = ({
       <div
         ref={triggerRef}
         className="relative w-full"
-        onClick={() => {
-          if (!disabled) setIsOpen((prev) => !prev);
-        }}
+        onClick={() => !disabled && setIsOpen((o) => !o)}
       >
         <PseudoInput
           tabIndex={0}
@@ -175,7 +187,7 @@ export const DatePicker = ({
             : placeholder}
           <IconCalendarMonth size={20} />
         </PseudoInput>
-        {isOpen && renderDayPicker()}
+        {isOpen && renderPicker()}
       </div>
       {error && <span className="text-sm text-danger">{error}</span>}
     </Col>

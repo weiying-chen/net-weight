@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { DayPicker } from '@/components/DayPicker'; // Adjust the import path as needed
+import { DatePicker } from '@/components/DatePicker'; // adjust path if needed
 import { Col } from '@/components/Col';
 
 export function PG() {
@@ -7,12 +7,15 @@ export function PG() {
 
   return (
     <Col>
-      <DayPicker
+      <DatePicker
+        label="Pickup date"
         value={selectedDate ?? undefined}
         onChange={(date) => {
           setSelectedDate(date);
           console.log('Selected date:', date);
         }}
+        placeholder="Select a date"
+        required
       />
     </Col>
   );
