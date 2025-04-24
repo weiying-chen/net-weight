@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useRef,
-  useLayoutEffect,
-  useEffect,
-  ReactNode,
-} from 'react';
+import { useState, useRef, useLayoutEffect, useEffect, ReactNode } from 'react';
 import { format } from 'date-fns';
 import {
   IconCalendarMonth,
@@ -150,14 +144,17 @@ export const DatePicker: React.FC<DatePickerProps> = ({
               ? monthLabel(viewDate)
               : format(viewDate, viewMode === 'day' ? 'MMMM yyyy' : 'yyyy')}
           </span>
-          <button onClick={goPrev} className="rounded p-1 hover:bg-subtle">
-            <IconChevronLeft size={20} />
-          </button>
-          <button onClick={goNext} className="rounded p-1 hover:bg-subtle">
-            <IconChevronRight size={20} />
-          </button>
+          {/* Changed: Wrapped buttons in a flex container without gap */}
+          <div className="flex items-center gap-1">
+            <button onClick={goPrev} className="rounded p-1 hover:bg-subtle">
+              <IconChevronLeft size={20} />
+            </button>
+            <button onClick={goNext} className="rounded p-1 hover:bg-subtle">
+              <IconChevronRight size={20} />
+            </button>
+          </div>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-1">
           <button
             className={cn('rounded px-2 py-1 text-xs', {
               'bg-primary text-white': viewMode === 'day',

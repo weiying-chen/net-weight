@@ -1,4 +1,3 @@
-import React from 'react';
 import { format } from 'date-fns';
 
 export type MonthPickerProps = {
@@ -29,10 +28,10 @@ export const MonthPicker: React.FC<MonthPickerProps> = ({
         {months.map((m, idx) => (
           <button
             key={idx}
-            disabled={
-              value != null &&
-              (value.getMonth() !== idx || value.getFullYear() !== viewDate)
-            }
+            // disabled={
+            //   value != null &&
+            //   (value.getMonth() !== idx || value.getFullYear() !== viewDate)
+            // }
             onClick={() => handleMonthClick(idx)}
             className={`rounded py-1 transition ${
               value &&
