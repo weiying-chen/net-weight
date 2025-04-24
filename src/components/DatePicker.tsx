@@ -143,9 +143,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         horizontalPosition === 'right' ? 'right-0' : 'left-0',
       )}
     >
-      {/* Unified header */}
       <div className="mb-2 flex items-center justify-between">
-        {/* Left: label + chevrons */}
         <div className="flex items-center gap-2">
           <span className="text-base font-semibold">
             {monthLabel
@@ -159,7 +157,6 @@ export const DatePicker: React.FC<DatePickerProps> = ({
             <IconChevronRight size={20} />
           </button>
         </div>
-        {/* Right: mode toggle */}
         <div className="flex items-center space-x-2">
           <button
             className={cn('rounded px-2 py-1 text-xs', {
@@ -181,23 +178,20 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           </button>
         </div>
       </div>
-
-      {/* Separator */}
       <div className="mb-2 h-px w-full bg-border" />
-
       {viewMode === 'day' ? (
         <DayPicker
           value={selectedDate}
+          label={weekdayLabel}
           onChange={handleSelect}
-          weekdayLabel={weekdayLabel}
           viewDate={viewDate}
         />
       ) : (
         <MonthPicker
           value={selectedDate}
+          label={monthLabel}
           onChange={handleSelect}
-          year={viewDate.getFullYear()}
-          monthLabel={monthLabel}
+          viewDate={viewDate.getFullYear()}
         />
       )}
     </div>

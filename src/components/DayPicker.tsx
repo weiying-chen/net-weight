@@ -12,7 +12,7 @@ function getDaysInMonth(year: number, month: number): number {
 }
 
 function getStartDayOfMonth(year: number, month: number): number {
-  return new Date(year, month, 1).getDay(); // 0 = Sunday
+  return new Date(year, month, 1).getDay();
 }
 
 function buildCalendarDays(year: number, month: number): CalendarDay[] {
@@ -36,19 +36,16 @@ function buildCalendarDays(year: number, month: number): CalendarDay[] {
     let isCurrentMonth = true;
 
     if (i < startDay) {
-      // previous month
       dayNumber = daysInPrev - (startDay - 1 - i);
       itemYear = prevYear;
       itemMonth = prevMonth;
       isCurrentMonth = false;
     } else if (offset >= daysInCurrent) {
-      // next month
       dayNumber = offset - daysInCurrent + 1;
       itemYear = nextYear;
       itemMonth = nextMonth;
       isCurrentMonth = false;
     } else {
-      // current month
       dayNumber = offset + 1;
       itemYear = year;
       itemMonth = month;
@@ -61,20 +58,16 @@ function buildCalendarDays(year: number, month: number): CalendarDay[] {
 }
 
 export type DayPickerProps = {
-  /** Currently selected date (for highlighting) */
   value?: Date;
-  /** Called when a day is clicked */
   onChange?: (date: Date) => void;
-  /** Optional custom weekday labels */
-  weekdayLabel?: (label: string, index: number) => string;
-  /** Controlled month/year to render */
+  label?: (label: string, index: number) => string;
   viewDate: Date;
 };
 
 export function DayPicker({
   value,
   onChange,
-  weekdayLabel,
+  label,
   viewDate,
 }: DayPickerProps) {
   const year = viewDate.getFullYear();
@@ -85,14 +78,11 @@ export function DayPicker({
 
   return (
     <div className="w-72">
-      {/* Weekday headers */}
       <div className="mb-1 grid grid-cols-7 text-center text-xs text-muted">
         {defaultWeekdays.map((wd, i) => (
-          <div key={i}>{weekdayLabel ? weekdayLabel(wd, i) : wd}</div>
+          <div key={i}>{label ? label(wd, i) : wd}</div>
         ))}
       </div>
-
-      {/* Calendar grid */}
       <div className="grid grid-cols-7 gap-1 text-sm">
         {calendarDays.map(
           ({ year: y, month: m, dayNumber, isCurrentMonth }, i) => {
