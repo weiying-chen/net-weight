@@ -310,7 +310,7 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
                 </div>
               );
             })}
-            <div className="w-12 self-start md:mt-7">
+            <div className="mt-7 w-12 self-start">
               <Button
                 type="button"
                 variant="secondary"

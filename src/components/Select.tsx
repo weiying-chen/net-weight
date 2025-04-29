@@ -271,7 +271,7 @@ export const Select = <T extends string | number>({
         <Row alignItems="center" className="min-w-0">
           {selected?.icon && <span>{selected.icon}</span>}
           {!isIconTrigger && (
-            <span className={cn('truncate', !selected && 'text-muted')}>
+            <span className={cn('w-full truncate', !selected && 'text-muted')}>
               {selected ? selected.label : placeholder}
             </span>
           )}
