@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Col } from '@/components/Col';
-import { Row } from '@/components/Row';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
 import { Select } from '@/components/Select';
-import { IconTrash } from '@tabler/icons-react';
+import { IconPlus, IconTrash } from '@tabler/icons-react';
 import { Switch } from '@/components/Switch';
 import { DatePicker } from '@/components/DatePicker';
 import { format } from 'date-fns';
@@ -18,10 +17,7 @@ export type ValueType =
   | 'password'
   | 'date';
 
-export type Option = {
-  value: string | number;
-  label: string;
-};
+export type Option = { value: string | number; label: string };
 
 export type FlexFieldInput = {
   key: string;
@@ -32,10 +28,7 @@ export type FlexFieldInput = {
   unit?: string;
 };
 
-export type FlexField = {
-  id: string;
-  inputs: FlexFieldInput[];
-};
+export type FlexField = { id: string; inputs: FlexFieldInput[] };
 
 export type FlexFieldsProps = {
   label?: string;
@@ -70,207 +63,240 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
   datePlaceholder,
   errors,
 }) => {
+  // State initialized from props
   const [fields, setFields] = useState<FlexField[]>(initialFields);
-
   useEffect(() => {
     setFields(initialFields);
   }, [initialFields]);
 
+  // Push updates up
   const updateFields = (newFields: FlexField[]) => {
     setFields(newFields);
     onChange(newFields);
   };
 
-  const handleInputChange = (
-    fieldIndex: number,
-    inputIndex: number,
-    newValue: string | number | boolean,
-  ) => {
-    const newFields = fields.map((field, fi) => {
-      if (fi !== fieldIndex) return field;
-      return {
-        ...field,
-        inputs: field.inputs.map((inp, ii) =>
-          ii === inputIndex ? { ...inp, value: newValue } : inp,
-        ),
-      };
-    });
-    updateFields(newFields);
-  };
+  // Clone helper
+  const cloneInput = (inp: FlexFieldInput): FlexFieldInput => ({
+    ...inp,
+    options: inp.options ? [...inp.options] : undefined,
+  });
 
-  const handleAddField = () => {
-    const newField: FlexField = fieldTemplate
-      ? { ...fieldTemplate }
+  // Default new field
+  const makeDefaultField = (): FlexField => {
+    const base: FlexField = fieldTemplate
+      ? {
+          id: crypto.randomUUID().slice(0, 8),
+          inputs: fieldTemplate.inputs.map(cloneInput),
+        }
       : {
           id: crypto.randomUUID().slice(0, 8),
-          inputs: [
-            {
-              key: 'value',
-              label: 'Value',
-              value: '',
-              type: 'text' as ValueType,
-            },
-          ],
+          inputs: [{ key: 'value', label: 'Value', value: '', type: 'text' }],
         };
-    updateFields([...fields, newField]);
+    return base;
   };
 
-  const handleRemoveField = (fieldIndex: number) => {
-    updateFields(fields.filter((_, i) => i !== fieldIndex));
-  };
-
-  const renderInput = (
-    fieldIndex: number,
-    input: FlexFieldInput,
-    inputIndex: number,
+  // Handlers
+  const handleInputChange = (
+    fi: number,
+    ii: number,
+    newValue: string | number | boolean,
   ) => {
-    const displayLabel = input.label
-      ? asLabel
-        ? asLabel(input.label)
-        : input.label
-      : 'Value';
+    const updated = fields.map((fld, idx) =>
+      idx !== fi
+        ? fld
+        : {
+            id: fld.id,
+            inputs: fld.inputs.map((inp, j) =>
+              j === ii ? { ...inp, value: newValue } : inp,
+            ),
+          },
+    );
+    updateFields(updated);
+  };
 
-    const fieldErrors = errors?.[fieldIndex] || {};
-    let errorMsg = fieldErrors[input.key];
+  const handleAddField = () => updateFields([...fields, makeDefaultField()]);
+  const handleRemoveField = (i: number) =>
+    updateFields(fields.filter((_, idx) => idx !== i));
 
-    // Example fallback logic: only apply if input.key is "currency"
-    // (Or use the label, or some other condition to identify the correct select).
-    if (!errorMsg && input.type === 'select' && input.key !== 'value') {
-      if (input.key === 'currency' && fieldErrors.value) {
-        errorMsg = fieldErrors.value;
-      }
-      // you could else if more custom selects (if needed)
-      // else if (input.key === 'someOtherKey' && fieldErrors.value) { ... }
+  const handleDuplicateField = (fi: number, ii: number) => {
+    const orig = fields[fi];
+    if (!orig) return;
+    const key = orig.inputs[ii].key;
+    if (key === 'type') {
+      updateFields([...fields, makeDefaultField()]);
+    } else {
+      const copied = orig.inputs.map((inp, idx) => ({
+        ...cloneInput(inp),
+        value: idx < ii ? inp.value : inp.type === 'switch' ? false : '',
+      }));
+      updateFields([
+        ...fields,
+        { id: crypto.randomUUID().slice(0, 8), inputs: copied },
+      ]);
+    }
+  };
+
+  // Render single input cell
+  const renderInput = (
+    field: FlexField,
+    fi: number,
+    inp: FlexFieldInput,
+    ii: number,
+  ) => {
+    const displayLabel =
+      inp.key === 'value' ? 'Value' : (asLabel?.(inp.label) ?? inp.label);
+    const fieldErrs = errors?.[fi] || {};
+    let errorMsg = fieldErrs[inp.key];
+    if (
+      !errorMsg &&
+      inp.type === 'select' &&
+      inp.key !== 'value' &&
+      inp.key === 'currency'
+    ) {
+      errorMsg = fieldErrs.value;
+    }
+    const showPlus = ['type', 'method', 'item'].includes(inp.key);
+
+    let element;
+    switch (inp.type) {
+      case 'number':
+      case 'float':
+        element = (
+          <Input
+            type="number"
+            step={inp.type === 'float' ? '0.1' : undefined}
+            value={String(inp.value)}
+            onChange={(e) => handleInputChange(fi, ii, Number(e.target.value))}
+            error={errorMsg}
+          />
+        );
+        break;
+      case 'switch':
+        element = (
+          <Switch
+            checked={Boolean(inp.value)}
+            onChange={(ch) => handleInputChange(fi, ii, ch)}
+            label={displayLabel}
+            error={errorMsg}
+          />
+        );
+        break;
+      case 'select':
+        element = (
+          <Select
+            value={String(inp.value)}
+            options={inp.options?.map((o) => asOption?.(o) ?? o) ?? []}
+            placeholder={selectPlaceholder}
+            disabled={inp.options?.length === 1}
+            onChange={(v) => handleInputChange(fi, ii, v)}
+            error={errorMsg}
+          />
+        );
+        break;
+      case 'password':
+        element = (
+          <Input
+            type="password"
+            value={String(inp.value)}
+            onChange={(e) => handleInputChange(fi, ii, e.target.value)}
+            error={errorMsg}
+          />
+        );
+        break;
+      case 'date':
+        element = (
+          <DatePicker
+            value={inp.value ? new Date(inp.value as string) : undefined}
+            onChange={(d) =>
+              handleInputChange(fi, ii, d ? format(d, 'yyyy-MM-dd') : '')
+            }
+            placeholder={datePlaceholder}
+            monthLabel={monthLabel}
+            weekdayLabel={weekdayLabel}
+            valueLabel={dateValueLabel}
+            error={errorMsg}
+          />
+        );
+        break;
+      default:
+        element = (
+          <Input
+            type="text"
+            value={String(inp.value)}
+            onChange={(e) => handleInputChange(fi, ii, e.target.value)}
+            error={errorMsg}
+          />
+        );
     }
 
     return (
-      <Col className="flex-1">
-        <label className="text-sm font-medium">
-          {displayLabel}
-          {input.unit && (
+      <Col key={`${field.id}-${inp.key}-${ii}`}>
+        <div className="flex items-center justify-between">
+          <label className="text-sm font-medium">{displayLabel}</label>
+          {inp.unit && (
             <span className="ml-1 text-xs text-muted">
-              {asUnit ? asUnit(input.unit) : input.unit}
+              {asUnit?.(inp.unit) ?? inp.unit}
             </span>
           )}
-        </label>
-        {(() => {
-          switch (input.type) {
-            case 'number':
-            case 'float':
-              return (
-                <Input
-                  type="number"
-                  step={input.type === 'float' ? '0.1' : undefined}
-                  value={String(input.value)}
-                  onChange={(e) =>
-                    handleInputChange(
-                      fieldIndex,
-                      inputIndex,
-                      Number(e.target.value),
-                    )
-                  }
-                  error={errorMsg}
-                />
-              );
-            case 'switch':
-              return (
-                <Switch
-                  checked={Boolean(input.value)}
-                  onChange={(checked) =>
-                    handleInputChange(fieldIndex, inputIndex, checked)
-                  }
-                  label={displayLabel}
-                  error={errorMsg}
-                />
-              );
-            case 'select': {
-              const finalOptions = input.options
-                ? input.options.map((opt) => (asOption ? asOption(opt) : opt))
-                : [];
-              return (
-                <Select
-                  value={String(input.value)}
-                  options={finalOptions}
-                  placeholder={selectPlaceholder}
-                  disabled={!!input.options && input.options.length === 1}
-                  onChange={(value) =>
-                    handleInputChange(fieldIndex, inputIndex, value)
-                  }
-                  error={errorMsg}
-                />
-              );
-            }
-            case 'password':
-              return (
-                <Input
-                  type="password"
-                  value={String(input.value)}
-                  onChange={(e) =>
-                    handleInputChange(fieldIndex, inputIndex, e.target.value)
-                  }
-                  error={errorMsg}
-                />
-              );
-            case 'date':
-              return (
-                <DatePicker
-                  value={
-                    input.value ? new Date(input.value as string) : undefined
-                  }
-                  onChange={(date) => {
-                    const formattedDate = date
-                      ? format(date, 'yyyy-MM-dd')
-                      : '';
-                    handleInputChange(fieldIndex, inputIndex, formattedDate);
-                  }}
-                  placeholder={datePlaceholder}
-                  monthLabel={monthLabel}
-                  weekdayLabel={weekdayLabel}
-                  valueLabel={dateValueLabel}
-                  error={errorMsg}
-                />
-              );
-            default:
-              return (
-                <Input
-                  type="text"
-                  value={String(input.value)}
-                  onChange={(e) =>
-                    handleInputChange(fieldIndex, inputIndex, e.target.value)
-                  }
-                  error={errorMsg}
-                />
-              );
-          }
-        })()}
+          {showPlus && (
+            <Button
+              variant="link"
+              onClick={() => handleDuplicateField(fi, ii)}
+              className="ml-2"
+            >
+              <IconPlus size={16} />
+            </Button>
+          )}
+        </div>
+        {element}
       </Col>
     );
   };
 
+  // Blueprint keys for columns
+  const blueprintKeys =
+    fieldTemplate?.inputs.map((i) => i.key) ??
+    fields[0]?.inputs.map((i) => i.key) ??
+    [];
+  if (!blueprintKeys.includes('value')) blueprintKeys.push('value');
+
   return (
-    <Col className="w-full">
-      {label && <label className="mb-2 text-sm font-semibold">{label}</label>}
-      {fields.map((field, fieldIndex) => (
-        <Row alignItems="start" key={field.id}>
-          {field.inputs.map((input, inputIndex) => (
-            <div
-              key={`${field.id}-${input.key}-${inputIndex}`}
-              className="flex-1"
-            >
-              {renderInput(fieldIndex, input, inputIndex)}
-            </div>
-          ))}
-          <div className="self-start md:mt-7">
+    <Col className="w-full space-y-2">
+      {label && <label className="text-sm font-semibold">{label}</label>}
+
+      {fields.map((field, fi) => (
+        <div
+          key={field.id}
+          className="grid w-full gap-4"
+          style={{
+            gridTemplateColumns: `repeat(${blueprintKeys.length}, minmax(0, 1fr)) auto`,
+          }}
+        >
+          {blueprintKeys.map((key, idx) => {
+            const inpIndex = field.inputs.findIndex((i) => i.key === key);
+            return (
+              <div key={`${key}-${idx}`}>
+                {inpIndex >= 0 ? (
+                  renderInput(field, fi, field.inputs[inpIndex], inpIndex)
+                ) : (
+                  <div style={{ visibility: 'hidden' }}> </div>
+                )}
+              </div>
+            );
+          })}
+
+          <div className="w-12 self-start md:mt-7">
             <Button
               type="button"
               variant="secondary"
-              onClick={() => handleRemoveField(fieldIndex)}
+              onClick={() => handleRemoveField(fi)}
             >
               <IconTrash size={20} />
             </Button>
           </div>
-        </Row>
+        </div>
       ))}
+
       <Button type="button" onClick={handleAddField} className="self-start">
         {addFieldLabel}
       </Button>

@@ -146,16 +146,25 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           </span>
           {/* Changed: Wrapped buttons in a flex container without gap */}
           <div className="flex items-center gap-1">
-            <button onClick={goPrev} className="rounded p-1 hover:bg-subtle">
+            <button
+              type="button"
+              onClick={goPrev}
+              className="rounded p-1 hover:bg-subtle"
+            >
               <IconChevronLeft size={20} />
             </button>
-            <button onClick={goNext} className="rounded p-1 hover:bg-subtle">
+            <button
+              type="button"
+              onClick={goNext}
+              className="rounded p-1 hover:bg-subtle"
+            >
               <IconChevronRight size={20} />
             </button>
           </div>
         </div>
         <div className="flex items-center gap-1">
           <button
+            type="button"
             className={cn('rounded px-2 py-1 text-xs', {
               'bg-primary text-white': viewMode === 'day',
               'hover:bg-subtle': viewMode !== 'day',
@@ -165,6 +174,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
             Day
           </button>
           <button
+            type="button"
             className={cn('rounded px-2 py-1 text-xs', {
               'bg-primary text-white': viewMode === 'month',
               'hover:bg-subtle': viewMode !== 'month',
