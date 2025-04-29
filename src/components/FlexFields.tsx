@@ -63,13 +63,10 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
   datePlaceholder,
   errors,
 }) => {
-  // State initialized from props
+  // State synced with props
   const [fields, setFields] = useState<FlexField[]>(initialFields);
-  useEffect(() => {
-    setFields(initialFields);
-  }, [initialFields]);
+  useEffect(() => setFields(initialFields), [initialFields]);
 
-  // Push updates up
   const updateFields = (newFields: FlexField[]) => {
     setFields(newFields);
     onChange(newFields);
@@ -81,9 +78,9 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
     options: inp.options ? [...inp.options] : undefined,
   });
 
-  // Default new field
-  const makeDefaultField = (): FlexField => {
-    const base: FlexField = fieldTemplate
+  // New‐field factory
+  const makeDefaultField = (): FlexField =>
+    fieldTemplate
       ? {
           id: crypto.randomUUID().slice(0, 8),
           inputs: fieldTemplate.inputs.map(cloneInput),
@@ -92,8 +89,6 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
           id: crypto.randomUUID().slice(0, 8),
           inputs: [{ key: 'value', label: 'Value', value: '', type: 'text' }],
         };
-    return base;
-  };
 
   // Handlers
   const handleInputChange = (
@@ -136,7 +131,7 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
     }
   };
 
-  // Render single input cell
+  // Renders one input box + label/dup-btn/unit/error under it
   const renderInput = (
     field: FlexField,
     fi: number,
@@ -147,12 +142,7 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
       inp.key === 'value' ? 'Value' : (asLabel?.(inp.label) ?? inp.label);
     const fieldErrs = errors?.[fi] || {};
     let errorMsg = fieldErrs[inp.key];
-    if (
-      !errorMsg &&
-      inp.type === 'select' &&
-      inp.key !== 'value' &&
-      inp.key === 'currency'
-    ) {
+    if (!errorMsg && inp.type === 'select' && inp.key === 'currency') {
       errorMsg = fieldErrs.value;
     }
     const showPlus = ['type', 'method', 'item'].includes(inp.key);
@@ -253,49 +243,87 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
     );
   };
 
-  // Blueprint keys for columns
-  const blueprintKeys =
-    fieldTemplate?.inputs.map((i) => i.key) ??
-    fields[0]?.inputs.map((i) => i.key) ??
-    [];
-  if (!blueprintKeys.includes('value')) blueprintKeys.push('value');
+  // Always "type", "method", "item", "value" in that order:
+  const blueprintKeys = ['type', 'method', 'item', 'value'];
 
   return (
     <Col className="w-full space-y-2">
       {label && <label className="text-sm font-semibold">{label}</label>}
 
-      {fields.map((field, fi) => (
-        <div
-          key={field.id}
-          className="grid w-full gap-4"
-          style={{
-            gridTemplateColumns: `repeat(${blueprintKeys.length}, minmax(0, 1fr)) auto`,
-          }}
-        >
-          {blueprintKeys.map((key, idx) => {
-            const inpIndex = field.inputs.findIndex((i) => i.key === key);
-            return (
-              <div key={`${key}-${idx}`}>
-                {inpIndex >= 0 ? (
-                  renderInput(field, fi, field.inputs[inpIndex], inpIndex)
-                ) : (
-                  <div style={{ visibility: 'hidden' }}> </div>
-                )}
-              </div>
-            );
-          })}
+      {fields.map((field, fi) => {
+        // split out any inputs whose key isn't one of the first three
+        // those go into the "value" cell
+        const extras = field.inputs.filter(
+          (inp) => !['type', 'method', 'item'].includes(inp.key),
+        );
+        return (
+          <div
+            key={field.id}
+            className="grid w-full gap-4"
+            style={{
+              gridTemplateColumns: `repeat(${blueprintKeys.length}, minmax(0, 1fr)) auto`,
+            }}
+          >
+            {blueprintKeys.map((key, idx) => {
+              // if it's one of the first three, render its single input:
+              if (key !== 'value') {
+                const inpIndex = field.inputs.findIndex((i) => i.key === key);
+                return (
+                  <div key={`${field.id}-${key}-${idx}`}>
+                    {inpIndex >= 0 ? (
+                      renderInput(field, fi, field.inputs[inpIndex], inpIndex)
+                    ) : (
+                      <div style={{ visibility: 'hidden' }}> </div>
+                    )}
+                  </div>
+                );
+              }
 
-          <div className="w-12 self-start md:mt-7">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => handleRemoveField(fi)}
-            >
-              <IconTrash size={20} />
-            </Button>
+              // otherwise key === "value": render either
+              //  • all extras side by side
+              //  • or, if there are *no* extras, look for the "value" input:
+              const hasValueKey = field.inputs.some((i) => i.key === 'value');
+              const valueIdx = field.inputs.findIndex((i) => i.key === 'value');
+
+              return (
+                <div key={`${field.id}-value-${idx}`}>
+                  {extras.length > 1 ? (
+                    <div className="flex gap-4">
+                      {extras.map((inp, ii) => {
+                        const realIdx = field.inputs.findIndex(
+                          (x) => x.key === inp.key,
+                        );
+                        return (
+                          <div
+                            key={`${field.id}-${inp.key}-${ii}`}
+                            className="flex-1"
+                          >
+                            {renderInput(field, fi, inp, realIdx)}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : hasValueKey && valueIdx >= 0 ? (
+                    renderInput(field, fi, field.inputs[valueIdx], valueIdx)
+                  ) : (
+                    <div style={{ visibility: 'hidden' }}> </div>
+                  )}
+                </div>
+              );
+            })}
+
+            <div className="w-12 self-start md:mt-7">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => handleRemoveField(fi)}
+              >
+                <IconTrash size={20} />
+              </Button>
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
 
       <Button type="button" onClick={handleAddField} className="self-start">
         {addFieldLabel}
