@@ -315,8 +315,9 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
                 type="button"
                 variant="secondary"
                 onClick={() => handleRemoveField(fi)}
+                className="md:w-full"
               >
-                <IconTrash size={20} />
+                <IconTrash size={20} className="shrink-0" />
               </Button>
             </div>
           </div>
