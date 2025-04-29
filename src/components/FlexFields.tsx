@@ -295,7 +295,7 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
                         return (
                           <div
                             key={`${field.id}-${inp.key}-${ii}`}
-                            className="flex-1"
+                            className="min-w-0 flex-1"
                           >
                             {renderInput(field, fi, inp, realIdx)}
                           </div>
