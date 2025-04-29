@@ -31,7 +31,7 @@ export type SelectProps<T> = {
   placeholder?: string;
   error?: string;
   className?: string;
-  wrapperClassName?: string; // Top-level container classes
+  wrapperClassName?: string;
   onChange: (value: T) => void;
   onSearchChange?: (query: string) => void;
   onFocus?: () => void;
@@ -44,9 +44,7 @@ export type SelectProps<T> = {
   isLoading?: boolean;
   muted?: boolean;
   searchQuery?: string;
-  /** New prop to customize the chevron icon */
   icon?: ReactNode;
-  /** New prop to customize the no-results label */
   noResultsLabel?: ReactNode;
 };
 
@@ -71,7 +69,7 @@ export const Select = <T extends string | number>({
   muted = false,
   searchQuery: extSearchQuery = '',
   icon,
-  noResultsLabel, // Destructure the new prop
+  noResultsLabel,
   ...props
 }: SelectProps<T>) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -90,48 +88,39 @@ export const Select = <T extends string | number>({
   );
 
   useLayoutEffect(() => {
-    const newSelected =
-      options.find((option) => option.value === value) || null;
-    setSelected(newSelected);
+    setSelected(options.find((o) => o.value === value) || null);
   }, [value, options]);
 
   const [filteredOptions, setFilteredOptions] = useState<SelectOption<T>[]>([]);
-
   useEffect(() => {
-    if (!isLoading) {
-      if (extSearchQuery) {
-        // API already filtered, so just use the options directly
-        setFilteredOptions(options);
-      } else {
-        const filtered = options.filter((option) => {
-          const labelLower = option.label.toLowerCase();
-          const searchLower = searchQuery.toLowerCase();
-          return !option.isHidden && labelLower.includes(searchLower);
-        });
-        setFilteredOptions(filtered);
-      }
-    } else {
+    if (isLoading) {
       setFilteredOptions([]);
+    } else if (extSearchQuery) {
+      setFilteredOptions(options);
+    } else {
+      setFilteredOptions(
+        options.filter((opt) => {
+          const lower = opt.label.toLowerCase();
+          return !opt.isHidden && lower.includes(searchQuery.toLowerCase());
+        }),
+      );
     }
-  }, [isLoading, options, extSearchQuery, localSearchQuery]);
+  }, [isLoading, options, extSearchQuery, searchQuery]);
 
   useEffect(() => {
     if (isOpen && hasSearch) {
       setFocusedIndex(filteredOptions.length > 0 ? 0 : null);
     }
-  }, [localSearchQuery, isOpen, filteredOptions.length, hasSearch]);
+  }, [filteredOptions.length, hasSearch, isOpen]);
 
   const openDropdown = () => {
     setIsOpen(true);
     if (selected) {
       const idx = options.findIndex((o) => o.value === selected.value);
-      setFocusedIndex(idx !== -1 ? idx : null);
-    } else {
-      setFocusedIndex(null);
+      setFocusedIndex(idx >= 0 ? idx : null);
     }
     onFocus?.();
   };
-
   const closeDropdown = () => {
     setIsOpen(false);
     setFocusedIndex(null);
@@ -139,106 +128,99 @@ export const Select = <T extends string | number>({
   };
 
   const handleOptionClick = (
-    option: SelectOption<T>,
-    event: ReactMouseEvent<HTMLLIElement>,
+    opt: SelectOption<T>,
+    e: ReactMouseEvent<HTMLLIElement>,
   ) => {
-    event.stopPropagation();
-    setSelected(option);
-    onChange(option.value);
+    e.stopPropagation();
+    setSelected(opt);
+    onChange(opt.value);
     setLocalSearchQuery('');
     closeDropdown();
   };
 
   const handleKeyDown = (
-    event: ReactKeyboardEvent<HTMLDivElement | HTMLInputElement>,
+    e: ReactKeyboardEvent<HTMLDivElement | HTMLInputElement>,
   ) => {
     if (disabled) return;
-
-    if (!isOpen && event.key === 'Enter') {
-      event.preventDefault();
+    if (!isOpen && e.key === 'Enter') {
+      e.preventDefault();
       openDropdown();
       return;
     }
     if (!isOpen) return;
 
-    switch (event.key) {
+    switch (e.key) {
       case 'ArrowDown':
-        event.preventDefault();
+        e.preventDefault();
         setFocusedIndex((prev) =>
           prev === null ? 0 : Math.min(prev + 1, filteredOptions.length - 1),
         );
         break;
       case 'ArrowUp':
-        event.preventDefault();
+        e.preventDefault();
         setFocusedIndex((prev) =>
           prev === null ? filteredOptions.length - 1 : Math.max(prev - 1, 0),
         );
         break;
       case 'Enter':
-        event.preventDefault();
+        e.preventDefault();
         if (focusedIndex !== null && filteredOptions[focusedIndex]) {
-          handleOptionClick(filteredOptions[focusedIndex], event as any);
+          handleOptionClick(filteredOptions[focusedIndex], e as any);
         }
-        break;
-      default:
         break;
     }
   };
 
   const adjustDropdownPosition = () => {
-    if (triggerRef.current && dropdownRef.current) {
-      const triggerRect = triggerRef.current.getBoundingClientRect();
-      const dropdownMaxHeight = 384;
-      const viewportHeight = window.innerHeight;
-      const spaceBelow = viewportHeight - triggerRect.bottom;
-      const spaceAbove = triggerRect.top;
-      const availableSpaceBelow = Math.min(spaceBelow, dropdownMaxHeight);
-      const availableSpaceAbove = Math.min(spaceAbove, dropdownMaxHeight);
-      const shouldFlip = availableSpaceAbove > availableSpaceBelow;
+    if (!triggerRef.current || !dropdownRef.current) return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    const maxH = 384;
+    const vh = window.innerHeight;
+    const spaceBelow = vh - rect.bottom;
+    const spaceAbove = rect.top;
+    const below = Math.min(spaceBelow, maxH);
+    const above = Math.min(spaceAbove, maxH);
+    const flip = above > below;
 
-      dropdownRef.current.style.maxHeight = `${shouldFlip ? availableSpaceAbove : availableSpaceBelow}px`;
-      setDropdownPosition(shouldFlip ? 'top' : 'bottom');
-    }
+    dropdownRef.current.style.maxHeight = `${flip ? above : below}px`;
+    setDropdownPosition(flip ? 'top' : 'bottom');
   };
 
   useLayoutEffect(() => {
-    const handleOutsideClick = (e: MouseEvent) => {
+    const onClickAway = (e: MouseEvent) => {
       if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node) &&
-        triggerRef.current &&
-        !triggerRef.current.contains(e.target as Node)
-      ) {
-        closeDropdown();
-      }
+        dropdownRef.current?.contains(e.target as Node) ||
+        triggerRef.current?.contains(e.target as Node)
+      )
+        return;
+      closeDropdown();
     };
-    document.addEventListener('mousedown', handleOutsideClick);
-    return () => document.removeEventListener('mousedown', handleOutsideClick);
+    document.addEventListener('mousedown', onClickAway);
+    return () => document.removeEventListener('mousedown', onClickAway);
   }, []);
 
   useLayoutEffect(() => {
     if (!isOpen) return;
-    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+    const onEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault();
         closeDropdown();
       }
     };
-    document.addEventListener('keydown', handleGlobalKeyDown);
-    return () => document.removeEventListener('keydown', handleGlobalKeyDown);
+    document.addEventListener('keydown', onEsc);
+    return () => document.removeEventListener('keydown', onEsc);
   }, [isOpen]);
 
   useLayoutEffect(() => {
     if (!isOpen) return;
     adjustDropdownPosition();
-    const handleResize = () => adjustDropdownPosition();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener('resize', adjustDropdownPosition);
+    return () => window.removeEventListener('resize', adjustDropdownPosition);
   }, [isOpen]);
 
   const renderRealInput = () => (
     <div
-      className={cn('relative w-full', className)}
+      className={cn('relative w-full min-w-0', className)}
       ref={triggerRef}
       {...props}
     >
@@ -253,13 +235,9 @@ export const Select = <T extends string | number>({
           setLocalSearchQuery(e.target.value);
           onSearchChange?.(e.target.value);
         }}
-        onClick={() => {
-          if (!isOpen) openDropdown();
-        }}
+        onClick={() => !isOpen && openDropdown()}
         onKeyDown={handleKeyDown}
-        onFocus={() => {
-          if (!isOpen) openDropdown();
-        }}
+        onFocus={() => !isOpen && openDropdown()}
         autoComplete="off"
         disabled={disabled}
       />
@@ -270,23 +248,12 @@ export const Select = <T extends string | number>({
   const renderPseudoInput = () => (
     <div
       ref={triggerRef}
-      className={cn('relative w-full', className)}
+      className={cn('relative w-full min-w-0', className)}
       onKeyDown={handleKeyDown}
       onClick={(e) => {
-        if (!disabled) {
-          e.stopPropagation();
-          setIsOpen((prev) => !prev);
-          if (!isOpen) {
-            setFocusedIndex(
-              selected
-                ? options.findIndex((o) => o.value === selected.value)
-                : null,
-            );
-            onFocus?.();
-          } else {
-            closeDropdown();
-          }
-        }
+        if (disabled) return;
+        e.stopPropagation();
+        isOpen ? closeDropdown() : openDropdown();
       }}
       {...props}
     >
@@ -301,15 +268,14 @@ export const Select = <T extends string | number>({
           'border-0 bg-subtle shadow-none': muted,
         })}
       >
-        <Row alignItems="center">
+        <Row alignItems="center" className="min-w-0">
           {selected?.icon && <span>{selected.icon}</span>}
           {!isIconTrigger && (
-            <span className={selected ? '' : 'text-muted'}>
+            <span className={cn('truncate', !selected && 'text-muted')}>
               {selected ? selected.label : placeholder}
             </span>
           )}
         </Row>
-        {/* Use the custom chevron if provided, otherwise default */}
         {!isIconTrigger && (icon ?? <IconChevronDown size={small ? 16 : 20} />)}
       </PseudoInput>
       {isOpen && renderDropdown()}
@@ -318,7 +284,6 @@ export const Select = <T extends string | number>({
 
   const renderDropdown = () => {
     if (!isOpen) return null;
-
     return (
       <div
         ref={dropdownRef}
@@ -338,36 +303,36 @@ export const Select = <T extends string | number>({
           </div>
         ) : (
           <ul className="max-h-96 overflow-y-auto overflow-x-hidden">
-            {filteredOptions.map((option, index) => {
-              const isFirst = index === 0;
-              const isLast = index === filteredOptions.length - 1;
-              const liEl = (
+            {filteredOptions.map((opt, idx) => {
+              const isFirst = idx === 0;
+              const isLast = idx === filteredOptions.length - 1;
+              const item = (
                 <li
-                  key={option.value}
+                  key={opt.value}
                   className={cn(
                     'flex cursor-pointer items-center gap-2 whitespace-nowrap px-3 py-2 text-sm',
                     {
                       'px-3 pb-2 pt-3': isFirst,
                       'px-3 pb-3 pt-2': isLast,
-                      'bg-subtle': focusedIndex === index,
+                      'bg-subtle': focusedIndex === idx,
                       'rounded-t': isFirst,
                       'rounded-b': isLast,
                     },
                   )}
-                  onClick={(event) => handleOptionClick(option, event)}
-                  onMouseEnter={() => setFocusedIndex(index)}
+                  onClick={(e) => handleOptionClick(opt, e)}
+                  onMouseEnter={() => setFocusedIndex(idx)}
                   onMouseDown={(e) => e.preventDefault()}
                 >
-                  {option.icon && <span>{option.icon}</span>}
-                  <span>{option.label}</span>
+                  {opt.icon && <span>{opt.icon}</span>}
+                  <span>{opt.label}</span>
                 </li>
               );
-              return option.tooltip ? (
-                <Tooltip key={option.value} content={option.tooltip} transient>
-                  {liEl}
+              return opt.tooltip ? (
+                <Tooltip key={opt.value} content={opt.tooltip} transient>
+                  {item}
                 </Tooltip>
               ) : (
-                liEl
+                item
               );
             })}
           </ul>

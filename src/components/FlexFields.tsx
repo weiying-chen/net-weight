@@ -59,11 +59,10 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
   monthLabel,
   weekdayLabel,
   dateValueLabel,
-  selectPlaceholder,
+  selectPlaceholder = 'Select an option',
   datePlaceholder,
   errors,
 }) => {
-  // State synced with props
   const [fields, setFields] = useState<FlexField[]>(initialFields);
   useEffect(() => setFields(initialFields), [initialFields]);
 
@@ -72,13 +71,11 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
     onChange(newFields);
   };
 
-  // Clone helper
   const cloneInput = (inp: FlexFieldInput): FlexFieldInput => ({
     ...inp,
     options: inp.options ? [...inp.options] : undefined,
   });
 
-  // New‐field factory
   const makeDefaultField = (): FlexField =>
     fieldTemplate
       ? {
@@ -90,7 +87,6 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
           inputs: [{ key: 'value', label: 'Value', value: '', type: 'text' }],
         };
 
-  // Handlers
   const handleInputChange = (
     fi: number,
     ii: number,
@@ -100,7 +96,7 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
       idx !== fi
         ? fld
         : {
-            id: fld.id,
+            ...fld,
             inputs: fld.inputs.map((inp, j) =>
               j === ii ? { ...inp, value: newValue } : inp,
             ),
@@ -116,22 +112,33 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
   const handleDuplicateField = (fi: number, ii: number) => {
     const orig = fields[fi];
     if (!orig) return;
+    const insertAt = fi + 1;
     const key = orig.inputs[ii].key;
+
     if (key === 'type') {
-      updateFields([...fields, makeDefaultField()]);
+      const newField = makeDefaultField();
+      updateFields([
+        ...fields.slice(0, insertAt),
+        newField,
+        ...fields.slice(insertAt),
+      ]);
     } else {
       const copied = orig.inputs.map((inp, idx) => ({
         ...cloneInput(inp),
         value: idx < ii ? inp.value : inp.type === 'switch' ? false : '',
       }));
+      const newField: FlexField = {
+        id: crypto.randomUUID().slice(0, 8),
+        inputs: copied,
+      };
       updateFields([
-        ...fields,
-        { id: crypto.randomUUID().slice(0, 8), inputs: copied },
+        ...fields.slice(0, insertAt),
+        newField,
+        ...fields.slice(insertAt),
       ]);
     }
   };
 
-  // Renders one input box + label/dup-btn/unit/error under it
   const renderInput = (
     field: FlexField,
     fi: number,
@@ -180,6 +187,8 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
             disabled={inp.options?.length === 1}
             onChange={(v) => handleInputChange(fi, ii, v)}
             error={errorMsg}
+            className="min-w-0"
+            wrapperClassName="min-w-0"
           />
         );
         break;
@@ -243,29 +252,24 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
     );
   };
 
-  // Always "type", "method", "item", "value" in that order:
   const blueprintKeys = ['type', 'method', 'item', 'value'];
 
   return (
     <Col className="w-full space-y-2">
       {label && <label className="text-sm font-semibold">{label}</label>}
-
       {fields.map((field, fi) => {
-        // split out any inputs whose key isn't one of the first three
-        // those go into the "value" cell
         const extras = field.inputs.filter(
           (inp) => !['type', 'method', 'item'].includes(inp.key),
         );
         return (
           <div
             key={field.id}
-            className="grid w-full gap-4"
+            className="grid w-full gap-2"
             style={{
               gridTemplateColumns: `repeat(${blueprintKeys.length}, minmax(0, 1fr)) auto`,
             }}
           >
             {blueprintKeys.map((key, idx) => {
-              // if it's one of the first three, render its single input:
               if (key !== 'value') {
                 const inpIndex = field.inputs.findIndex((i) => i.key === key);
                 return (
@@ -273,22 +277,17 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
                     {inpIndex >= 0 ? (
                       renderInput(field, fi, field.inputs[inpIndex], inpIndex)
                     ) : (
-                      <div style={{ visibility: 'hidden' }}> </div>
+                      <div style={{ visibility: 'hidden' }} />
                     )}
                   </div>
                 );
               }
-
-              // otherwise key === "value": render either
-              //  • all extras side by side
-              //  • or, if there are *no* extras, look for the "value" input:
               const hasValueKey = field.inputs.some((i) => i.key === 'value');
               const valueIdx = field.inputs.findIndex((i) => i.key === 'value');
-
               return (
                 <div key={`${field.id}-value-${idx}`}>
                   {extras.length > 1 ? (
-                    <div className="flex gap-4">
+                    <div className="flex gap-2">
                       {extras.map((inp, ii) => {
                         const realIdx = field.inputs.findIndex(
                           (x) => x.key === inp.key,
@@ -306,12 +305,11 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
                   ) : hasValueKey && valueIdx >= 0 ? (
                     renderInput(field, fi, field.inputs[valueIdx], valueIdx)
                   ) : (
-                    <div style={{ visibility: 'hidden' }}> </div>
+                    <div style={{ visibility: 'hidden' }} />
                   )}
                 </div>
               );
             })}
-
             <div className="w-12 self-start md:mt-7">
               <Button
                 type="button"
@@ -324,7 +322,6 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
           </div>
         );
       })}
-
       <Button type="button" onClick={handleAddField} className="self-start">
         {addFieldLabel}
       </Button>
