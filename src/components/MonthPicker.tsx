@@ -4,14 +4,15 @@ export type MonthPickerProps = {
   value?: Date;
   onChange?: (date: Date) => void;
   viewDate: number;
-  label?: (date: Date) => string;
+  /** Tile label: short month name for each month button */
+  monthLabelTile?: (date: Date) => string;
 };
 
 export const MonthPicker: React.FC<MonthPickerProps> = ({
   value,
   onChange,
   viewDate,
-  label,
+  monthLabelTile,
 }) => {
   const months = Array.from({ length: 12 }).map(
     (_, idx) => new Date(viewDate, idx, 1),
@@ -28,10 +29,6 @@ export const MonthPicker: React.FC<MonthPickerProps> = ({
         {months.map((m, idx) => (
           <button
             key={idx}
-            // disabled={
-            //   value != null &&
-            //   (value.getMonth() !== idx || value.getFullYear() !== viewDate)
-            // }
             onClick={() => handleMonthClick(idx)}
             className={`rounded py-1 transition ${
               value &&
@@ -41,7 +38,7 @@ export const MonthPicker: React.FC<MonthPickerProps> = ({
                 : 'hover:bg-subtle'
             }`}
           >
-            {label ? label(m) : format(m, 'MMM')}
+            {monthLabelTile ? monthLabelTile(m) : format(m, 'MMM')}
           </button>
         ))}
       </div>

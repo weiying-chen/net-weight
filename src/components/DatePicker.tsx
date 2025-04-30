@@ -21,7 +21,10 @@ export type DatePickerProps = {
   required?: boolean;
   disabled?: boolean;
   small?: boolean;
-  monthLabel?: (date: Date) => string;
+  /** Header label: "MMMM yyyy" in day mode or "yyyy" in month mode */
+  monthLabelHeader?: (date: Date, mode: 'day' | 'month') => string;
+  /** Tile label: short month name for each month button */
+  monthLabelTile?: (date: Date) => string;
   weekdayLabel?: (weekday: string, index: number) => string;
   valueLabel?: (date: Date) => string;
 };
@@ -36,7 +39,8 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   required,
   disabled,
   small = false,
-  monthLabel,
+  monthLabelHeader,
+  monthLabelTile,
   weekdayLabel,
   valueLabel,
 }) => {
@@ -137,14 +141,14 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         horizontalPosition === 'right' ? 'right-0' : 'left-0',
       )}
     >
+      {/* Header */}
       <div className="mb-2 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-base font-semibold">
-            {monthLabel
-              ? monthLabel(viewDate)
+            {monthLabelHeader
+              ? monthLabelHeader(viewDate, viewMode)
               : format(viewDate, viewMode === 'day' ? 'MMMM yyyy' : 'yyyy')}
           </span>
-          {/* Changed: Wrapped buttons in a flex container without gap */}
           <div className="flex items-center gap-1">
             <button
               type="button"
@@ -185,7 +189,10 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           </button>
         </div>
       </div>
+
       <div className="mb-2 h-px w-full bg-border" />
+
+      {/* Picker Body */}
       {viewMode === 'day' ? (
         <DayPicker
           value={selectedDate}
@@ -196,7 +203,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
       ) : (
         <MonthPicker
           value={selectedDate}
-          label={monthLabel}
+          monthLabelTile={monthLabelTile}
           onChange={handleSelect}
           viewDate={viewDate.getFullYear()}
         />
@@ -214,6 +221,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         ) : (
           label
         ))}
+
       <div
         ref={triggerRef}
         className="relative w-full"
@@ -238,6 +246,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         </PseudoInput>
         {isOpen && renderPicker()}
       </div>
+
       {error && <span className="text-sm text-danger">{error}</span>}
     </Col>
   );
