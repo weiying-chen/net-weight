@@ -3,7 +3,7 @@ import { Col } from '@/components/Col';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
 import { Select } from '@/components/Select';
-import { IconPlus, IconTrash } from '@tabler/icons-react';
+import { IconTrash } from '@tabler/icons-react';
 import { Switch } from '@/components/Switch';
 import { DatePicker } from '@/components/DatePicker';
 import { format } from 'date-fns';
@@ -106,38 +106,9 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
   };
 
   const handleAddField = () => updateFields([...fields, makeDefaultField()]);
+
   const handleRemoveField = (i: number) =>
     updateFields(fields.filter((_, idx) => idx !== i));
-
-  const handleDuplicateField = (fi: number, ii: number) => {
-    const orig = fields[fi];
-    if (!orig) return;
-    const insertAt = fi + 1;
-    const key = orig.inputs[ii].key;
-
-    if (key === 'type') {
-      const newField = makeDefaultField();
-      updateFields([
-        ...fields.slice(0, insertAt),
-        newField,
-        ...fields.slice(insertAt),
-      ]);
-    } else {
-      const copied = orig.inputs.map((inp, idx) => ({
-        ...cloneInput(inp),
-        value: idx < ii ? inp.value : inp.type === 'switch' ? false : '',
-      }));
-      const newField: FlexField = {
-        id: crypto.randomUUID().slice(0, 8),
-        inputs: copied,
-      };
-      updateFields([
-        ...fields.slice(0, insertAt),
-        newField,
-        ...fields.slice(insertAt),
-      ]);
-    }
-  };
 
   const renderInput = (
     field: FlexField,
@@ -152,7 +123,6 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
     if (!errorMsg && inp.type === 'select' && inp.key === 'currency') {
       errorMsg = fieldErrs.value;
     }
-    const showPlus = ['type', 'method', 'item'].includes(inp.key);
 
     let element;
     switch (inp.type) {
@@ -184,11 +154,11 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
             value={String(inp.value)}
             options={inp.options?.map((o) => asOption?.(o) ?? o) ?? []}
             placeholder={selectPlaceholder}
-            disabled={inp.options?.length === 1}
             onChange={(v) => handleInputChange(fi, ii, v)}
             error={errorMsg}
             className="min-w-0"
             wrapperClassName="min-w-0"
+            disabled={inp.options?.length === 1}
           />
         );
         break;
@@ -236,15 +206,6 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
             <span className="ml-1 text-xs text-muted">
               {asUnit?.(inp.unit) ?? inp.unit}
             </span>
-          )}
-          {showPlus && (
-            <Button
-              variant="link"
-              onClick={() => handleDuplicateField(fi, ii)}
-              className="ml-2"
-            >
-              <IconPlus size={16} />
-            </Button>
           )}
         </div>
         {element}
