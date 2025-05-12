@@ -42,6 +42,7 @@ export type SelectProps<T> = {
   small?: boolean;
   hasSearch?: boolean;
   isLoading?: boolean;
+  isDropdownLoading?: boolean;
   muted?: boolean;
   searchQuery?: string;
   icon?: ReactNode;
@@ -66,6 +67,7 @@ export const Select = <T extends string | number>({
   small = false,
   hasSearch = false,
   isLoading = false,
+  isDropdownLoading = false,
   muted = false,
   searchQuery: extSearchQuery = '',
   icon,
@@ -79,8 +81,8 @@ export const Select = <T extends string | number>({
     'bottom',
   );
   const [localSearchQuery, setLocalSearchQuery] = useState('');
-  const dropdownRef = useRef<HTMLDivElement | null>(null);
-  const triggerRef = useRef<HTMLDivElement | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
 
   const searchQuery = useMemo(
     () => (extSearchQuery || localSearchQuery).trim(),
@@ -93,19 +95,21 @@ export const Select = <T extends string | number>({
 
   const [filteredOptions, setFilteredOptions] = useState<SelectOption<T>[]>([]);
   useEffect(() => {
-    if (isLoading) {
+    if (isDropdownLoading) {
       setFilteredOptions([]);
     } else if (extSearchQuery) {
       setFilteredOptions(options);
     } else {
       setFilteredOptions(
         options.filter((opt) => {
-          const lower = opt.label.toLowerCase();
-          return !opt.isHidden && lower.includes(searchQuery.toLowerCase());
+          return (
+            !opt.isHidden &&
+            opt.label.toLowerCase().includes(searchQuery.toLowerCase())
+          );
         }),
       );
     }
-  }, [isLoading, options, extSearchQuery, searchQuery]);
+  }, [isDropdownLoading, options, extSearchQuery, searchQuery]);
 
   useEffect(() => {
     if (isOpen && hasSearch) {
@@ -152,19 +156,19 @@ export const Select = <T extends string | number>({
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        setFocusedIndex((prev) =>
-          prev === null ? 0 : Math.min(prev + 1, filteredOptions.length - 1),
+        setFocusedIndex((p) =>
+          p === null ? 0 : Math.min(p + 1, filteredOptions.length - 1),
         );
         break;
       case 'ArrowUp':
         e.preventDefault();
-        setFocusedIndex((prev) =>
-          prev === null ? filteredOptions.length - 1 : Math.max(prev - 1, 0),
+        setFocusedIndex((p) =>
+          p === null ? filteredOptions.length - 1 : Math.max(p - 1, 0),
         );
         break;
       case 'Enter':
         e.preventDefault();
-        if (focusedIndex !== null && filteredOptions[focusedIndex]) {
+        if (focusedIndex !== null) {
           handleOptionClick(filteredOptions[focusedIndex], e as any);
         }
         break;
@@ -176,12 +180,9 @@ export const Select = <T extends string | number>({
     const rect = triggerRef.current.getBoundingClientRect();
     const maxH = 384;
     const vh = window.innerHeight;
-    const spaceBelow = vh - rect.bottom;
-    const spaceAbove = rect.top;
-    const below = Math.min(spaceBelow, maxH);
-    const above = Math.min(spaceAbove, maxH);
+    const below = Math.min(vh - rect.bottom, maxH);
+    const above = Math.min(rect.top, maxH);
     const flip = above > below;
-
     dropdownRef.current.style.maxHeight = `${flip ? above : below}px`;
     setDropdownPosition(flip ? 'top' : 'bottom');
   };
@@ -240,6 +241,7 @@ export const Select = <T extends string | number>({
         onFocus={() => !isOpen && openDropdown()}
         autoComplete="off"
         disabled={disabled}
+        isLoading={isLoading}
       />
       {isOpen && renderDropdown()}
     </div>
@@ -276,8 +278,20 @@ export const Select = <T extends string | number>({
             </span>
           )}
         </Row>
-        {!isIconTrigger && (icon ?? <IconChevronDown size={small ? 16 : 20} />)}
+        {!isIconTrigger && (
+          <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center"></span>
+        )}
       </PseudoInput>
+      {isLoading && (
+        <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+          <IconLoader2 size={16} className="animate-spin text-muted" />
+        </span>
+      )}
+      {!isLoading && !isIconTrigger && (
+        <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+          {icon ?? <IconChevronDown size={small ? 16 : 20} />}
+        </span>
+      )}
       {isOpen && renderDropdown()}
     </div>
   );
@@ -293,7 +307,7 @@ export const Select = <T extends string | number>({
           isIconTrigger ? 'left-0 right-auto w-auto' : 'left-0 right-0 w-full',
         )}
       >
-        {isLoading && localSearchQuery.length > 0 ? (
+        {isDropdownLoading && localSearchQuery.length > 0 ? (
           <div className="flex items-center justify-center p-4">
             <IconLoader2 size={24} className="animate-spin" />
           </div>

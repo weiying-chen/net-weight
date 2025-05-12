@@ -26,6 +26,10 @@ type ListEditorProps = {
   className?: string;
   onChange: (initialItems: string[]) => void;
   labels?: ListEditorLabels;
+  /**
+   * Optional function to format item labels for display only.
+   */
+  asItemName?: (item: string) => string;
 };
 
 export function ListEditor({
@@ -34,6 +38,7 @@ export function ListEditor({
   className,
   onChange,
   labels,
+  asItemName,
 }: ListEditorProps) {
   const {
     active = 'Active',
@@ -140,12 +145,12 @@ export function ListEditor({
   };
 
   const renderList = (
-    items: string[],
+    listItems: string[],
     pickedItems: string[],
     onItemClick: (item: string) => void,
   ) => (
     <ul className="h-40 w-full overflow-y-auto rounded border border-border p-2 text-sm">
-      {items.map((item) => (
+      {listItems.map((item) => (
         <li
           key={item}
           onClick={() => onItemClick(item)}
@@ -153,7 +158,7 @@ export function ListEditor({
             'bg-muted text-white': pickedItems.includes(item),
           })}
         >
-          {item}
+          {asItemName ? asItemName(item) : item}
         </li>
       ))}
     </ul>

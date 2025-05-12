@@ -40,14 +40,16 @@ export type FlexFieldsProps = {
   asOption?: (option: Option) => Option;
   asUnit?: (unit?: string) => string | undefined;
   /** Header label: "MMMM yyyy" in day mode or "yyyy" in month mode */
-  monthLabelHeader?: (date: Date, mode: 'day' | 'month') => string;
+  headerLabel?: (date: Date, mode: 'day' | 'month') => string;
   /** Tile label: short month name for each month button */
-  monthLabelTile?: (date: Date) => string;
+  monthLabel?: (date: Date) => string;
   weekdayLabel?: (weekday: string, index: number) => string;
   dateValueLabel?: (date: Date) => string;
   selectPlaceholder?: string;
   datePlaceholder?: string;
   errors?: Array<{ [key: string]: string }>;
+  /** Localized labels for the “Day” / “Month” toggle buttons */
+  viewModeLabels?: { day: string; month: string };
 };
 
 export const FlexFields: React.FC<FlexFieldsProps> = ({
@@ -59,13 +61,14 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
   asLabel,
   asOption,
   asUnit,
-  monthLabelHeader,
-  monthLabelTile,
+  headerLabel,
+  monthLabel,
   weekdayLabel,
   dateValueLabel,
   selectPlaceholder = 'Select an option',
   datePlaceholder,
   errors,
+  viewModeLabels,
 }) => {
   const [fields, setFields] = useState<FlexField[]>(initialFields);
   useEffect(() => setFields(initialFields), [initialFields]);
@@ -120,8 +123,8 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
     inp: FlexFieldInput,
     ii: number,
   ) => {
-    const displayLabel =
-      inp.key === 'value' ? 'Value' : (asLabel?.(inp.label) ?? inp.label);
+    const displayLabel = asLabel?.(inp.label) ?? inp.label;
+
     const fieldErrs = errors?.[fi] || {};
     let errorMsg = fieldErrs[inp.key];
     if (!errorMsg && inp.type === 'select' && inp.key === 'currency') {
@@ -184,10 +187,11 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
               handleInputChange(fi, ii, d ? format(d, 'yyyy-MM-dd') : '')
             }
             placeholder={datePlaceholder}
-            monthLabelHeader={monthLabelHeader}
-            monthLabelTile={monthLabelTile}
+            headerLabel={headerLabel}
+            monthLabel={monthLabel}
             weekdayLabel={weekdayLabel}
             valueLabel={dateValueLabel}
+            viewModeLabels={viewModeLabels}
             error={errorMsg}
           />
         );

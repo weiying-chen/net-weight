@@ -5,14 +5,14 @@ export type MonthPickerProps = {
   onChange?: (date: Date) => void;
   viewDate: number;
   /** Tile label: short month name for each month button */
-  monthLabelTile?: (date: Date) => string;
+  monthLabel?: (date: Date) => string;
 };
 
 export const MonthPicker: React.FC<MonthPickerProps> = ({
   value,
   onChange,
   viewDate,
-  monthLabelTile,
+  monthLabel,
 }) => {
   const months = Array.from({ length: 12 }).map(
     (_, idx) => new Date(viewDate, idx, 1),
@@ -38,7 +38,7 @@ export const MonthPicker: React.FC<MonthPickerProps> = ({
                 : 'hover:bg-subtle'
             }`}
           >
-            {monthLabelTile ? monthLabelTile(m) : format(m, 'MMM')}
+            {monthLabel ? monthLabel(m) : format(m, 'MMM')}
           </button>
         ))}
       </div>

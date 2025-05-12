@@ -106,7 +106,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
             style={style}
             className={cn(
               'pointer-events-none transform rounded bg-foreground px-3 py-2 text-sm text-background shadow',
-              'max-w-[250px] whitespace-pre-line transition duration-200 ease-in-out',
+              'max-w-[180px] whitespace-pre-line transition duration-200 ease-in-out',
               isVisible && isMeasured
                 ? 'scale-100 opacity-100'
                 : 'scale-95 opacity-0',
