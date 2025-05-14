@@ -30,7 +30,7 @@ export function Map({ lat, lng, zoom = 15, height = 200 }: MapProps) {
         </div>
       )}
       <APIProvider
-        apiKey="AIzaSyCvOVv3xuF-DYbJu6MIS5tThyU6NTa6crc"
+        apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}
         onLoad={() => setApiLoaded(true)}
       >
         {apiLoaded && (

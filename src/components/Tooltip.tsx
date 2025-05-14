@@ -7,6 +7,11 @@ interface TooltipProps {
   content: ReactNode;
   className?: string;
   transient?: boolean;
+  /**
+   * CSS max-width for the tooltip box. Accepts any valid CSS width value,
+   * e.g. "200px", "50%", "20rem". Defaults to "180px".
+   */
+  maxWidth?: string;
 }
 
 const TOOLTIP_OFFSET = { x: 10, y: 10 };
@@ -16,6 +21,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
   content,
   className,
   transient = false,
+  maxWidth = '180px',
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
@@ -25,6 +31,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
     top: 0,
     left: 0,
     zIndex: 9999,
+    maxWidth, // apply default or incoming maxWidth
   });
 
   const triggerRef = useRef<HTMLDivElement>(null);
@@ -67,11 +74,17 @@ export const Tooltip: React.FC<TooltipProps> = ({
         left = window.scrollX + 5;
       }
 
-      setStyle((prev) => ({ ...prev, top, left }));
+      setStyle((prev) => ({
+        ...prev,
+        top,
+        left,
+        maxWidth, // ensure we carry over the prop on each move
+      }));
       setIsMeasured(true);
     });
   };
 
+  // Show portal when visible, hide after fade-out
   useEffect(() => {
     if (isVisible) {
       setShouldRender(true);
@@ -81,6 +94,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
     }
   }, [isVisible]);
 
+  // Reset measurement state when hidden
   useEffect(() => {
     if (!isVisible) {
       setIsMeasured(false);
@@ -106,7 +120,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
             style={style}
             className={cn(
               'pointer-events-none transform rounded bg-foreground px-3 py-2 text-sm text-background shadow',
-              'max-w-[180px] whitespace-pre-line transition duration-200 ease-in-out',
+              'whitespace-pre-line transition duration-200 ease-in-out',
               isVisible && isMeasured
                 ? 'scale-100 opacity-100'
                 : 'scale-95 opacity-0',

@@ -23,7 +23,6 @@ export function Table<T, D extends object>({
   asTooltip,
 }: {
   data: T[];
-  /** receives the raw items and returns a flattened copy for display */
   formatData?: (items: T[]) => D[];
   selectedItems: T[];
   cols: Cols<D>[];
@@ -32,15 +31,12 @@ export function Table<T, D extends object>({
   asActions?: (item: T) => React.ReactNode;
   asTooltip?: (item: T) => React.ReactNode;
 }) {
-  // Pair each original with its display-only copy
+  // Pair originals with display copies
   const paired = useMemo(() => {
     const dispArr = formatData
       ? formatData(originalData)
       : (originalData as unknown as D[]);
-    return dispArr.map((disp, i) => ({
-      orig: originalData[i],
-      disp,
-    }));
+    return dispArr.map((disp, i) => ({ orig: originalData[i], disp }));
   }, [originalData, formatData]);
 
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
@@ -58,7 +54,7 @@ export function Table<T, D extends object>({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const hoverRef = useRef<HTMLDivElement | null>(null);
 
-  // Sort by rendered display value
+  // Sort logic
   const sortedPaired = useMemo(() => {
     if (!sortConfig) return paired;
     const { index, direction } = sortConfig;
@@ -71,10 +67,14 @@ export function Table<T, D extends object>({
     });
   }, [paired, sortConfig, cols]);
 
-  // Global mouse handlers for hover
+  // GLOBAL MOUSE HANDLERS (for hover popover), but IGNORE clicks INSIDE the table
   useEffect(() => {
     const onDown = (e: MouseEvent) => {
+      // If cursor is in the hover-actions popover, ignore
       if (hoverRef.current?.contains(e.target as Node)) return;
+      // *** NEW: ignore any mousedown that starts inside our table container ***
+      if (containerRef.current?.contains(e.target as Node)) return;
+
       isMouseDown.current = true;
       hideTimeout.current && window.clearTimeout(hideTimeout.current);
       setHoveredRow(null);
@@ -90,6 +90,7 @@ export function Table<T, D extends object>({
     };
   }, []);
 
+  // Header click → sort
   const handleSort = (ci: number) => {
     const sample = cols[ci].render(paired[0]?.disp);
     if (typeof sample === 'object' && sample !== null) return;
@@ -100,17 +101,19 @@ export function Table<T, D extends object>({
     setSortConfig({ index: ci, direction: dir });
   };
 
+  // Hover row
   const handleMouseEnterRow = (ri: number, e: React.MouseEvent) => {
     if (isMouseDown.current) return;
     hideTimeout.current && window.clearTimeout(hideTimeout.current);
     setHoveredRow(ri);
     const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
     const cont = containerRef.current?.getBoundingClientRect();
-    cont &&
+    if (cont) {
       setHoverPosition({
         top: rect.top + rect.height / 2,
         right: document.documentElement.clientWidth - cont.right,
       });
+    }
   };
   const handleMouseLeaveRow = () => {
     hideTimeout.current = window.setTimeout(() => setHoveredRow(null), 100);
@@ -120,6 +123,7 @@ export function Table<T, D extends object>({
     hideTimeout.current && window.clearTimeout(hideTimeout.current);
   };
 
+  // Column resizing
   const startResizing = (ci: number, e: React.MouseEvent) => {
     e.preventDefault();
     const startX = e.clientX;
@@ -139,7 +143,7 @@ export function Table<T, D extends object>({
     document.addEventListener('mouseup', onUp);
   };
 
-  // Auto-calc column widths
+  // Auto-calc widths
   useLayoutEffect(() => {
     if (!sortedPaired.length) return;
     const newW: { [i: number]: number } = {};
@@ -167,6 +171,7 @@ export function Table<T, D extends object>({
     setWidths(newW);
   }, [sortedPaired, cols]);
 
+  // Row selection
   const handleRowSelect = (ri: number) => {
     const { orig } = sortedPaired[ri];
     const next = selectedItems.includes(orig)
@@ -186,7 +191,7 @@ export function Table<T, D extends object>({
     );
   };
 
-  // Render table header
+  // HEADER RENDER
   const renderHeader = () => (
     <div className="flex bg-subtle">
       {onRowSelect && (
@@ -235,7 +240,7 @@ export function Table<T, D extends object>({
     </div>
   );
 
-  // Render table body
+  // BODY RENDER
   const renderBody = () =>
     sortedPaired.map(({ orig, disp }, ri) => {
       const wrapTooltip = !!(asTooltip && !isMouseDown.current);
@@ -276,8 +281,7 @@ export function Table<T, D extends object>({
           className={`flex cursor-pointer border-b border-subtle ${
             hoveredRow === ri ? 'bg-subtle' : ''
           }`}
-          style={{ pointerEvents: 'auto' }}
-          onMouseDown={(e) => onRowClick?.(e, orig)}
+          onClick={(e) => onRowClick?.(e, orig)}
           onMouseEnter={(e) => handleMouseEnterRow(ri, e)}
           onMouseLeave={handleMouseLeaveRow}
           onMouseMove={() => handleMouseMoveRow(ri)}
@@ -288,15 +292,15 @@ export function Table<T, D extends object>({
 
       if (wrapTooltip) {
         return (
-          <Tooltip key={ri} content={asTooltip!(orig)}>
-            <div style={{ pointerEvents: 'none' }}>{rowNode}</div>
+          <Tooltip key={ri} content={asTooltip!(orig)} maxWidth="280px">
+            {rowNode}
           </Tooltip>
         );
       }
       return rowNode;
     });
 
-  // Render hover actions
+  // HOVER ACTIONS
   const renderHover = () => {
     if (
       isMouseDown.current ||

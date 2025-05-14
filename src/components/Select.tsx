@@ -278,20 +278,19 @@ export const Select = <T extends string | number>({
             </span>
           )}
         </Row>
-        {!isIconTrigger && (
-          <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center"></span>
-        )}
+        <span
+          className={cn(
+            'pointer-events-none absolute inset-y-0 right-3 flex items-center',
+            disabled && 'opacity-50',
+          )}
+        >
+          {isLoading ? (
+            <IconLoader2 size={16} className="animate-spin text-muted" />
+          ) : !isIconTrigger ? (
+            (icon ?? <IconChevronDown size={small ? 16 : 20} />)
+          ) : null}
+        </span>
       </PseudoInput>
-      {isLoading && (
-        <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
-          <IconLoader2 size={16} className="animate-spin text-muted" />
-        </span>
-      )}
-      {!isLoading && !isIconTrigger && (
-        <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
-          {icon ?? <IconChevronDown size={small ? 16 : 20} />}
-        </span>
-      )}
       {isOpen && renderDropdown()}
     </div>
   );
