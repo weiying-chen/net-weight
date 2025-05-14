@@ -106,6 +106,7 @@ export function DayPicker({
             return (
               <button
                 key={i}
+                type="button"
                 disabled={!isCurrentMonth}
                 onClick={() => isCurrentMonth && onChange?.(cellDate)}
                 className={`rounded p-2 text-center transition ${baseClass}`}

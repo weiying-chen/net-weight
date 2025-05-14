@@ -28,6 +28,7 @@ export const MonthPicker: React.FC<MonthPickerProps> = ({
       <div className="grid grid-cols-3 gap-1 text-sm">
         {months.map((m, idx) => (
           <button
+            type="button"
             key={idx}
             onClick={() => handleMonthClick(idx)}
             className={`rounded py-1 transition ${
