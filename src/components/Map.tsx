@@ -35,7 +35,7 @@ export function Map({ lat, lng, zoom = 15, height = 200 }: MapProps) {
       >
         {apiLoaded && (
           <MapBase
-            mapId="3e9079d83029ecff63d1f8f6"
+            mapId={process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID!}
             defaultCenter={position}
             defaultZoom={zoom}
             controlSize={24}

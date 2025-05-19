@@ -97,3 +97,31 @@ export const getSeason = (month: string): string => {
   if (monthIndex >= 9 && monthIndex <= 11) return 'Fall';
   return 'Winter';
 };
+
+export function getArcPath(
+  cx: number,
+  cy: number,
+  r: number,
+  startDeg: number,
+  endDeg: number,
+) {
+  const θ1 = (startDeg * Math.PI) / 180;
+  const θ2 = (endDeg * Math.PI) / 180;
+  const x1 = cx + Math.sin(θ1) * r;
+  const y1 = cy - Math.cos(θ1) * r;
+  const x2 = cx + Math.sin(θ2) * r;
+  const y2 = cy - Math.cos(θ2) * r;
+  return { d: `M ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2}`, x1, y1, x2, y2 };
+}
+
+export function getSegmentDegrees(
+  index: number,
+  slice: number,
+  spotlight: boolean,
+) {
+  if (spotlight) {
+    const mid = slice * index;
+    return { startDeg: mid - slice / 2, endDeg: mid + slice / 2 };
+  }
+  return { startDeg: slice * index, endDeg: slice * (index + 1) };
+}

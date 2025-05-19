@@ -1,18 +1,21 @@
-// components/DatePicker.tsx
-import React, {
+'use client';
+
+import {
   useState,
   useRef,
   useLayoutEffect,
   useEffect,
   ReactNode,
+  ChangeEvent,
+  FocusEvent,
 } from 'react';
-import { format } from 'date-fns';
+import { parse, isValid, format } from 'date-fns';
 import {
   IconCalendarMonth,
   IconChevronLeft,
   IconChevronRight,
 } from '@tabler/icons-react';
-import { PseudoInput } from '@/components/PseudoInput';
+import { Input } from '@/components/Input';
 import { Col } from '@/components/Col';
 import { cn } from '@/utils';
 import { DayPicker } from '@/components/DayPicker';
@@ -27,7 +30,6 @@ export type DatePickerProps = {
   className?: string;
   required?: boolean;
   disabled?: boolean;
-  small?: boolean;
   headerLabel?: (date: Date, mode: 'day' | 'month') => string;
   monthLabel?: (date: Date) => string;
   weekdayLabel?: (weekday: string, index: number) => string;
@@ -44,7 +46,6 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   className,
   required,
   disabled,
-  small = false,
   headerLabel,
   monthLabel,
   weekdayLabel,
@@ -59,23 +60,36 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   const [horizontalPosition, setHorizontalPosition] = useState<
     'left' | 'right'
   >('left');
+
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
     externalValue,
   );
+
+  const [inputValue, setInputValue] = useState<string>(
+    externalValue
+      ? valueLabel
+        ? valueLabel(externalValue)
+        : format(externalValue, 'yyyy-MM-dd')
+      : '',
+  );
+
   const [viewDate, setViewDate] = useState<Date>(externalValue || new Date());
 
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLDivElement>(null);
-  // this flag lets us ignore exactly one outside click after month→day switch
+  const triggerRef = useRef<HTMLInputElement>(null);
   const skipNextOutsideClick = useRef(false);
 
-  // sync external value
   useEffect(() => {
     setSelectedDate(externalValue);
-    if (externalValue) setViewDate(externalValue);
-  }, [externalValue]);
+    if (externalValue) {
+      const formatted = valueLabel
+        ? valueLabel(externalValue)
+        : format(externalValue, 'yyyy-MM-dd');
+      setInputValue(formatted);
+      setViewDate(externalValue);
+    }
+  }, [externalValue, valueLabel]);
 
-  // position adjustment
   const adjustDropdownPosition = () => {
     if (!triggerRef.current || !dropdownRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
@@ -101,10 +115,8 @@ export const DatePicker: React.FC<DatePickerProps> = ({
     if (isOpen) adjustDropdownPosition();
   }, [isOpen]);
 
-  // outside-click listener (click phase)
   useEffect(() => {
     const onDocumentClick = (e: MouseEvent) => {
-      // swallow exactly one if flagged
       if (skipNextOutsideClick.current) {
         skipNextOutsideClick.current = false;
         return;
@@ -121,16 +133,42 @@ export const DatePicker: React.FC<DatePickerProps> = ({
     return () => document.removeEventListener('click', onDocumentClick);
   }, []);
 
-  // day select
   const handleSelect = (date: Date) => {
     setSelectedDate(date);
     setViewDate(date);
+    const formatted = valueLabel
+      ? valueLabel(date)
+      : format(date, 'yyyy-MM-dd');
+    setInputValue(formatted);
     onChange?.(date);
     setIsOpen(false);
     setViewMode('day');
   };
 
-  // nav
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value);
+  };
+
+  const handleInputBlur = (_: FocusEvent<HTMLInputElement>) => {
+    if (!inputValue) return;
+
+    const parsed = parse(inputValue, 'yyyy-MM-dd', new Date());
+
+    if (isValid(parsed)) {
+      const iso = format(parsed, 'yyyy-MM-dd');
+      setInputValue(iso);
+      setSelectedDate(parsed);
+      setViewDate(parsed);
+      onChange?.(parsed);
+    } else {
+      if (selectedDate) {
+        setInputValue(format(selectedDate, 'yyyy-MM-dd'));
+      } else {
+        setInputValue('');
+      }
+    }
+  };
+
   const goPrev = () => {
     if (viewMode === 'day') {
       setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1));
@@ -138,6 +176,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
       setViewDate(new Date(viewDate.getFullYear() - 1, viewDate.getMonth(), 1));
     }
   };
+
   const goNext = () => {
     if (viewMode === 'day') {
       setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1));
@@ -146,7 +185,6 @@ export const DatePicker: React.FC<DatePickerProps> = ({
     }
   };
 
-  // render dropdown
   const renderPicker = () => (
     <div
       ref={dropdownRef}
@@ -158,7 +196,6 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         horizontalPosition === 'right' ? 'right-0' : 'left-0',
       )}
     >
-      {/* header */}
       <div className="mb-2 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-base font-semibold">
@@ -206,10 +243,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           </button>
         </div>
       </div>
-
       <div className="mb-2 h-px w-full bg-border" />
-
-      {/* body */}
       {viewMode === 'day' ? (
         <DayPicker
           value={selectedDate}
@@ -223,7 +257,6 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           monthLabel={monthLabel}
           viewDate={viewDate.getFullYear()}
           onChange={(date) => {
-            // flag to skip the next outside click
             skipNextOutsideClick.current = true;
             setViewDate(date);
             setViewMode('day');
@@ -244,30 +277,29 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           label
         ))}
 
-      <div
-        ref={triggerRef}
-        className="relative w-full"
-        onClick={() => !disabled && setIsOpen((o) => !o)}
-      >
-        <PseudoInput
-          tabIndex={0}
-          error={error}
+      <div className="relative w-full">
+        <Input
+          ref={triggerRef}
+          value={inputValue}
+          placeholder={placeholder}
           disabled={disabled}
-          className={cn('cursor-pointer justify-between shadow', {
-            'focus-visible:ring-0 focus-visible:ring-offset-0': isOpen,
-            'hover:shadow-dark': !disabled,
-            'h-6 px-2 py-1 text-xs': small,
-          })}
+          error={error}
+          onChange={handleInputChange}
+          onBlur={handleInputBlur}
+        />
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (!disabled) {
+              skipNextOutsideClick.current = true;
+              setIsOpen((o) => !o);
+            }
+          }}
+          className="absolute inset-y-0 right-3 flex items-center"
         >
-          <span className={cn(!selectedDate && 'text-muted')}>
-            {selectedDate
-              ? valueLabel
-                ? valueLabel(selectedDate)
-                : selectedDate.toLocaleDateString()
-              : placeholder}
-          </span>
           <IconCalendarMonth size={20} />
-        </PseudoInput>
+        </button>
 
         {isOpen && renderPicker()}
       </div>

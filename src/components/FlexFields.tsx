@@ -39,16 +39,13 @@ export type FlexFieldsProps = {
   asLabel?: (label: string) => string;
   asOption?: (option: Option) => Option;
   asUnit?: (unit?: string) => string | undefined;
-  /** Header label: "MMMM yyyy" in day mode or "yyyy" in month mode */
   headerLabel?: (date: Date, mode: 'day' | 'month') => string;
-  /** Tile label: short month name for each month button */
   monthLabel?: (date: Date) => string;
   weekdayLabel?: (weekday: string, index: number) => string;
   dateValueLabel?: (date: Date) => string;
   selectPlaceholder?: string;
   datePlaceholder?: string;
   errors?: Array<{ [key: string]: string }>;
-  /** Localized labels for the “Day” / “Month” toggle buttons */
   viewModeLabels?: { day: string; month: string };
 };
 
@@ -231,6 +228,13 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
         const extras = field.inputs.filter(
           (inp) => !['type', 'method', 'item'].includes(inp.key),
         );
+
+        // new logic for handling single extra input that's not "value"
+        const onlyExtra = extras.length === 1 ? extras[0] : null;
+        const onlyExtraIdx = onlyExtra
+          ? field.inputs.findIndex((i) => i.key === onlyExtra.key)
+          : -1;
+
         return (
           <div
             key={field.id}
@@ -252,8 +256,7 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
                   </div>
                 );
               }
-              const hasValueKey = field.inputs.some((i) => i.key === 'value');
-              const valueIdx = field.inputs.findIndex((i) => i.key === 'value');
+
               return (
                 <div key={`${field.id}-value-${idx}`}>
                   {extras.length > 1 ? (
@@ -272,8 +275,8 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
                         );
                       })}
                     </div>
-                  ) : hasValueKey && valueIdx >= 0 ? (
-                    renderInput(field, fi, field.inputs[valueIdx], valueIdx)
+                  ) : onlyExtra && onlyExtraIdx >= 0 ? (
+                    renderInput(field, fi, onlyExtra, onlyExtraIdx)
                   ) : (
                     <div style={{ visibility: 'hidden' }} />
                   )}

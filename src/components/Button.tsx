@@ -43,7 +43,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       secondary: 'text-foreground bg-secondary px-4 py-2 text-sm h-10',
       success: 'text-background bg-success px-4 py-2 text-sm h-10',
       danger: 'text-white bg-danger px-4 py-2 text-sm h-10',
-      link: 'h-auto border-none bg-transparent px-0 py-0 text-foreground shadow-none',
+      link: 'h-auto border-none bg-transparent px-0 py-0 text-sm text-foreground shadow-none',
       icon: 'h-10 w-10 md:w-10 px-0 py-0 border-none shadow-none hover:shadow',
     };
 
