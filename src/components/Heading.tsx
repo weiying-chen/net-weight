@@ -2,7 +2,7 @@ import { HTMLAttributes } from 'react';
 import { cn } from '@/utils';
 
 type HeadingProps = HTMLAttributes<HTMLHeadingElement> & {
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xl';
   isFull?: boolean;
   hasBorder?: boolean;
 };
@@ -19,18 +19,19 @@ export function Heading({
     sm: 'text-sm uppercase',
     md: 'text-lg',
     lg: 'text-xl',
-  };
+    xl: 'text-2xl',
+  } as const;
 
   return (
     <h2
       className={cn(
-        'max-w-full overflow-hidden text-ellipsis text-nowrap font-semibold tracking-tight',
+        'max-w-full overflow-hidden text-ellipsis whitespace-nowrap font-semibold tracking-tight',
         cnFromSize[size],
         { 'w-full': isFull },
         { 'border-b border-border pb-2': hasBorder },
         className,
       )}
-      {...props} // Spread additional props here
+      {...props}
     >
       {children}
     </h2>

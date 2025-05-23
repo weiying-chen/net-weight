@@ -18,19 +18,28 @@ export const SvgRing: React.FC<SvgRingProps> = ({
 }) => {
   const count = colors.length;
   const slice = 360 / count;
+
+  // Center with padding baked in
   const cx = size / 2;
   const cy = size / 2;
   const r = cx - stroke / 2;
+
   const fadeStart = fadePct * 100;
   const fadeEnd = 100 - fadeStart;
 
   return (
-    <svg width={size} height={size}>
+    <svg
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      style={{ overflow: 'visible' }}
+      shapeRendering="geometricPrecision"
+    >
       <defs>
         {colors.map((col, i) => {
           const next = colors[(i + 1) % count];
 
-          // full segment bounds
+          // full-segment path
           const { startDeg: fullStart, endDeg: fullEnd } = getSegmentDegrees(
             i,
             slice,
@@ -38,13 +47,14 @@ export const SvgRing: React.FC<SvgRingProps> = ({
           );
           const full = getArcPath(cx, cy, r, fullStart, fullEnd);
 
-          // fade segment bounds
+          // fade-edge path
           const { startDeg: fadeStartDeg, endDeg: fadeEndDeg } =
             getSegmentDegrees(i, slice, true);
           const fade = getArcPath(cx, cy, r, fadeStartDeg, fadeEndDeg);
 
           return (
             <React.Fragment key={i}>
+              {/* solid-to-solid gradient */}
               <linearGradient
                 id={`grad${i}`}
                 gradientUnits="userSpaceOnUse"
@@ -57,6 +67,7 @@ export const SvgRing: React.FC<SvgRingProps> = ({
                 <stop offset="100%" stopColor={next} />
               </linearGradient>
 
+              {/* fade edges in/out using stopOpacity */}
               <linearGradient
                 id={`fade${i}`}
                 gradientUnits="userSpaceOnUse"
@@ -65,10 +76,14 @@ export const SvgRing: React.FC<SvgRingProps> = ({
                 x2={fade.x2}
                 y2={fade.y2}
               >
-                <stop offset="0%" stopColor="transparent" />
-                <stop offset={`${fadeStart}%`} stopColor={col} />
-                <stop offset={`${fadeEnd}%`} stopColor={col} />
-                <stop offset="100%" stopColor="transparent" />
+                <stop offset="0%" stopColor={col} stopOpacity="0" />
+                <stop
+                  offset={`${fadeStart}%`}
+                  stopColor={col}
+                  stopOpacity="1"
+                />
+                <stop offset={`${fadeEnd}%`} stopColor={col} stopOpacity="1" />
+                <stop offset="100%" stopColor={col} stopOpacity="0" />
               </linearGradient>
             </React.Fragment>
           );
@@ -89,7 +104,7 @@ export const SvgRing: React.FC<SvgRingProps> = ({
             strokeWidth={stroke}
             strokeOpacity={spotlightIndex === null || isSpot ? 1 : 0}
             strokeLinecap="butt"
-            style={{ transition: 'stroke-opacity 150ms ease' }}
+            style={{ transition: 'stroke-opacity 300ms ease-in-out' }}
           />
         );
       })}

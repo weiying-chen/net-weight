@@ -32,7 +32,7 @@ export type SelectProps<T> = {
   error?: string;
   className?: string;
   wrapperClassName?: string;
-  onChange: (value: T) => void;
+  onChange?: (value: T) => void; // made optional
   onSearchChange?: (query: string) => void;
   onFocus?: () => void;
   onBlur?: () => void;
@@ -47,6 +47,8 @@ export type SelectProps<T> = {
   searchQuery?: string;
   icon?: ReactNode;
   noResultsLabel?: ReactNode;
+  /** Optional display-only transformation for the selected label */
+  formatValue?: (label: string) => string;
 };
 
 export const Select = <T extends string | number>({
@@ -72,6 +74,7 @@ export const Select = <T extends string | number>({
   searchQuery: extSearchQuery = '',
   icon,
   noResultsLabel,
+  formatValue,
   ...props
 }: SelectProps<T>) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -101,12 +104,11 @@ export const Select = <T extends string | number>({
       setFilteredOptions(options);
     } else {
       setFilteredOptions(
-        options.filter((opt) => {
-          return (
+        options.filter(
+          (opt) =>
             !opt.isHidden &&
-            opt.label.toLowerCase().includes(searchQuery.toLowerCase())
-          );
-        }),
+            opt.label.toLowerCase().includes(searchQuery.toLowerCase()),
+        ),
       );
     }
   }, [isDropdownLoading, options, extSearchQuery, searchQuery]);
@@ -115,9 +117,10 @@ export const Select = <T extends string | number>({
     if (isOpen && hasSearch) {
       setFocusedIndex(filteredOptions.length > 0 ? 0 : null);
     }
-  }, [filteredOptions.length, hasSearch, isOpen]);
+  }, [filteredOptions, hasSearch, isOpen]);
 
   const openDropdown = () => {
+    if (disabled || !onChange) return; // prevent opening if readonly
     setIsOpen(true);
     if (selected) {
       const idx = options.findIndex((o) => o.value === selected.value);
@@ -137,7 +140,7 @@ export const Select = <T extends string | number>({
   ) => {
     e.stopPropagation();
     setSelected(opt);
-    onChange(opt.value);
+    onChange?.(opt.value); // guard call
     setLocalSearchQuery('');
     closeDropdown();
   };
@@ -152,7 +155,6 @@ export const Select = <T extends string | number>({
       return;
     }
     if (!isOpen) return;
-
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
@@ -168,9 +170,8 @@ export const Select = <T extends string | number>({
         break;
       case 'Enter':
         e.preventDefault();
-        if (focusedIndex !== null) {
+        if (focusedIndex !== null)
           handleOptionClick(filteredOptions[focusedIndex], e as any);
-        }
         break;
     }
   };
@@ -231,6 +232,7 @@ export const Select = <T extends string | number>({
         value={
           isOpen ? localSearchQuery : localSearchQuery || selected?.label || ''
         }
+        formatValue={formatValue}
         onChange={(e) => {
           if (!isOpen) openDropdown();
           setLocalSearchQuery(e.target.value);
@@ -249,13 +251,14 @@ export const Select = <T extends string | number>({
 
   const renderPseudoInput = () => (
     <div
-      ref={triggerRef}
       className={cn('relative w-full min-w-0', className)}
+      ref={triggerRef}
       onKeyDown={handleKeyDown}
       onClick={(e) => {
-        if (disabled) return;
-        e.stopPropagation();
-        isOpen ? closeDropdown() : openDropdown();
+        if (!disabled && onChange) {
+          e.stopPropagation();
+          isOpen ? closeDropdown() : openDropdown();
+        }
       }}
       {...props}
     >
@@ -274,7 +277,11 @@ export const Select = <T extends string | number>({
           {selected?.icon && <span>{selected.icon}</span>}
           {!isIconTrigger && (
             <span className={cn('w-full truncate', !selected && 'text-muted')}>
-              {selected ? selected.label : placeholder}
+              {selected
+                ? formatValue
+                  ? formatValue(selected.label)
+                  : selected.label
+                : placeholder}
             </span>
           )}
         </Row>
@@ -332,16 +339,16 @@ export const Select = <T extends string | number>({
                       'rounded-b': isLast,
                     },
                   )}
-                  onClick={(e) => handleOptionClick(opt, e)}
                   onMouseEnter={() => setFocusedIndex(idx)}
                   onMouseDown={(e) => e.preventDefault()}
+                  onClick={(e) => handleOptionClick(opt, e)}
                 >
                   {opt.icon && <span>{opt.icon}</span>}
                   <span>{opt.label}</span>
                 </li>
               );
               return opt.tooltip ? (
-                <Tooltip key={opt.value} content={opt.tooltip} transient>
+                <Tooltip key={opt.value} content={opt.tooltip}>
                   {item}
                 </Tooltip>
               ) : (
@@ -359,7 +366,7 @@ export const Select = <T extends string | number>({
       {label &&
         (typeof label === 'string' ? (
           <label className="text-sm font-semibold">
-            {label} {required && <span className="text-danger"> *</span>}
+            {label} {required && <span className="text-danger">*</span>}
           </label>
         ) : (
           label

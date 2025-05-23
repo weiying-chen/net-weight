@@ -11,6 +11,8 @@ type InputProps = InputHTMLAttributes<HTMLInputElement> & {
   isLoading?: boolean;
   /** Makes the input act as a read-only trigger with hover and shadow styles */
   triggerOnly?: boolean;
+  /** Optional display-only transformation */
+  formatValue?: (value: any) => string;
 };
 
 const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
@@ -24,6 +26,9 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
     isLoading,
     triggerOnly,
     readOnly,
+    formatValue,
+    value,
+    type,
     ...props
   },
   ref,
@@ -32,6 +37,17 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
 
   const baseInputClasses =
     'h-10 w-full rounded border border-border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted';
+
+  const displayValue =
+    typeof formatValue === 'function' ? formatValue(value) : value;
+
+  const shouldForceTextType =
+    (type === 'number' || type === 'tel') &&
+    typeof displayValue === 'string' &&
+    (disabled || isReadOnly) &&
+    typeof formatValue === 'function';
+
+  const actualType = shouldForceTextType ? 'text' : type;
 
   return (
     <Col className={className}>
@@ -51,8 +67,10 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         )}
         <input
           ref={ref}
+          type={actualType}
           disabled={disabled}
           readOnly={isReadOnly}
+          value={displayValue}
           className={cn(
             baseInputClasses,
             !triggerOnly &&
