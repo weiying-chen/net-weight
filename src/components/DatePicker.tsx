@@ -191,7 +191,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
       onMouseDown={(e) => e.stopPropagation()}
       onClick={(e) => e.stopPropagation()}
       className={cn(
-        'absolute z-10 rounded border border-border bg-background p-3 shadow',
+        'absolute z-50 rounded border border-border bg-background p-3 shadow',
         dropdownPosition === 'top' ? 'bottom-full mb-1' : 'top-full mt-1',
         horizontalPosition === 'right' ? 'right-0' : 'left-0',
       )}
@@ -283,7 +283,6 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           value={inputValue}
           placeholder={placeholder}
           disabled={disabled}
-          error={error}
           onChange={handleInputChange}
           onBlur={handleInputBlur}
         />

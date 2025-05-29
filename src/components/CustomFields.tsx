@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { Col } from '@/components/Col';
 import { Row } from '@/components/Row';
 import { Button } from '@/components/Button';
@@ -67,11 +67,28 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
   onChange,
   onBeforeRemove,
 }) => {
-  const prevFields = useRef([...initialFields]);
+  // Normalize lockedFields once
+  const normalizedLocked = useMemo(
+    () => lockedFields.map((k) => k.trim()),
+    [lockedFields],
+  );
+
+  // Compute which initial keys are locked (by index)
+  const lockedIndexRef = useRef<Set<number>>(
+    new Set(
+      initialFields
+        .map((f, idx) => ({ key: f.key.trim(), idx }))
+        .filter(({ key }) => normalizedLocked.includes(key))
+        .map(({ idx }) => idx),
+    ),
+  );
+
+  const prevFields = useRef<CustomField[]>(initialFields);
   const [fields, setFields] = useState<CustomField[]>(initialFields);
 
   useEffect(() => {
     setFields(initialFields);
+    prevFields.current = initialFields;
   }, [initialFields]);
 
   const updateFields = (newFields: CustomField[]) => {
@@ -86,32 +103,25 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
   ) => {
     const newFields = fields.map((field, i) => {
       if (i !== index) return field;
-
       if (fieldType === 'type') {
         const newType = newValue as ValueType;
-        return {
-          ...field,
-          type: newType,
-          value: resetType(newType),
-        };
+        return { ...field, type: newType, value: resetType(newType) };
       }
-
-      return {
-        ...field,
-        [fieldType]: newValue,
-      };
+      return { ...field, [fieldType]: newValue };
     });
-
     updateFields(newFields);
   };
 
   const handleAddField = () => {
-    updateFields([...fields, { key: '', value: '', type: 'string' }]);
+    const newField: CustomField = { key: '', value: '', type: 'string' };
+    updateFields([...fields, newField]);
   };
 
-  const handleRemoveField = async (index: number) => {
-    if (onBeforeRemove) {
-      const canRemove = await onBeforeRemove(fields[index]);
+  const handleRemoveClick = async (field: CustomField, index: number) => {
+    // If this field name is in lockedFields, skip onBeforeRemove
+    const isLockedName = normalizedLocked.includes(field.key.trim());
+    if (!isLockedName && onBeforeRemove) {
+      const canRemove = await onBeforeRemove(field);
       if (!canRemove) return;
     }
     updateFields(fields.filter((_, i) => i !== index));
@@ -165,7 +175,7 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
     <Col className={className}>
       {label && <label className="text-sm font-semibold">{label}</label>}
       {fields.map((field, index) => {
-        const isLocked = lockedFields.includes(field.key);
+        const isLocked = lockedIndexRef.current.has(index);
         return (
           <Row alignItems="start" key={index}>
             <Input
@@ -191,7 +201,7 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
               variant="secondary"
               className="md:mt-7"
               disabled={isLocked}
-              onClick={() => handleRemoveField(index)}
+              onClick={() => handleRemoveClick(field, index)}
             >
               <IconTrash size={20} />
             </Button>

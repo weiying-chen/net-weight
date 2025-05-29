@@ -68,7 +68,7 @@ export const TagInput: React.FC<TagInputProps> = ({
       {label && <label className="text-sm font-semibold">{label}</label>}
       <PseudoInput tabIndex={0} error={error} className="h-auto flex-wrap">
         {tags.map((tag) => (
-          <Tag key={tag} onClick={() => handleRemoveTag(tag)}>
+          <Tag key={tag} onRemove={() => handleRemoveTag(tag)}>
             {tag}
           </Tag>
         ))}

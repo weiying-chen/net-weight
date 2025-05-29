@@ -6,10 +6,10 @@ import { Button } from '@/components/Button';
 type TagProps = {
   className?: string;
   children: ReactNode;
-  onClick?: () => void;
+  onRemove?: () => void;
 };
 
-export function Tag({ className, children, onClick }: TagProps) {
+export function Tag({ className, children, onRemove }: TagProps) {
   return (
     <span
       className={cn(
@@ -18,8 +18,8 @@ export function Tag({ className, children, onClick }: TagProps) {
       )}
     >
       {children}
-      {onClick && (
-        <Button variant="link" onClick={onClick}>
+      {onRemove && (
+        <Button variant="link" onClick={onRemove}>
           <IconX size={16} />
         </Button>
       )}

@@ -16,7 +16,7 @@ import { PseudoInput } from '@/components/PseudoInput';
 import { Tooltip } from '@/components/Tooltip';
 import { Input } from '@/components/Input';
 
-type SelectOption<T> = {
+export type SelectOption<T> = {
   label: string;
   value: T;
   icon?: ReactNode;
