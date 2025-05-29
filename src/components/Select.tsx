@@ -32,7 +32,7 @@ export type SelectProps<T> = {
   error?: string;
   className?: string;
   wrapperClassName?: string;
-  onChange?: (value: T) => void; // made optional
+  onChange?: (value: T) => void;
   onSearchChange?: (query: string) => void;
   onFocus?: () => void;
   onBlur?: () => void;
@@ -47,7 +47,6 @@ export type SelectProps<T> = {
   searchQuery?: string;
   icon?: ReactNode;
   noResultsLabel?: ReactNode;
-  /** Optional display-only transformation for the selected label */
   formatValue?: (label: string) => string;
 };
 
@@ -120,7 +119,7 @@ export const Select = <T extends string | number>({
   }, [filteredOptions, hasSearch, isOpen]);
 
   const openDropdown = () => {
-    if (disabled || !onChange) return; // prevent opening if readonly
+    if (disabled || !onChange) return;
     setIsOpen(true);
     if (selected) {
       const idx = options.findIndex((o) => o.value === selected.value);
@@ -128,6 +127,7 @@ export const Select = <T extends string | number>({
     }
     onFocus?.();
   };
+
   const closeDropdown = () => {
     setIsOpen(false);
     setFocusedIndex(null);
@@ -140,7 +140,7 @@ export const Select = <T extends string | number>({
   ) => {
     e.stopPropagation();
     setSelected(opt);
-    onChange?.(opt.value); // guard call
+    onChange?.(opt.value);
     setLocalSearchQuery('');
     closeDropdown();
   };
@@ -326,15 +326,20 @@ export const Select = <T extends string | number>({
             {filteredOptions.map((opt, idx) => {
               const isFirst = idx === 0;
               const isLast = idx === filteredOptions.length - 1;
+              const isFocused = focusedIndex === idx;
               const item = (
                 <li
+                  ref={(el) => {
+                    if (isOpen && isFocused && el)
+                      el.scrollIntoView({ block: 'nearest' });
+                  }}
                   key={opt.value}
                   className={cn(
                     'flex cursor-pointer items-center gap-2 whitespace-nowrap px-3 py-2 text-sm',
                     {
                       'px-3 pb-2 pt-3': isFirst,
                       'px-3 pb-3 pt-2': isLast,
-                      'bg-subtle': focusedIndex === idx,
+                      'bg-subtle': isFocused,
                       'rounded-t': isFirst,
                       'rounded-b': isLast,
                     },

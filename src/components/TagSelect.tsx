@@ -2,48 +2,67 @@ import { Col } from '@/components/Col';
 import { Row } from '@/components/Row';
 import { Select, SelectOption } from '@/components/Select';
 import { Tag } from '@/components/Tag';
-import { useState } from 'react';
+import { ReactNode, useState } from 'react';
 
 export type TagSelectProps<T extends string> = {
+  /** Optional label displayed above the tag list */
+  label?: ReactNode;
   /** All available options */
   options: SelectOption<T>[];
   /** Placeholder for the select input */
   placeholder?: string;
-  /** Controlled list of selected tags */
-  value: SelectOption<T>[];
+  /** Controlled list of selected tag values */
+  value: T[];
   /** Called when tag list changes */
-  onChange: (tags: SelectOption<T>[]) => void;
+  onChange: (values: T[]) => void;
+  /** Error message displayed below the select */
+  error?: string;
 };
 
 export function TagSelect<T extends string>({
+  label,
   options,
   placeholder,
-  value: tags,
+  value,
   onChange,
+  error,
 }: TagSelectProps<T>) {
   const [searchValue, setSearchValue] = useState<T | ''>('');
 
-  const handleSelect = (val: T) => {
-    const opt = options.find((o) => o.value === val);
-    if (!opt || tags.some((t) => t.value === val)) return;
+  // Find the selected option objects for display as tags
+  const selectedOptions = options.filter((opt) => value.includes(opt.value));
 
-    onChange([...tags, opt]);
+  const handleSelect = (val: T) => {
+    if (!options.some((o) => o.value === val) || value.includes(val)) {
+      return;
+    }
+    onChange([...value, val]);
     setSearchValue('');
   };
 
   const handleRemove = (val: T) => {
-    onChange(tags.filter((t) => t.value !== val));
+    onChange(value.filter((v) => v !== val));
   };
 
   return (
     <Col className="w-full">
-      <Row>
-        {tags.map((tag) => (
-          <Tag key={tag.value} onRemove={() => handleRemove(tag.value)}>
-            {tag.label}
-          </Tag>
+      {label &&
+        (typeof label === 'string' ? (
+          <label className="text-sm font-semibold">{label}</label>
+        ) : (
+          label
         ))}
-      </Row>
+
+      {selectedOptions.length > 0 && (
+        <Row>
+          {selectedOptions.map((opt) => (
+            <Tag key={opt.value} onRemove={() => handleRemove(opt.value)}>
+              {opt.label}
+            </Tag>
+          ))}
+        </Row>
+      )}
+
       <Select
         hasSearch
         options={options}
@@ -51,6 +70,8 @@ export function TagSelect<T extends string>({
         placeholder={placeholder}
         onChange={handleSelect}
       />
+
+      {error && <span className="text-sm text-danger">{error}</span>}
     </Col>
   );
 }
