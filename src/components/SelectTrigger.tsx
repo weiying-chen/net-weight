@@ -121,22 +121,19 @@ export function SelectTrigger<T extends string | number>({
         tabIndex={0}
         error={error}
         disabled={isDisabled}
-        className={cn(
-          'flex cursor-pointer flex-wrap justify-between gap-1 shadow',
-          {
-            'focus-visible:ring-0 focus-visible:ring-offset-0': isOpen,
-            'hover:shadow-dark': !isDisabled,
-            'h-8 px-2 text-sm': small && !isIconTrigger,
-            // ← Default size should be text-sm
-            'h-10 px-3 text-sm': !small && !isIconTrigger,
-            'border-0 bg-subtle shadow-none': muted,
-            // When icon‐trigger is true, apply the exact “old” icon‐trigger styling:
-            'flex h-5 cursor-pointer items-center justify-between whitespace-nowrap rounded border-0 bg-subtle px-2 py-1 text-xs shadow-none outline-none ring-foreground ring-offset-2 ring-offset-background hover:shadow-dark focus-visible:ring-2':
-              isIconTrigger,
-          },
-        )}
+        className={cn('flex cursor-pointer items-center gap-1 shadow', {
+          'focus-visible:ring-0 focus-visible:ring-offset-0': isOpen,
+          'hover:shadow-dark': !isDisabled,
+          'h-8 px-2 text-sm': small && !isIconTrigger,
+          'h-10 px-3 text-sm': !small && !isIconTrigger,
+          'border-0 bg-subtle shadow-none': muted,
+          // When icon‐trigger is true, apply the exact “old” icon‐trigger styling:
+          'flex h-5 cursor-pointer items-center justify-between whitespace-nowrap rounded border-0 bg-subtle px-2 py-1 text-xs shadow-none outline-none ring-foreground ring-offset-2 ring-offset-background hover:shadow-dark focus-visible:ring-2':
+            isIconTrigger,
+        })}
       >
-        <Row alignItems="center" className="min-w-0 flex-wrap gap-1">
+        {/* LEFT: Wrapped tags */}
+        <Row alignItems="center" className="min-w-0 flex-1 flex-wrap gap-1">
           {selectedOptions.map((opt) => (
             <Tag
               key={opt.value}
@@ -151,12 +148,8 @@ export function SelectTrigger<T extends string | number>({
           )}
         </Row>
 
-        <span
-          className={cn(
-            'pointer-events-none absolute inset-y-0 right-2 flex items-center',
-            isDisabled && 'opacity-50',
-          )}
-        >
+        {/* RIGHT: Chevron or spinner as a flex child */}
+        <span className={cn('flex items-center', isDisabled && 'opacity-50')}>
           {isLoading ? (
             <IconLoader2 size={16} className="animate-spin text-muted" />
           ) : !isIconTrigger ? (
@@ -320,7 +313,6 @@ export function SelectTrigger<T extends string | number>({
             isOpen && !isIconTrigger,
           'hover:shadow-dark': !isDisabled && !isIconTrigger,
           'h-8 px-2 text-sm': small && !isIconTrigger,
-          // ← Default size should be text-sm
           'h-10 px-3 text-sm': !small && !isIconTrigger,
           'border-0 bg-subtle shadow-none': muted && !isIconTrigger,
         })}
@@ -361,7 +353,7 @@ export function SelectTrigger<T extends string | number>({
   );
 
   // ──────────────────────────────────────────────────────────
-  // Choose which of the four to render:
+  // Pick which version to render:
   // ──────────────────────────────────────────────────────────
   if (multiple && hasSearch) {
     return renderMultipleSearchInput();
