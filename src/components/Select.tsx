@@ -7,7 +7,9 @@ import {
   MouseEvent as ReactMouseEvent,
   useEffect,
   useMemo,
+  CSSProperties,
 } from 'react';
+import { createPortal } from 'react-dom';
 import { Col } from '@/components/Col';
 import { Row } from '@/components/Row';
 import { cn } from '@/utils';
@@ -76,25 +78,37 @@ export const Select = <T extends string | number>({
   formatValue,
   ...props
 }: SelectProps<T>) => {
+  // State for open/close and keyboard focus
   const [isOpen, setIsOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
   const [selected, setSelected] = useState<SelectOption<T> | null>(null);
-  const [dropdownPosition, setDropdownPosition] = useState<'top' | 'bottom'>(
-    'bottom',
-  );
   const [localSearchQuery, setLocalSearchQuery] = useState('');
+  const [dropdownStyles, setDropdownStyles] = useState<CSSProperties>({});
   const dropdownRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
 
+  // This ref prevents scrollIntoView on the first mount only
+  const hasRenderedDropdown = useRef(false);
+
+  // After the dropdown actually renders, mark it as rendered once
+  useLayoutEffect(() => {
+    if (isOpen) {
+      hasRenderedDropdown.current = true;
+    }
+  }, [isOpen]);
+
+  // Merge external searchQuery prop with local state
   const searchQuery = useMemo(
     () => (extSearchQuery || localSearchQuery).trim(),
     [extSearchQuery, localSearchQuery],
   );
 
+  // Keep `selected` in sync with `value`
   useLayoutEffect(() => {
     setSelected(options.find((o) => o.value === value) || null);
   }, [value, options]);
 
+  // Filter options based on searchQuery
   const [filteredOptions, setFilteredOptions] = useState<SelectOption<T>[]>([]);
   useEffect(() => {
     if (isDropdownLoading) {
@@ -112,6 +126,7 @@ export const Select = <T extends string | number>({
     }
   }, [isDropdownLoading, options, extSearchQuery, searchQuery]);
 
+  // When opening with search enabled, initialize focusedIndex
   useEffect(() => {
     if (isOpen && hasSearch) {
       setFocusedIndex(filteredOptions.length > 0 ? 0 : null);
@@ -158,36 +173,60 @@ export const Select = <T extends string | number>({
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        setFocusedIndex((p) =>
-          p === null ? 0 : Math.min(p + 1, filteredOptions.length - 1),
+        setFocusedIndex((prev) =>
+          prev === null ? 0 : Math.min(prev + 1, filteredOptions.length - 1),
         );
         break;
       case 'ArrowUp':
         e.preventDefault();
-        setFocusedIndex((p) =>
-          p === null ? filteredOptions.length - 1 : Math.max(p - 1, 0),
+        setFocusedIndex((prev) =>
+          prev === null ? filteredOptions.length - 1 : Math.max(prev - 1, 0),
         );
         break;
       case 'Enter':
         e.preventDefault();
-        if (focusedIndex !== null)
+        if (focusedIndex !== null) {
           handleOptionClick(filteredOptions[focusedIndex], e as any);
+        }
         break;
     }
   };
 
+  // Compute dropdown position, flip up/down, and build style object
   const adjustDropdownPosition = () => {
-    if (!triggerRef.current || !dropdownRef.current) return;
+    if (!triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
     const maxH = 384;
     const vh = window.innerHeight;
-    const below = Math.min(vh - rect.bottom, maxH);
-    const above = Math.min(rect.top, maxH);
-    const flip = above > below;
-    dropdownRef.current.style.maxHeight = `${flip ? above : below}px`;
-    setDropdownPosition(flip ? 'top' : 'bottom');
+    const belowSpace = Math.min(vh - rect.bottom, maxH);
+    const aboveSpace = Math.min(rect.top, maxH);
+    const flipUp = aboveSpace > belowSpace;
+    const rawGap = 4;
+
+    // Round rect values to avoid fractional rounding discrepancies
+    const roundedBottom = Math.round(rect.bottom);
+    const roundedTop = Math.round(rect.top);
+
+    const computedStyles: CSSProperties = {
+      position: 'fixed',
+      left: `${rect.left}px`,
+      minWidth: `${rect.width}px`,
+      maxHeight: `${flipUp ? aboveSpace : belowSpace}px`,
+      overflowY: 'auto',
+      zIndex: 200,
+    };
+
+    if (flipUp) {
+      // Use roundedTop so bottom gap is consistent
+      computedStyles.bottom = `${vh - roundedTop + rawGap}px`;
+    } else {
+      computedStyles.top = `${roundedBottom + rawGap}px`;
+    }
+
+    setDropdownStyles(computedStyles);
   };
 
+  // Close on outside click
   useLayoutEffect(() => {
     const onClickAway = (e: MouseEvent) => {
       if (
@@ -201,6 +240,7 @@ export const Select = <T extends string | number>({
     return () => document.removeEventListener('mousedown', onClickAway);
   }, []);
 
+  // Close on Escape
   useLayoutEffect(() => {
     if (!isOpen) return;
     const onEsc = (e: KeyboardEvent) => {
@@ -213,13 +253,26 @@ export const Select = <T extends string | number>({
     return () => document.removeEventListener('keydown', onEsc);
   }, [isOpen]);
 
+  // Recompute position on open and window resize
   useLayoutEffect(() => {
     if (!isOpen) return;
     adjustDropdownPosition();
     window.addEventListener('resize', adjustDropdownPosition);
     return () => window.removeEventListener('resize', adjustDropdownPosition);
-  }, [isOpen]);
+  }, [isOpen, filteredOptions]);
 
+  // Ensure we have a portal container for all dropdowns
+  const dropdownContainer = useMemo(() => {
+    let el = document.getElementById('select-portal');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'select-portal';
+      document.body.appendChild(el);
+    }
+    return el;
+  }, []);
+
+  // Render the real (search-enabled) input
   const renderRealInput = () => (
     <div
       className={cn('relative w-full min-w-0', className)}
@@ -249,6 +302,7 @@ export const Select = <T extends string | number>({
     </div>
   );
 
+  // Render the pseudo input trigger
   const renderPseudoInput = () => (
     <div
       className={cn('relative w-full min-w-0', className)}
@@ -302,15 +356,21 @@ export const Select = <T extends string | number>({
     </div>
   );
 
+  // Build the dropdown (to be portaled)
   const renderDropdown = () => {
-    if (!isOpen) return null;
-    return (
+    if (!isOpen) {
+      // Reset the “has rendered once” flag whenever the dropdown closes
+      hasRenderedDropdown.current = false;
+      return null;
+    }
+
+    const dropdownContent = (
       <div
         ref={dropdownRef}
+        style={dropdownStyles}
         className={cn(
-          'absolute z-50 overflow-hidden rounded border border-border bg-background shadow',
-          dropdownPosition === 'top' ? 'bottom-full mb-1' : 'top-full mt-1',
-          isIconTrigger ? 'left-0 right-auto w-auto' : 'left-0 right-0 w-full',
+          'rounded border border-border bg-background shadow',
+          'overflow-hidden',
         )}
       >
         {isDropdownLoading && localSearchQuery.length > 0 ? (
@@ -322,16 +382,24 @@ export const Select = <T extends string | number>({
             {noResultsLabel || 'No results found'}
           </div>
         ) : (
-          <ul className="max-h-96 overflow-y-auto overflow-x-hidden">
+          <ul className="max-h-full overflow-y-auto overflow-x-hidden">
             {filteredOptions.map((opt, idx) => {
               const isFirst = idx === 0;
               const isLast = idx === filteredOptions.length - 1;
               const isFocused = focusedIndex === idx;
-              const item = (
+
+              const listItem = (
                 <li
                   ref={(el) => {
-                    if (isOpen && isFocused && el)
+                    // Only scroll into view if dropdown has already been rendered once
+                    if (
+                      hasRenderedDropdown.current &&
+                      isOpen &&
+                      isFocused &&
+                      el
+                    ) {
                       el.scrollIntoView({ block: 'nearest' });
+                    }
                   }}
                   key={opt.value}
                   className={cn(
@@ -352,18 +420,21 @@ export const Select = <T extends string | number>({
                   <span>{opt.label}</span>
                 </li>
               );
+
               return opt.tooltip ? (
                 <Tooltip key={opt.value} content={opt.tooltip}>
-                  {item}
+                  {listItem}
                 </Tooltip>
               ) : (
-                item
+                listItem
               );
             })}
           </ul>
         )}
       </div>
     );
+
+    return createPortal(dropdownContent, dropdownContainer);
   };
 
   return (

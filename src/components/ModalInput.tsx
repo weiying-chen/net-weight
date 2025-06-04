@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Col } from '@/components/Col';
 import { PseudoInput } from '@/components/PseudoInput';
-import { Modal } from '@/components/Modal';
 import { cn } from '@/utils';
 import { IconWorldSearch } from '@tabler/icons-react';
+import { Modal } from '@/components/Modal';
 
 type ModalInputProps = {
   label?: React.ReactNode;
@@ -12,6 +13,8 @@ type ModalInputProps = {
   error?: string;
   disabled?: boolean;
   content: (onClose: () => void) => React.ReactNode;
+  /** Optional display-only transformation */
+  formatValue?: (value: any) => string;
 };
 
 export const ModalInput = ({
@@ -21,12 +24,29 @@ export const ModalInput = ({
   error,
   disabled = false,
   content,
+  formatValue,
 }: ModalInputProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleClose = () => {
     setIsOpen(false);
   };
+
+  // Freeze body scroll while modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = '';
+      };
+    }
+  }, [isOpen]);
+
+  const displayValue =
+    typeof formatValue === 'function' ? formatValue(value) : value;
+
+  // Decide where to portal (fallback to document.body)
+  const portalTarget = document.getElementById('modal-root') || document.body;
 
   return (
     <Col>
@@ -44,14 +64,23 @@ export const ModalInput = ({
             'hover:shadow-dark': !disabled,
           })}
         >
-          {value || placeholder}
+          {displayValue || placeholder}
           <IconWorldSearch size={20} />
         </PseudoInput>
       </div>
       {error && <span className="text-sm text-danger">{error}</span>}
-      <Modal isOpen={isOpen} onClose={handleClose} size="md">
-        {content(handleClose)}
-      </Modal>
+
+      {/*
+        Wrap the <Modal> in createPortal so it still mounts under #modal-root,
+        while letting Modal handle its own show/hide animation.
+      */}
+      {isOpen &&
+        createPortal(
+          <Modal isOpen={isOpen} onClose={handleClose}>
+            {content(handleClose)}
+          </Modal>,
+          portalTarget,
+        )}
     </Col>
   );
 };

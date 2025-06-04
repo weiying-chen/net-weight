@@ -288,6 +288,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         />
         <button
           type="button"
+          disabled={disabled}
           onClick={(e) => {
             e.stopPropagation();
             if (!disabled) {
@@ -295,7 +296,10 @@ export const DatePicker: React.FC<DatePickerProps> = ({
               setIsOpen((o) => !o);
             }
           }}
-          className="absolute inset-y-0 right-3 flex items-center"
+          className={cn(
+            'absolute inset-y-0 right-3 flex items-center',
+            disabled && 'cursor-not-allowed opacity-50',
+          )}
         >
           <IconCalendarMonth size={20} />
         </button>
