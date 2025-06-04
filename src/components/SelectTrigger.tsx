@@ -138,6 +138,7 @@ export function SelectTrigger<T extends string | number>({
             <Tag
               key={opt.value}
               onRemove={() => handleOptionClick(opt, null)}
+              removeIconSize={12}
               className="h-5 px-2 py-1 text-xs"
             >
               {opt.label}

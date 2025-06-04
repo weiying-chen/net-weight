@@ -7,9 +7,15 @@ type TagProps = {
   className?: string;
   children: ReactNode;
   onRemove?: () => void;
+  removeIconSize?: number;
 };
 
-export function Tag({ className, children, onRemove }: TagProps) {
+export function Tag({
+  className,
+  children,
+  onRemove,
+  removeIconSize = 16,
+}: TagProps) {
   return (
     <span
       className={cn(
@@ -20,7 +26,7 @@ export function Tag({ className, children, onRemove }: TagProps) {
       {children}
       {onRemove && (
         <Button variant="link" onClick={onRemove}>
-          <IconX size={16} />
+          <IconX size={removeIconSize} />
         </Button>
       )}
     </span>
