@@ -24,8 +24,10 @@ export type SelectDropdownProps<T> = {
   filteredOptions: SelectOption<T>[];
   /** Currently highlighted index (for keyboard navigation) */
   focusedIndex: number | null;
-  /** The currently selected value */
-  selectedValue: T | null;
+  /** The currently selected value(s) */
+  selectedValue: T | T[] | null;
+  /** Whether multiple selection is enabled */
+  multiple?: boolean;
   /** Called when an option is clicked */
   onOptionClick: (
     opt: SelectOption<T>,
@@ -55,6 +57,7 @@ export function SelectDropdown<T extends string | number>({
   filteredOptions,
   focusedIndex,
   selectedValue,
+  multiple = false,
   onOptionClick,
   setFocusedIndex,
   isDropdownLoading,
@@ -95,7 +98,11 @@ export function SelectDropdown<T extends string | number>({
             const isFirst = idx === 0;
             const isLast = idx === filteredOptions.length - 1;
             const isFocused = focusedIndex === idx;
-            const isSelected = selectedValue === opt.value;
+
+            const isSelected = multiple
+              ? Array.isArray(selectedValue) &&
+                selectedValue.includes(opt.value)
+              : selectedValue === opt.value;
 
             return (
               <li

@@ -1,6 +1,7 @@
 import { Col } from '@/components/Col';
 import { Row } from '@/components/Row';
-import { Select, SelectOption } from '@/components/Select';
+import { Select } from '@/components/Select';
+import { SelectOption } from '@/components/SelectDropdown';
 import { Tag } from '@/components/Tag';
 import { ReactNode, useState } from 'react';
 
@@ -64,7 +65,6 @@ export function TagSelect<T extends string>({
       )}
 
       <Select
-        hasSearch
         options={options}
         value={searchValue as T}
         placeholder={placeholder}

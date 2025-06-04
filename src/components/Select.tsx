@@ -9,25 +9,19 @@ import {
   MouseEvent as ReactMouseEvent,
   useEffect,
   useMemo,
-  CSSProperties,
 } from 'react';
 import { Col } from '@/components/Col';
-import { Row } from '@/components/Row';
 import { cn } from '@/utils';
-import { IconChevronDown, IconSearch, IconLoader2 } from '@tabler/icons-react';
-import { PseudoInput } from '@/components/PseudoInput';
-import { Input } from '@/components/Input';
 import { SelectDropdown, SelectOption } from '@/components/SelectDropdown';
+import { SelectTrigger } from '@/components/SelectTrigger';
 
-export type SelectProps<T> = {
+type CommonProps<T> = {
   label?: ReactNode;
-  value: T;
   options: SelectOption<T>[];
   placeholder?: string;
   error?: string;
   className?: string;
   wrapperClassName?: string;
-  onChange?: (value: T) => void;
   onSearchChange?: (query: string) => void;
   onFocus?: () => void;
   onBlur?: () => void;
@@ -45,59 +39,122 @@ export type SelectProps<T> = {
   formatValue?: (label: string) => string;
 };
 
-export const Select = <T extends string | number>({
-  label,
-  value,
-  options,
-  placeholder = 'Select an option',
-  error,
-  className,
-  wrapperClassName,
-  onChange,
-  onSearchChange,
-  onFocus,
-  onBlur,
-  required,
-  disabled = false,
-  isIconTrigger = false,
-  small = false,
-  hasSearch = false,
-  isLoading = false,
-  isDropdownLoading = false,
-  muted = false,
-  searchQuery: extSearchQuery = '',
-  icon,
-  noResultsLabel,
-  formatValue,
-  ...props
-}: SelectProps<T>) => {
+/**
+ * Props for single‐select mode (or when `multiple` is omitted/false).
+ *   - `value` must be a single T
+ *   - `onChange` receives a single T
+ */
+export type SingleSelectProps<T> = CommonProps<T> & {
+  multiple?: false;
+  value: T;
+  onChange?: (value: T) => void;
+};
+
+/**
+ * Props for multi‐select mode (when `multiple={true}`).
+ *   - `value` must be an array of T
+ *   - `onChange` receives an array of T
+ */
+export type MultiSelectProps<T> = CommonProps<T> & {
+  multiple: true;
+  value: T[];
+  onChange?: (value: T[]) => void;
+};
+
+/**
+ * Union type: if `multiple === true`, you get MultiSelectProps; else, you get SingleSelectProps.
+ */
+export type SelectProps<T> = SingleSelectProps<T> | MultiSelectProps<T>;
+
+export const Select = <T extends string | number>(props: SelectProps<T>) => {
+  // — Destructure all common props first —
+  const {
+    label,
+    options,
+    placeholder = 'Select an option',
+    error,
+    className,
+    wrapperClassName,
+    onSearchChange,
+    onFocus,
+    onBlur,
+    required,
+    disabled = false,
+    isIconTrigger = false,
+    small = false,
+    hasSearch = false,
+    isLoading = false,
+    isDropdownLoading = false,
+    muted = false,
+    searchQuery: extSearchQuery = '',
+    icon,
+    noResultsLabel,
+    formatValue,
+  } = props as CommonProps<T>;
+
+  // TypeScript will narrow `multiple` below:
+  const multiple = (props as any).multiple === true;
+
+  // Depending on `multiple`, `value` is either T or T[]:
+  const value = (props as any).value as T | T[];
+
+  // Depending on `multiple`, onChange is either (v: T)=>void or (v: T[])=>void
+  const onChange = (props as any).onChange as
+    | ((val: T) => void)
+    | ((vals: T[]) => void)
+    | undefined;
+
+  // If disabled or only one option remains, we treat as disabled
   const isDisabled = disabled || options.length === 1;
 
+  // ------------------------------------------------------
+  // Internal state
+  // ------------------------------------------------------
   const [isOpen, setIsOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
-  const [selected, setSelected] = useState<SelectOption<T> | null>(null);
+
+  // Internally, we always keep an array of selected options:
+  //  • single‐select → array of length 0 or 1
+  //  • multi‐select → array of 0..N
+  const [selectedOptions, setSelectedOptions] = useState<SelectOption<T>[]>([]);
+
   const [localSearchQuery, setLocalSearchQuery] = useState('');
-  const [dropdownStyles, setDropdownStyles] = useState<CSSProperties>({});
+  const [dropdownStyles, setDropdownStyles] = useState<React.CSSProperties>({});
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Ref for the trigger’s outermost element
   const triggerRef = useRef<HTMLDivElement>(null);
 
   const hasRenderedDropdown = useRef(false);
 
+  // Mark that the dropdown has rendered at least once, so that scrollIntoView can fire
   useLayoutEffect(() => {
     if (isOpen) {
       hasRenderedDropdown.current = true;
     }
   }, [isOpen]);
 
+  // Combine external searchQuery + localSearchQuery
   const searchQuery = useMemo(
     () => (extSearchQuery || localSearchQuery).trim(),
     [extSearchQuery, localSearchQuery],
   );
 
+  // Whenever `value` or `options` change, sync our internal `selectedOptions`:
   useLayoutEffect(() => {
-    setSelected(options.find((o) => o.value === value) || null);
-  }, [value, options]);
+    if (multiple) {
+      // In multi mode: `value` is guaranteed to be T[]
+      const vals = Array.isArray(value) ? value : [];
+      setSelectedOptions(options.filter((o) => vals.includes(o.value)));
+    } else {
+      // In single mode: `value` is guaranteed to be T
+      const singleVal = Array.isArray(value) ? undefined : (value as T);
+      const found = options.find((o) => o.value === singleVal) || null;
+      setSelectedOptions(found ? [found] : []);
+    }
+  }, [value, options, multiple]);
 
+  // Filter the options list based on search text
   const [filteredOptions, setFilteredOptions] = useState<SelectOption<T>[]>([]);
   useEffect(() => {
     if (isDropdownLoading) {
@@ -115,17 +172,25 @@ export const Select = <T extends string | number>({
     }
   }, [isDropdownLoading, options, extSearchQuery, searchQuery]);
 
+  // If dropdown just opened and has a search box, highlight first item
   useEffect(() => {
     if (isOpen && hasSearch) {
       setFocusedIndex(filteredOptions.length > 0 ? 0 : null);
     }
   }, [filteredOptions, hasSearch, isOpen]);
 
+  // ------------------------------------------------------
+  // Handlers to open/close dropdown
+  // ------------------------------------------------------
   const openDropdown = () => {
     if (isDisabled || !onChange) return;
     setIsOpen(true);
-    if (selected) {
-      const idx = options.findIndex((o) => o.value === selected.value);
+
+    // If we already have a selection, scroll to it
+    if (selectedOptions.length > 0) {
+      const idx = options.findIndex(
+        (o) => o.value === selectedOptions[0].value,
+      );
       setFocusedIndex(idx >= 0 ? idx : null);
     }
     onFocus?.();
@@ -137,17 +202,42 @@ export const Select = <T extends string | number>({
     onBlur?.();
   };
 
+  // ------------------------------------------------------
+  // When an option is clicked
+  // ------------------------------------------------------
   const handleOptionClick = (
     opt: SelectOption<T>,
-    e: ReactMouseEvent<HTMLLIElement>,
+    e: ReactMouseEvent<HTMLLIElement> | null,
   ) => {
-    e.stopPropagation();
-    setSelected(opt);
-    onChange?.(opt.value);
-    setLocalSearchQuery('');
-    closeDropdown();
+    if (e) e.stopPropagation();
+
+    if (multiple) {
+      // Multi‐select: toggle in/out of the array
+      const exists = selectedOptions.some((s) => s.value === opt.value);
+      let newSelected: SelectOption<T>[];
+
+      if (exists) {
+        newSelected = selectedOptions.filter((s) => s.value !== opt.value);
+      } else {
+        newSelected = [...selectedOptions, opt];
+      }
+
+      setSelectedOptions(newSelected);
+      // Fire onChange with an array of T
+      (onChange as (v: T[]) => void)?.(newSelected.map((s) => s.value) as T[]);
+      // Keep dropdown open in multi mode
+    } else {
+      // Single‐select: pick exactly one and close
+      setSelectedOptions([opt]);
+      (onChange as (v: T) => void)?.(opt.value);
+      setLocalSearchQuery('');
+      closeDropdown();
+    }
   };
 
+  // ------------------------------------------------------
+  // Keyboard navigation inside the dropdown
+  // ------------------------------------------------------
   const handleKeyDown = (
     e: ReactKeyboardEvent<HTMLDivElement | HTMLInputElement>,
   ) => {
@@ -158,6 +248,7 @@ export const Select = <T extends string | number>({
       return;
     }
     if (!isOpen) return;
+
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
@@ -180,6 +271,9 @@ export const Select = <T extends string | number>({
     }
   };
 
+  // ------------------------------------------------------
+  // Positioning the dropdown under the trigger
+  // ------------------------------------------------------
   const adjustDropdownPosition = () => {
     if (!triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
@@ -193,7 +287,7 @@ export const Select = <T extends string | number>({
     const roundedBottom = Math.round(rect.bottom);
     const roundedTop = Math.round(rect.top);
 
-    const computedStyles: CSSProperties = {
+    const computedStyles: React.CSSProperties = {
       position: 'fixed',
       left: `${rect.left}px`,
       minWidth: `${rect.width}px`,
@@ -211,6 +305,7 @@ export const Select = <T extends string | number>({
     setDropdownStyles(computedStyles);
   };
 
+  // Close if click outside
   useLayoutEffect(() => {
     const onClickAway = (e: MouseEvent) => {
       if (
@@ -224,6 +319,7 @@ export const Select = <T extends string | number>({
     return () => document.removeEventListener('mousedown', onClickAway);
   }, []);
 
+  // Close on ESC
   useLayoutEffect(() => {
     if (!isOpen) return;
     const onEsc = (e: KeyboardEvent) => {
@@ -236,6 +332,7 @@ export const Select = <T extends string | number>({
     return () => document.removeEventListener('keydown', onEsc);
   }, [isOpen]);
 
+  // Recompute dropdown position on open & on resize
   useLayoutEffect(() => {
     if (!isOpen) return;
     adjustDropdownPosition();
@@ -243,6 +340,7 @@ export const Select = <T extends string | number>({
     return () => window.removeEventListener('resize', adjustDropdownPosition);
   }, [isOpen, filteredOptions]);
 
+  // Create (or reuse) a portal container with id="select-portal"
   const dropdownContainer = useMemo(() => {
     let el = document.getElementById('select-portal');
     if (!el) {
@@ -253,114 +351,62 @@ export const Select = <T extends string | number>({
     return el;
   }, []);
 
-  const renderRealInput = () => (
-    <div
-      className={cn('relative w-full min-w-0', className)}
-      ref={triggerRef}
-      {...props}
-    >
-      <Input
-        icon={<IconSearch size={16} className="text-muted" />}
-        placeholder={placeholder}
-        value={
-          isOpen ? localSearchQuery : localSearchQuery || selected?.label || ''
-        }
-        formatValue={formatValue}
-        onChange={(e) => {
-          if (!isOpen) openDropdown();
-          setLocalSearchQuery(e.target.value);
-          onSearchChange?.(e.target.value);
-        }}
-        onClick={() => !isOpen && openDropdown()}
-        onKeyDown={handleKeyDown}
-        onFocus={() => !isOpen && openDropdown()}
-        autoComplete="off"
-        disabled={isDisabled}
-        isLoading={isLoading}
-      />
-      <SelectDropdown
-        filteredOptions={filteredOptions}
-        focusedIndex={focusedIndex}
-        selectedValue={selected ? selected.value : null}
-        onOptionClick={handleOptionClick}
-        setFocusedIndex={setFocusedIndex}
-        isDropdownLoading={isDropdownLoading}
-        localSearchQuery={localSearchQuery}
-        noResultsLabel={noResultsLabel}
-        dropdownStyles={dropdownStyles}
-        dropdownContainer={dropdownContainer}
-        hasRenderedDropdown={hasRenderedDropdown}
-        isOpen={isOpen}
-        dropdownRef={dropdownRef}
-      />
-    </div>
+  // ------------------------------------------------------
+  // Render the "trigger" portion via SelectTrigger
+  // ------------------------------------------------------
+  const renderedTrigger = (
+    <SelectTrigger
+      multiple={multiple}
+      hasSearch={hasSearch}
+      selectedOptions={selectedOptions}
+      placeholder={placeholder}
+      isOpen={isOpen}
+      isDisabled={isDisabled}
+      isLoading={isLoading}
+      small={small}
+      isIconTrigger={isIconTrigger}
+      muted={muted}
+      error={error}
+      icon={icon}
+      formatValue={formatValue}
+      localSearchQuery={localSearchQuery}
+      onSearchChange={onSearchChange}
+      openDropdown={openDropdown}
+      closeDropdown={closeDropdown}
+      handleOptionClick={handleOptionClick}
+      handleKeyDown={handleKeyDown}
+      setLocalSearchQuery={setLocalSearchQuery}
+      className={className}
+      triggerRef={triggerRef} // ← pass the ref directly, no extra <div>
+    />
   );
 
-  const renderPseudoInput = () => (
-    <div
-      className={cn('relative w-full min-w-0', className)}
-      ref={triggerRef}
-      onKeyDown={handleKeyDown}
-      onClick={(e) => {
-        if (!isDisabled && onChange) {
-          e.stopPropagation();
-          isOpen ? closeDropdown() : openDropdown();
-        }
-      }}
-      {...props}
-    >
-      <PseudoInput
-        tabIndex={0}
-        error={error}
-        disabled={isDisabled}
-        className={cn('cursor-pointer justify-between shadow', {
-          'focus-visible:ring-0 focus-visible:ring-offset-0': isOpen,
-          'hover:shadow-dark': !isDisabled,
-          'h-5 px-2 py-1 text-xs': small,
-          'border-0 bg-subtle shadow-none': muted,
-        })}
-      >
-        <Row alignItems="center" className="min-w-0">
-          {selected?.icon && <span>{selected.icon}</span>}
-          {!isIconTrigger && (
-            <span className={cn('w-full truncate', !selected && 'text-muted')}>
-              {selected
-                ? formatValue
-                  ? formatValue(selected.label)
-                  : selected.label
-                : placeholder}
-            </span>
-          )}
-        </Row>
-        <span
-          className={cn(
-            'pointer-events-none absolute inset-y-0 right-3 flex items-center',
-            isDisabled && 'opacity-50',
-          )}
-        >
-          {isLoading ? (
-            <IconLoader2 size={16} className="animate-spin text-muted" />
-          ) : !isIconTrigger ? (
-            (icon ?? <IconChevronDown size={small ? 16 : 20} />)
-          ) : null}
-        </span>
-      </PseudoInput>
-      <SelectDropdown
-        filteredOptions={filteredOptions}
-        focusedIndex={focusedIndex}
-        selectedValue={selected ? selected.value : null}
-        onOptionClick={handleOptionClick}
-        setFocusedIndex={setFocusedIndex}
-        isDropdownLoading={isDropdownLoading}
-        localSearchQuery={localSearchQuery}
-        noResultsLabel={noResultsLabel}
-        dropdownStyles={dropdownStyles}
-        dropdownContainer={dropdownContainer}
-        hasRenderedDropdown={hasRenderedDropdown}
-        isOpen={isOpen}
-        dropdownRef={dropdownRef}
-      />
-    </div>
+  // ------------------------------------------------------
+  // Render the dropdown portion via SelectDropdown
+  // ------------------------------------------------------
+  const renderedDropdown = (
+    <SelectDropdown
+      filteredOptions={filteredOptions}
+      focusedIndex={focusedIndex}
+      selectedValue={
+        multiple
+          ? (selectedOptions.map((s) => s.value) as T[])
+          : selectedOptions.length > 0
+            ? (selectedOptions[0].value as T)
+            : null
+      }
+      multiple={multiple}
+      onOptionClick={handleOptionClick}
+      setFocusedIndex={setFocusedIndex}
+      isDropdownLoading={isDropdownLoading}
+      localSearchQuery={localSearchQuery}
+      noResultsLabel={noResultsLabel}
+      dropdownStyles={dropdownStyles}
+      dropdownContainer={dropdownContainer}
+      hasRenderedDropdown={hasRenderedDropdown}
+      isOpen={isOpen}
+      dropdownRef={dropdownRef}
+    />
   );
 
   return (
@@ -373,7 +419,8 @@ export const Select = <T extends string | number>({
         ) : (
           label
         ))}
-      {hasSearch ? renderRealInput() : renderPseudoInput()}
+      {renderedTrigger}
+      {renderedDropdown}
       {error && <span className="text-sm text-danger">{error}</span>}
     </Col>
   );
