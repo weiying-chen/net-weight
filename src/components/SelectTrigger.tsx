@@ -127,7 +127,7 @@ export function SelectTrigger<T extends string | number>({
             'focus-visible:ring-0 focus-visible:ring-offset-0': isOpen,
             'hover:shadow-dark': !isDisabled,
             'h-8 px-2 text-sm': small && !isIconTrigger,
-            // ← Changed here: default size should be text-sm
+            // ← Default size should be text-sm
             'h-10 px-3 text-sm': !small && !isIconTrigger,
             'border-0 bg-subtle shadow-none': muted,
             // When icon‐trigger is true, apply the exact “old” icon‐trigger styling:
@@ -138,7 +138,11 @@ export function SelectTrigger<T extends string | number>({
       >
         <Row alignItems="center" className="min-w-0 flex-wrap gap-1">
           {selectedOptions.map((opt) => (
-            <Tag key={opt.value} onRemove={() => handleOptionClick(opt, null)}>
+            <Tag
+              key={opt.value}
+              onRemove={() => handleOptionClick(opt, null)}
+              className="h-5 px-2 py-1 text-xs"
+            >
               {opt.label}
             </Tag>
           ))}
@@ -179,7 +183,11 @@ export function SelectTrigger<T extends string | number>({
       onClick={() => !isOpen && openDropdown()}
     >
       {selectedOptions.map((opt) => (
-        <Tag key={opt.value} onRemove={() => handleOptionClick(opt, null)}>
+        <Tag
+          key={opt.value}
+          onRemove={() => handleOptionClick(opt, null)}
+          className="h-5 px-2 py-1 text-xs"
+        >
           {opt.label}
         </Tag>
       ))}
@@ -312,7 +320,7 @@ export function SelectTrigger<T extends string | number>({
             isOpen && !isIconTrigger,
           'hover:shadow-dark': !isDisabled && !isIconTrigger,
           'h-8 px-2 text-sm': small && !isIconTrigger,
-          // ← Changed here: default size should be text-sm
+          // ← Default size should be text-sm
           'h-10 px-3 text-sm': !small && !isIconTrigger,
           'border-0 bg-subtle shadow-none': muted && !isIconTrigger,
         })}
