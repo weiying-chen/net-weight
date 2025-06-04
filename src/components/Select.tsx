@@ -13,7 +13,12 @@ import { createPortal } from 'react-dom';
 import { Col } from '@/components/Col';
 import { Row } from '@/components/Row';
 import { cn } from '@/utils';
-import { IconChevronDown, IconSearch, IconLoader2 } from '@tabler/icons-react';
+import {
+  IconChevronDown,
+  IconSearch,
+  IconLoader2,
+  IconCheck,
+} from '@tabler/icons-react';
 import { PseudoInput } from '@/components/PseudoInput';
 import { Tooltip } from '@/components/Tooltip';
 import { Input } from '@/components/Input';
@@ -65,7 +70,7 @@ export const Select = <T extends string | number>({
   onFocus,
   onBlur,
   required,
-  disabled,
+  disabled = false,
   isIconTrigger = false,
   small = false,
   hasSearch = false,
@@ -78,6 +83,9 @@ export const Select = <T extends string | number>({
   formatValue,
   ...props
 }: SelectProps<T>) => {
+  // If there's only one option, disable the select
+  const isDisabled = disabled || options.length === 1;
+
   // State for open/close and keyboard focus
   const [isOpen, setIsOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
@@ -134,7 +142,7 @@ export const Select = <T extends string | number>({
   }, [filteredOptions, hasSearch, isOpen]);
 
   const openDropdown = () => {
-    if (disabled || !onChange) return;
+    if (isDisabled || !onChange) return;
     setIsOpen(true);
     if (selected) {
       const idx = options.findIndex((o) => o.value === selected.value);
@@ -163,7 +171,7 @@ export const Select = <T extends string | number>({
   const handleKeyDown = (
     e: ReactKeyboardEvent<HTMLDivElement | HTMLInputElement>,
   ) => {
-    if (disabled) return;
+    if (isDisabled) return;
     if (!isOpen && e.key === 'Enter') {
       e.preventDefault();
       openDropdown();
@@ -295,7 +303,7 @@ export const Select = <T extends string | number>({
         onKeyDown={handleKeyDown}
         onFocus={() => !isOpen && openDropdown()}
         autoComplete="off"
-        disabled={disabled}
+        disabled={isDisabled}
         isLoading={isLoading}
       />
       {isOpen && renderDropdown()}
@@ -309,7 +317,7 @@ export const Select = <T extends string | number>({
       ref={triggerRef}
       onKeyDown={handleKeyDown}
       onClick={(e) => {
-        if (!disabled && onChange) {
+        if (!isDisabled && onChange) {
           e.stopPropagation();
           isOpen ? closeDropdown() : openDropdown();
         }
@@ -319,10 +327,10 @@ export const Select = <T extends string | number>({
       <PseudoInput
         tabIndex={0}
         error={error}
-        disabled={disabled}
+        disabled={isDisabled}
         className={cn('cursor-pointer justify-between shadow', {
           'focus-visible:ring-0 focus-visible:ring-offset-0': isOpen,
-          'hover:shadow-dark': !disabled,
+          'hover:shadow-dark': !isDisabled,
           'h-5 px-2 py-1 text-xs': small,
           'border-0 bg-subtle shadow-none': muted,
         })}
@@ -342,7 +350,7 @@ export const Select = <T extends string | number>({
         <span
           className={cn(
             'pointer-events-none absolute inset-y-0 right-3 flex items-center',
-            disabled && 'opacity-50',
+            isDisabled && 'opacity-50',
           )}
         >
           {isLoading ? (
@@ -387,6 +395,7 @@ export const Select = <T extends string | number>({
               const isFirst = idx === 0;
               const isLast = idx === filteredOptions.length - 1;
               const isFocused = focusedIndex === idx;
+              const isSelected = value === opt.value;
 
               const listItem = (
                 <li
@@ -403,7 +412,7 @@ export const Select = <T extends string | number>({
                   }}
                   key={opt.value}
                   className={cn(
-                    'flex cursor-pointer items-center gap-2 whitespace-nowrap px-3 py-2 text-sm',
+                    'flex cursor-pointer items-center whitespace-nowrap px-3 py-2 text-sm',
                     {
                       'px-3 pb-2 pt-3': isFirst,
                       'px-3 pb-3 pt-2': isLast,
@@ -416,8 +425,15 @@ export const Select = <T extends string | number>({
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={(e) => handleOptionClick(opt, e)}
                 >
-                  {opt.icon && <span>{opt.icon}</span>}
-                  <span>{opt.label}</span>
+                  <Row align="between" className="w-full">
+                    <div className="flex items-center gap-2">
+                      {opt.icon && <span>{opt.icon}</span>}
+                      <span>{opt.label}</span>
+                    </div>
+                    {isSelected && (
+                      <IconCheck size={16} className="text-muted" />
+                    )}
+                  </Row>
                 </li>
               );
 

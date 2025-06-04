@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Col } from '@/components/Col';
-import { TagSelect } from '@/components/TagSelect';
+import { Select } from '@/components/Select';
 import type { SelectOption } from '@/components/Select';
 
 const exampleOptions: SelectOption<string>[] = [
@@ -27,16 +27,16 @@ const exampleOptions: SelectOption<string>[] = [
 ];
 
 export function PG() {
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedFruit, setSelectedFruit] = useState<string>('');
 
   return (
     <Col className="w-full">
-      <TagSelect
+      <Select
         options={exampleOptions}
-        value={selectedTags}
-        onChange={setSelectedTags}
-        placeholder="Search fruits..."
-        label="Favorite Fruits"
+        value={selectedFruit}
+        onChange={setSelectedFruit}
+        placeholder="Select a fruit..."
+        label="Favorite Fruit"
       />
     </Col>
   );
