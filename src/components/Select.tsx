@@ -1,5 +1,3 @@
-// components/Select.tsx
-
 import {
   useState,
   useRef,
@@ -40,9 +38,9 @@ type CommonProps<T> = {
 };
 
 /**
- * Props for single‐select mode (or when `multiple` is omitted/false).
- *   - `value` must be a single T
- *   - `onChange` receives a single T
+ * Props for single-select mode (or when `multiple` is omitted/false).
+ *   – `value` must be a single T
+ *   – `onChange` receives a single T
  */
 export type SingleSelectProps<T> = CommonProps<T> & {
   multiple?: false;
@@ -51,9 +49,9 @@ export type SingleSelectProps<T> = CommonProps<T> & {
 };
 
 /**
- * Props for multi‐select mode (when `multiple={true}`).
- *   - `value` must be an array of T
- *   - `onChange` receives an array of T
+ * Props for multi-select mode (when `multiple={true}`).
+ *   – `value` must be an array of T
+ *   – `onChange` receives an array of T
  */
 export type MultiSelectProps<T> = CommonProps<T> & {
   multiple: true;
@@ -62,7 +60,7 @@ export type MultiSelectProps<T> = CommonProps<T> & {
 };
 
 /**
- * Union type: if `multiple === true`, you get MultiSelectProps; else, you get SingleSelectProps.
+ * Union type: if `multiple === true`, you get MultiSelectProps; else, SingleSelectProps.
  */
 export type SelectProps<T> = SingleSelectProps<T> | MultiSelectProps<T>;
 
@@ -104,30 +102,28 @@ export const Select = <T extends string | number>(props: SelectProps<T>) => {
     | ((vals: T[]) => void)
     | undefined;
 
-  // If disabled or only one option remains, we treat as disabled
+  // If disabled or only one option remains, we treat it as “disabled”
   const isDisabled = disabled || options.length === 1;
 
-  // ------------------------------------------------------
+  // ——————————————————————————————————————————————————————————————————
   // Internal state
-  // ------------------------------------------------------
+  // ——————————————————————————————————————————————————————————————————
   const [isOpen, setIsOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
 
   // Internally, we always keep an array of selected options:
-  //  • single‐select → array of length 0 or 1
-  //  • multi‐select → array of 0..N
+  //   • single-select → array of length 0 or 1
+  //   • multi-select  → array of 0…N
   const [selectedOptions, setSelectedOptions] = useState<SelectOption<T>[]>([]);
 
+  // “local” search text that we type into the trigger’s input
   const [localSearchQuery, setLocalSearchQuery] = useState('');
   const [dropdownStyles, setDropdownStyles] = useState<React.CSSProperties>({});
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // Ref for the trigger’s outermost element
   const triggerRef = useRef<HTMLDivElement>(null);
-
   const hasRenderedDropdown = useRef(false);
 
-  // Mark that the dropdown has rendered at least once, so that scrollIntoView can fire
+  // Mark that the dropdown has rendered at least once, so scrollIntoView can fire
   useLayoutEffect(() => {
     if (isOpen) {
       hasRenderedDropdown.current = true;
@@ -140,26 +136,27 @@ export const Select = <T extends string | number>(props: SelectProps<T>) => {
     [extSearchQuery, localSearchQuery],
   );
 
-  // Whenever `value` or `options` change, sync our internal `selectedOptions`:
+  // Whenever `value` or `options` change, sync our internal `selectedOptions`
   useLayoutEffect(() => {
     if (multiple) {
-      // In multi mode: `value` is guaranteed to be T[]
+      // In multi mode → `value` is guaranteed to be T[]
       const vals = Array.isArray(value) ? value : [];
       setSelectedOptions(options.filter((o) => vals.includes(o.value)));
     } else {
-      // In single mode: `value` is guaranteed to be T
+      // In single mode → `value` is guaranteed to be T
       const singleVal = Array.isArray(value) ? undefined : (value as T);
       const found = options.find((o) => o.value === singleVal) || null;
       setSelectedOptions(found ? [found] : []);
     }
   }, [value, options, multiple]);
 
-  // Filter the options list based on search text
+  // Filter the dropdown’s options based on `searchQuery`
   const [filteredOptions, setFilteredOptions] = useState<SelectOption<T>[]>([]);
   useEffect(() => {
     if (isDropdownLoading) {
       setFilteredOptions([]);
     } else if (extSearchQuery) {
+      // If external searchQuery is provided, show all options (caller can filter upstream)
       setFilteredOptions(options);
     } else {
       setFilteredOptions(
@@ -172,22 +169,22 @@ export const Select = <T extends string | number>(props: SelectProps<T>) => {
     }
   }, [isDropdownLoading, options, extSearchQuery, searchQuery]);
 
-  // If dropdown just opened and has a search box, highlight first item
+  // If the dropdown just opened and we are in “search” mode, highlight the very first item
   useEffect(() => {
     if (isOpen && hasSearch) {
       setFocusedIndex(filteredOptions.length > 0 ? 0 : null);
     }
   }, [filteredOptions, hasSearch, isOpen]);
 
-  // ------------------------------------------------------
+  // ——————————————————————————————————————————————————————————————————
   // Handlers to open/close dropdown
-  // ------------------------------------------------------
+  // ——————————————————————————————————————————————————————————————————
   const openDropdown = () => {
     if (isDisabled || !onChange) return;
     setIsOpen(true);
 
-    // If we already have a selection, scroll to it
-    if (selectedOptions.length > 0) {
+    // Only scroll to the “currently selected” item if we are NOT in “search” mode.
+    if (!hasSearch && selectedOptions.length > 0) {
       const idx = options.findIndex(
         (o) => o.value === selectedOptions[0].value,
       );
@@ -202,9 +199,9 @@ export const Select = <T extends string | number>(props: SelectProps<T>) => {
     onBlur?.();
   };
 
-  // ------------------------------------------------------
+  // ——————————————————————————————————————————————————————————————————
   // When an option is clicked
-  // ------------------------------------------------------
+  // ——————————————————————————————————————————————————————————————————
   const handleOptionClick = (
     opt: SelectOption<T>,
     e: ReactMouseEvent<HTMLLIElement> | null,
@@ -212,7 +209,7 @@ export const Select = <T extends string | number>(props: SelectProps<T>) => {
     if (e) e.stopPropagation();
 
     if (multiple) {
-      // Multi‐select: toggle in/out of the array
+      // Multi-select: toggle in/out of the array
       const exists = selectedOptions.some((s) => s.value === opt.value);
       let newSelected: SelectOption<T>[];
 
@@ -223,21 +220,26 @@ export const Select = <T extends string | number>(props: SelectProps<T>) => {
       }
 
       setSelectedOptions(newSelected);
-      // Fire onChange with an array of T
+      // Fire onChange with T[]
       (onChange as (v: T[]) => void)?.(newSelected.map((s) => s.value) as T[]);
-      // Keep dropdown open in multi mode
+
+      // 👉 Immediately clear the search query:
+      setLocalSearchQuery('');
+      // (dropdown stays open in multi mode)
     } else {
-      // Single‐select: pick exactly one and close
+      // Single-select: pick exactly one and close
       setSelectedOptions([opt]);
       (onChange as (v: T) => void)?.(opt.value);
+
+      // 👉 Immediately clear the search query
       setLocalSearchQuery('');
       closeDropdown();
     }
   };
 
-  // ------------------------------------------------------
+  // ——————————————————————————————————————————————————————————————————
   // Keyboard navigation inside the dropdown
-  // ------------------------------------------------------
+  // ——————————————————————————————————————————————————————————————————
   const handleKeyDown = (
     e: ReactKeyboardEvent<HTMLDivElement | HTMLInputElement>,
   ) => {
@@ -271,18 +273,37 @@ export const Select = <T extends string | number>(props: SelectProps<T>) => {
     }
   };
 
-  // ------------------------------------------------------
+  // ——————————————————————————————————————————————————————————————————
   // Positioning the dropdown under the trigger
-  // ------------------------------------------------------
+  // ——————————————————————————————————————————————————————————————————
   const adjustDropdownPosition = () => {
     if (!triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
+    const rawGap = 4;
+
+    // Compute available space below
     const maxH = 384;
     const vh = window.innerHeight;
     const belowSpace = Math.min(vh - rect.bottom, maxH);
+
+    // Always open downward if hasSearch is true
+    if (hasSearch) {
+      const top = Math.round(rect.bottom) + rawGap;
+      setDropdownStyles({
+        position: 'fixed',
+        left: `${rect.left}px`,
+        top: `${top}px`,
+        minWidth: `${rect.width}px`,
+        maxHeight: `${belowSpace}px`,
+        overflowY: 'auto',
+        zIndex: 200,
+      });
+      return;
+    }
+
+    // Otherwise, use original “flip up if there’s more space above” logic
     const aboveSpace = Math.min(rect.top, maxH);
     const flipUp = aboveSpace > belowSpace;
-    const rawGap = 4;
 
     const roundedBottom = Math.round(rect.bottom);
     const roundedTop = Math.round(rect.top);
@@ -351,9 +372,9 @@ export const Select = <T extends string | number>(props: SelectProps<T>) => {
     return el;
   }, []);
 
-  // ------------------------------------------------------
-  // Render the "trigger" portion via SelectTrigger
-  // ------------------------------------------------------
+  // ——————————————————————————————————————————————————————————————————
+  // Render the “trigger” portion via SelectTrigger
+  // ——————————————————————————————————————————————————————————————————
   const renderedTrigger = (
     <SelectTrigger
       multiple={multiple}
@@ -377,13 +398,13 @@ export const Select = <T extends string | number>(props: SelectProps<T>) => {
       handleKeyDown={handleKeyDown}
       setLocalSearchQuery={setLocalSearchQuery}
       className={className}
-      triggerRef={triggerRef} // ← pass the ref directly, no extra <div>
+      triggerRef={triggerRef} // ← pass the ref directly
     />
   );
 
-  // ------------------------------------------------------
+  // ——————————————————————————————————————————————————————————————————
   // Render the dropdown portion via SelectDropdown
-  // ------------------------------------------------------
+  // ——————————————————————————————————————————————————————————————————
   const renderedDropdown = (
     <SelectDropdown
       filteredOptions={filteredOptions}

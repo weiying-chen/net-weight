@@ -1,9 +1,8 @@
-// components/SelectTrigger.tsx
-
 import {
   ReactNode,
   KeyboardEvent as ReactKeyboardEvent,
   MouseEvent as ReactMouseEvent,
+  useEffect,
 } from 'react';
 import { cn } from '@/utils';
 import { Row } from '@/components/Row';
@@ -14,63 +13,32 @@ import { IconChevronDown, IconSearch, IconLoader2 } from '@tabler/icons-react';
 import { SelectOption } from '@/components/SelectDropdown';
 
 export type SelectTriggerProps<T> = {
-  /** Passed from Select: whether multi‐select mode is on */
   multiple: boolean;
-  /** Passed from Select: whether search‐in‐input is enabled */
   hasSearch: boolean;
-  /** All currently selected options (array of SelectOption<T>) */
   selectedOptions: SelectOption<T>[];
-  /** Placeholder text to show when nothing is selected */
   placeholder: string;
-  /** Is the dropdown currently open (to control focus styling) */
   isOpen: boolean;
-  /** If disabled, clicking/focusing does nothing */
   isDisabled: boolean;
-  /** If loading, show spinner instead of arrow */
   isLoading: boolean;
-  /** If true, render smaller (“text-sm h-8 px-2”) vs default (“h-10 px-3”) */
   small: boolean;
-  /** If true, do not render the default chevron arrow icon */
   isIconTrigger: boolean;
-  /** If true, render a “muted” style (borderless background) */
   muted: boolean;
-  /** Any error message shown below the trigger (passed, but not used visually here) */
   error?: string;
-  /** Icon to show on the right side (overrides default chevron) */
   icon?: ReactNode;
-  /** How to format a label when passing `formatValue` */
   formatValue?: (label: string) => string;
-
-  /** Current search‐in‐input text (only used when hasSearch=true) */
   localSearchQuery: string;
-  /** Called when typing changes searchQuery */
   onSearchChange?: (query: string) => void;
-
-  /** Called by parent to open the dropdown */
   openDropdown: () => void;
-  /** Called by parent to close the dropdown */
   closeDropdown: () => void;
-
-  /** Called when an option is clicked or a tag’s “×” is clicked.
-   *  opt: SelectOption<T>, e: ReactMouseEvent or null when removing via Backspace/“×”
-   */
   handleOptionClick: (
     opt: SelectOption<T>,
     e: ReactMouseEvent<HTMLLIElement> | null,
   ) => void;
-
-  /** Called on keyDown for ArrowUp/ArrowDown/Enter behavior in dropdown */
   handleKeyDown: (
     e: ReactKeyboardEvent<HTMLDivElement | HTMLInputElement>,
   ) => void;
-
-  /** Only used in multi+search mode: update the internal search text */
   setLocalSearchQuery: (query: string) => void;
-
-  /** Pass through any custom className for the wrapper `<div>` */
   className?: string;
-
-  /** Reference to the actual visible trigger element (Input or PseudoInput) */
   triggerRef: React.RefObject<HTMLDivElement>;
 };
 
@@ -98,9 +66,16 @@ export function SelectTrigger<T extends string | number>({
   className,
   triggerRef,
 }: SelectTriggerProps<T>) {
-  // ──────────────────────────────────────────────────────────
-  // 1) Multi + No‐Search (render tags inside a PseudoInput)
-  // ──────────────────────────────────────────────────────────
+  // Clear search query whenever the dropdown closes
+  useEffect(() => {
+    if (!isOpen) {
+      setLocalSearchQuery('');
+    }
+  }, [isOpen, setLocalSearchQuery]);
+
+  // ——————————————————————————————————————————————————————————————————
+  // 1) Multi + No-Search (render tags inside a PseudoInput)
+  // ——————————————————————————————————————————————————————————————————
   const renderMultiplePseudoInput = () => (
     <div
       ref={triggerRef}
@@ -127,12 +102,10 @@ export function SelectTrigger<T extends string | number>({
           'h-8 px-2 text-sm': small && !isIconTrigger,
           'h-10 px-3 text-sm': !small && !isIconTrigger,
           'border-0 bg-subtle shadow-none': muted,
-          // When icon‐trigger is true, apply the exact “old” icon‐trigger styling:
           'flex h-5 cursor-pointer items-center justify-between whitespace-nowrap rounded border-0 bg-subtle px-2 py-1 text-xs shadow-none outline-none ring-foreground ring-offset-2 ring-offset-background hover:shadow-dark focus-visible:ring-2':
             isIconTrigger,
         })}
       >
-        {/* LEFT: Wrapped tags */}
         <Row alignItems="center" className="min-w-0 flex-1 flex-wrap gap-1">
           {selectedOptions.map((opt) => (
             <Tag
@@ -149,7 +122,6 @@ export function SelectTrigger<T extends string | number>({
           )}
         </Row>
 
-        {/* RIGHT: Chevron or spinner as a flex child */}
         <span className={cn('flex items-center', isDisabled && 'opacity-50')}>
           {isLoading ? (
             <IconLoader2 size={16} className="animate-spin text-muted" />
@@ -161,77 +133,88 @@ export function SelectTrigger<T extends string | number>({
     </div>
   );
 
-  // ──────────────────────────────────────────────────────────
-  // 2) Multi + Search (render tags + an Input)
-  // ──────────────────────────────────────────────────────────
-  const renderMultipleSearchInput = () => (
-    <div
-      ref={triggerRef}
-      className={cn(
-        'relative flex',
-        isIconTrigger ? 'w-auto' : 'w-full min-w-0',
-        'flex-wrap items-center gap-1 rounded border border-border bg-background px-1 py-1',
-        { 'text-sm': small, 'text-base': !small },
-        className,
-      )}
-      onClick={() => !isOpen && openDropdown()}
-    >
-      {selectedOptions.map((opt) => (
-        <Tag
-          key={opt.value}
-          onRemove={() => handleOptionClick(opt, null)}
-          className="h-5 px-2 py-1 text-xs"
-        >
-          {opt.label}
-        </Tag>
-      ))}
+  // ——————————————————————————————————————————————————————————————————
+  // 2) Multi + Search (render tags + an unstyled <input>)
+  // ——————————————————————————————————————————————————————————————————
+  const renderMultipleSearchInput = () => {
+    const outerHeightClasses = isIconTrigger
+      ? 'h-5 px-2 text-xs'
+      : small
+        ? 'h-8 px-2 text-sm'
+        : 'h-10 px-3 text-sm';
 
-      <Input
-        className="min-w-[60px] flex-1 p-0"
-        placeholder={selectedOptions.length === 0 ? placeholder : ''}
-        value={isOpen ? localSearchQuery : ''}
-        formatValue={formatValue}
-        onChange={(e) => {
-          if (!isOpen) openDropdown();
-          setLocalSearchQuery(e.target.value);
-          onSearchChange?.(e.target.value);
-        }}
-        onKeyDown={(e) => {
-          // Remove last tag on Backspace if search box is empty
-          if (
-            e.key === 'Backspace' &&
-            localSearchQuery === '' &&
-            selectedOptions.length > 0
-          ) {
-            const last = selectedOptions[selectedOptions.length - 1];
-            handleOptionClick(last, null);
-          } else {
-            handleKeyDown(e as any);
-          }
-        }}
-        autoComplete="off"
-        disabled={isDisabled}
-        isLoading={isLoading}
-      />
-
-      <span
+    return (
+      <div
+        ref={triggerRef}
         className={cn(
-          'pointer-events-none absolute inset-y-0 right-2 flex items-center',
-          isDisabled && 'opacity-50',
+          'relative flex items-center gap-1 rounded border border-border bg-background',
+          outerHeightClasses,
+          className,
         )}
+        onClick={() => !isOpen && openDropdown()}
       >
-        {isLoading ? (
-          <IconLoader2 size={16} className="animate-spin text-muted" />
-        ) : !isIconTrigger ? (
-          (icon ?? <IconChevronDown size={small ? 16 : 20} />)
-        ) : null}
-      </span>
-    </div>
-  );
+        {selectedOptions.map((opt) => (
+          <Tag
+            key={opt.value}
+            onRemove={() => handleOptionClick(opt, null)}
+            removeIconSize={12}
+            className="h-5 px-2 py-1 text-xs"
+          >
+            {opt.label}
+          </Tag>
+        ))}
 
-  // ──────────────────────────────────────────────────────────
-  // 3) Single + Search (a normal Input with search icon)
-  // ──────────────────────────────────────────────────────────
+        <input
+          type="text"
+          placeholder={placeholder}
+          value={localSearchQuery}
+          onChange={(e) => {
+            if (!isOpen) openDropdown();
+            setLocalSearchQuery(e.target.value);
+            onSearchChange?.(e.target.value);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              handleKeyDown(e as any);
+              // As soon as the user “selects” via Enter, clear the box
+              setLocalSearchQuery('');
+              return;
+            }
+            if (
+              e.key === 'Backspace' &&
+              localSearchQuery === '' &&
+              selectedOptions.length > 0
+            ) {
+              e.preventDefault();
+              const last = selectedOptions[selectedOptions.length - 1];
+              handleOptionClick(last, null);
+            } else {
+              handleKeyDown(e as any);
+            }
+          }}
+          autoComplete="off"
+          disabled={isDisabled}
+          className={cn(
+            'placeholder:text-muted-foreground flex-grow border-none bg-transparent p-0 text-sm outline-none transition-colors focus-visible:ring-0',
+            { 'cursor-not-allowed opacity-50': isDisabled },
+          )}
+        />
+
+        <span className={cn('flex items-center', isDisabled && 'opacity-50')}>
+          {isLoading ? (
+            <IconLoader2 size={16} className="animate-spin text-muted" />
+          ) : !isIconTrigger ? (
+            (icon ?? <IconChevronDown size={small ? 16 : 20} />)
+          ) : null}
+        </span>
+      </div>
+    );
+  };
+
+  // ——————————————————————————————————————————————————————————————————
+  // 3) Single + Search (uses <Input> with IconSearch)
+  // ——————————————————————————————————————————————————————————————————
   const renderRealInput = () => (
     <div
       ref={triggerRef}
@@ -280,9 +263,9 @@ export function SelectTrigger<T extends string | number>({
     </div>
   );
 
-  // ──────────────────────────────────────────────────────────
-  // 4) Single + No‐Search (a PseudoInput showing one label)
-  // ──────────────────────────────────────────────────────────
+  // ——————————————————————————————————————————————————————————————————
+  // 4) Single + No-Search (renders a PseudoInput)
+  // ——————————————————————————————————————————————————————————————————
   const renderPseudoInput = () => (
     <div
       ref={triggerRef}
@@ -304,11 +287,8 @@ export function SelectTrigger<T extends string | number>({
         error={error}
         disabled={isDisabled}
         className={cn('shadow', {
-          // The exact “old” icon‐trigger styling when isIconTrigger is true:
           'flex h-5 w-full cursor-pointer items-center justify-between whitespace-nowrap rounded border-0 border-border bg-subtle px-2 py-1 text-xs shadow-none outline-none ring-foreground ring-offset-2 ring-offset-background hover:shadow-dark focus-visible:ring-2':
             isIconTrigger,
-
-          // Otherwise, use the normal small/large PseudoInput styles:
           'flex cursor-pointer justify-between': !isIconTrigger,
           'focus-visible:ring-0 focus-visible:ring-offset-0':
             isOpen && !isIconTrigger,
@@ -353,9 +333,7 @@ export function SelectTrigger<T extends string | number>({
     </div>
   );
 
-  // ──────────────────────────────────────────────────────────
   // Pick which version to render:
-  // ──────────────────────────────────────────────────────────
   if (multiple && hasSearch) {
     return renderMultipleSearchInput();
   } else if (multiple && !hasSearch) {
