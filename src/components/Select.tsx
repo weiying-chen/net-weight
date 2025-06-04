@@ -1,3 +1,5 @@
+// components/Select.tsx
+
 import {
   useState,
   useRef,
@@ -9,27 +11,13 @@ import {
   useMemo,
   CSSProperties,
 } from 'react';
-import { createPortal } from 'react-dom';
 import { Col } from '@/components/Col';
 import { Row } from '@/components/Row';
 import { cn } from '@/utils';
-import {
-  IconChevronDown,
-  IconSearch,
-  IconLoader2,
-  IconCheck,
-} from '@tabler/icons-react';
+import { IconChevronDown, IconSearch, IconLoader2 } from '@tabler/icons-react';
 import { PseudoInput } from '@/components/PseudoInput';
-import { Tooltip } from '@/components/Tooltip';
 import { Input } from '@/components/Input';
-
-export type SelectOption<T> = {
-  label: string;
-  value: T;
-  icon?: ReactNode;
-  isHidden?: boolean;
-  tooltip?: ReactNode;
-};
+import { SelectDropdown, SelectOption } from '@/components/SelectDropdown';
 
 export type SelectProps<T> = {
   label?: ReactNode;
@@ -83,10 +71,8 @@ export const Select = <T extends string | number>({
   formatValue,
   ...props
 }: SelectProps<T>) => {
-  // If there's only one option, disable the select
   const isDisabled = disabled || options.length === 1;
 
-  // State for open/close and keyboard focus
   const [isOpen, setIsOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
   const [selected, setSelected] = useState<SelectOption<T> | null>(null);
@@ -95,28 +81,23 @@ export const Select = <T extends string | number>({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
 
-  // This ref prevents scrollIntoView on the first mount only
   const hasRenderedDropdown = useRef(false);
 
-  // After the dropdown actually renders, mark it as rendered once
   useLayoutEffect(() => {
     if (isOpen) {
       hasRenderedDropdown.current = true;
     }
   }, [isOpen]);
 
-  // Merge external searchQuery prop with local state
   const searchQuery = useMemo(
     () => (extSearchQuery || localSearchQuery).trim(),
     [extSearchQuery, localSearchQuery],
   );
 
-  // Keep `selected` in sync with `value`
   useLayoutEffect(() => {
     setSelected(options.find((o) => o.value === value) || null);
   }, [value, options]);
 
-  // Filter options based on searchQuery
   const [filteredOptions, setFilteredOptions] = useState<SelectOption<T>[]>([]);
   useEffect(() => {
     if (isDropdownLoading) {
@@ -134,7 +115,6 @@ export const Select = <T extends string | number>({
     }
   }, [isDropdownLoading, options, extSearchQuery, searchQuery]);
 
-  // When opening with search enabled, initialize focusedIndex
   useEffect(() => {
     if (isOpen && hasSearch) {
       setFocusedIndex(filteredOptions.length > 0 ? 0 : null);
@@ -200,7 +180,6 @@ export const Select = <T extends string | number>({
     }
   };
 
-  // Compute dropdown position, flip up/down, and build style object
   const adjustDropdownPosition = () => {
     if (!triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
@@ -211,7 +190,6 @@ export const Select = <T extends string | number>({
     const flipUp = aboveSpace > belowSpace;
     const rawGap = 4;
 
-    // Round rect values to avoid fractional rounding discrepancies
     const roundedBottom = Math.round(rect.bottom);
     const roundedTop = Math.round(rect.top);
 
@@ -225,7 +203,6 @@ export const Select = <T extends string | number>({
     };
 
     if (flipUp) {
-      // Use roundedTop so bottom gap is consistent
       computedStyles.bottom = `${vh - roundedTop + rawGap}px`;
     } else {
       computedStyles.top = `${roundedBottom + rawGap}px`;
@@ -234,7 +211,6 @@ export const Select = <T extends string | number>({
     setDropdownStyles(computedStyles);
   };
 
-  // Close on outside click
   useLayoutEffect(() => {
     const onClickAway = (e: MouseEvent) => {
       if (
@@ -248,7 +224,6 @@ export const Select = <T extends string | number>({
     return () => document.removeEventListener('mousedown', onClickAway);
   }, []);
 
-  // Close on Escape
   useLayoutEffect(() => {
     if (!isOpen) return;
     const onEsc = (e: KeyboardEvent) => {
@@ -261,7 +236,6 @@ export const Select = <T extends string | number>({
     return () => document.removeEventListener('keydown', onEsc);
   }, [isOpen]);
 
-  // Recompute position on open and window resize
   useLayoutEffect(() => {
     if (!isOpen) return;
     adjustDropdownPosition();
@@ -269,7 +243,6 @@ export const Select = <T extends string | number>({
     return () => window.removeEventListener('resize', adjustDropdownPosition);
   }, [isOpen, filteredOptions]);
 
-  // Ensure we have a portal container for all dropdowns
   const dropdownContainer = useMemo(() => {
     let el = document.getElementById('select-portal');
     if (!el) {
@@ -280,7 +253,6 @@ export const Select = <T extends string | number>({
     return el;
   }, []);
 
-  // Render the real (search-enabled) input
   const renderRealInput = () => (
     <div
       className={cn('relative w-full min-w-0', className)}
@@ -306,11 +278,24 @@ export const Select = <T extends string | number>({
         disabled={isDisabled}
         isLoading={isLoading}
       />
-      {isOpen && renderDropdown()}
+      <SelectDropdown
+        filteredOptions={filteredOptions}
+        focusedIndex={focusedIndex}
+        selectedValue={selected ? selected.value : null}
+        onOptionClick={handleOptionClick}
+        setFocusedIndex={setFocusedIndex}
+        isDropdownLoading={isDropdownLoading}
+        localSearchQuery={localSearchQuery}
+        noResultsLabel={noResultsLabel}
+        dropdownStyles={dropdownStyles}
+        dropdownContainer={dropdownContainer}
+        hasRenderedDropdown={hasRenderedDropdown}
+        isOpen={isOpen}
+        dropdownRef={dropdownRef}
+      />
     </div>
   );
 
-  // Render the pseudo input trigger
   const renderPseudoInput = () => (
     <div
       className={cn('relative w-full min-w-0', className)}
@@ -360,98 +345,23 @@ export const Select = <T extends string | number>({
           ) : null}
         </span>
       </PseudoInput>
-      {isOpen && renderDropdown()}
+      <SelectDropdown
+        filteredOptions={filteredOptions}
+        focusedIndex={focusedIndex}
+        selectedValue={selected ? selected.value : null}
+        onOptionClick={handleOptionClick}
+        setFocusedIndex={setFocusedIndex}
+        isDropdownLoading={isDropdownLoading}
+        localSearchQuery={localSearchQuery}
+        noResultsLabel={noResultsLabel}
+        dropdownStyles={dropdownStyles}
+        dropdownContainer={dropdownContainer}
+        hasRenderedDropdown={hasRenderedDropdown}
+        isOpen={isOpen}
+        dropdownRef={dropdownRef}
+      />
     </div>
   );
-
-  // Build the dropdown (to be portaled)
-  const renderDropdown = () => {
-    if (!isOpen) {
-      // Reset the “has rendered once” flag whenever the dropdown closes
-      hasRenderedDropdown.current = false;
-      return null;
-    }
-
-    const dropdownContent = (
-      <div
-        ref={dropdownRef}
-        style={dropdownStyles}
-        className={cn(
-          'rounded border border-border bg-background shadow',
-          'overflow-hidden',
-        )}
-      >
-        {isDropdownLoading && localSearchQuery.length > 0 ? (
-          <div className="flex items-center justify-center p-4">
-            <IconLoader2 size={24} className="animate-spin" />
-          </div>
-        ) : filteredOptions.length === 0 ? (
-          <div className="p-4 text-sm text-muted">
-            {noResultsLabel || 'No results found'}
-          </div>
-        ) : (
-          <ul className="max-h-full overflow-y-auto overflow-x-hidden">
-            {filteredOptions.map((opt, idx) => {
-              const isFirst = idx === 0;
-              const isLast = idx === filteredOptions.length - 1;
-              const isFocused = focusedIndex === idx;
-              const isSelected = value === opt.value;
-
-              const listItem = (
-                <li
-                  ref={(el) => {
-                    // Only scroll into view if dropdown has already been rendered once
-                    if (
-                      hasRenderedDropdown.current &&
-                      isOpen &&
-                      isFocused &&
-                      el
-                    ) {
-                      el.scrollIntoView({ block: 'nearest' });
-                    }
-                  }}
-                  key={opt.value}
-                  className={cn(
-                    'flex cursor-pointer items-center whitespace-nowrap px-3 py-2 text-sm',
-                    {
-                      'px-3 pb-2 pt-3': isFirst,
-                      'px-3 pb-3 pt-2': isLast,
-                      'bg-subtle': isFocused,
-                      'rounded-t': isFirst,
-                      'rounded-b': isLast,
-                    },
-                  )}
-                  onMouseEnter={() => setFocusedIndex(idx)}
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={(e) => handleOptionClick(opt, e)}
-                >
-                  <Row align="between" className="w-full">
-                    <div className="flex items-center gap-2">
-                      {opt.icon && <span>{opt.icon}</span>}
-                      <span>{opt.label}</span>
-                    </div>
-                    {isSelected && (
-                      <IconCheck size={16} className="text-muted" />
-                    )}
-                  </Row>
-                </li>
-              );
-
-              return opt.tooltip ? (
-                <Tooltip key={opt.value} content={opt.tooltip}>
-                  {listItem}
-                </Tooltip>
-              ) : (
-                listItem
-              );
-            })}
-          </ul>
-        )}
-      </div>
-    );
-
-    return createPortal(dropdownContent, dropdownContainer);
-  };
 
   return (
     <Col className={cn({ 'w-auto': isIconTrigger }, wrapperClassName)}>
