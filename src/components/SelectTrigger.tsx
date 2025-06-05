@@ -79,11 +79,7 @@ export function SelectTrigger<T extends string | number>({
   const renderMultiplePseudoInput = () => (
     <div
       ref={triggerRef}
-      className={cn(
-        'relative',
-        isIconTrigger ? 'w-auto' : 'w-full min-w-0',
-        className,
-      )}
+      className={cn('relative w-full min-w-0', className)}
       onKeyDown={handleKeyDown}
       onClickCapture={(e) => {
         // If click originated from a <button> (i.e., the IconX), do nothing here
@@ -150,7 +146,7 @@ export function SelectTrigger<T extends string | number>({
       <div
         ref={triggerRef}
         className={cn(
-          'relative flex items-center gap-1 rounded border border-border bg-background',
+          'relative flex w-full items-center gap-1 rounded border border-border bg-background',
           outerHeightClasses,
           className,
         )}
@@ -226,11 +222,7 @@ export function SelectTrigger<T extends string | number>({
   const renderRealInput = () => (
     <div
       ref={triggerRef}
-      className={cn(
-        'relative',
-        isIconTrigger ? 'w-auto' : 'w-full min-w-0',
-        className,
-      )}
+      className={cn('relative w-full', className)}
       onKeyDown={handleKeyDown}
       onClick={() => !isDisabled && openDropdown()}
     >
@@ -277,11 +269,7 @@ export function SelectTrigger<T extends string | number>({
   const renderPseudoInput = () => (
     <div
       ref={triggerRef}
-      className={cn(
-        'relative',
-        isIconTrigger ? 'w-auto' : 'w-full min-w-0',
-        className,
-      )}
+      className={cn('relative w-full min-w-0', className)}
       onKeyDown={handleKeyDown}
       onClick={(e) => {
         if (!isDisabled) {
