@@ -74,7 +74,7 @@ export function SelectTrigger<T extends string | number>({
   }, [isOpen, setLocalSearchQuery]);
 
   // ——————————————————————————————————————————————————————————————————
-  // 1) Multi + No-Search (render tags inside a PseudoInput)
+  // 1) Multi + No-Search (render tags inside a PseudoInput that wraps)
   // ——————————————————————————————————————————————————————————————————
   const renderMultiplePseudoInput = () => (
     <div
@@ -95,15 +95,18 @@ export function SelectTrigger<T extends string | number>({
         tabIndex={0}
         error={error}
         disabled={isDisabled}
-        className={cn('flex cursor-pointer items-center gap-1 shadow', {
-          'focus-visible:ring-0 focus-visible:ring-offset-0': isOpen,
-          'hover:shadow-dark': !isDisabled,
-          'h-8 px-2 text-sm': small && !isIconTrigger,
-          'h-10 px-3 text-sm': !small && !isIconTrigger,
-          'border-0 bg-subtle shadow-none': muted,
-          'flex h-5 cursor-pointer items-center justify-between whitespace-nowrap rounded border-0 bg-subtle px-2 py-1 text-xs shadow-none outline-none ring-foreground ring-offset-2 ring-offset-background hover:shadow-dark focus-visible:ring-2':
-            isIconTrigger,
-        })}
+        className={cn(
+          'flex cursor-pointer flex-wrap items-center gap-1 shadow',
+          {
+            'focus-visible:ring-0 focus-visible:ring-offset-0': isOpen,
+            'hover:shadow-dark': !isDisabled,
+            'h-8 px-2 text-sm': small && !isIconTrigger,
+            'h-10 px-3 text-sm': !small && !isIconTrigger,
+            'border-0 bg-subtle shadow-none': muted,
+            'flex h-5 cursor-pointer items-center justify-between whitespace-nowrap rounded border-0 bg-subtle px-2 py-1 text-xs shadow-none outline-none ring-foreground ring-offset-2 ring-offset-background hover:shadow-dark focus-visible:ring-2':
+              isIconTrigger,
+          },
+        )}
       >
         <Row alignItems="center" className="min-w-0 flex-1 flex-wrap gap-1">
           {selectedOptions.map((opt) => (
@@ -133,27 +136,19 @@ export function SelectTrigger<T extends string | number>({
   );
 
   // ——————————————————————————————————————————————————————————————————
-  // 2) Multi + Search (render tags + an unstyled <input>)
+  // 2) Multi + Search (render tags + an unstyled <input>, wrapping)
   // ——————————————————————————————————————————————————————————————————
   const renderMultipleSearchInput = () => {
-    const outerHeightClasses = isIconTrigger
-      ? 'h-5 px-2 text-xs'
-      : small
-        ? 'h-8 px-2 text-sm'
-        : 'h-10 px-3 text-sm';
-
     return (
       <div
         ref={triggerRef}
         className={cn(
-          'relative flex w-full items-center gap-1 rounded border border-border bg-background',
-          outerHeightClasses,
+          'relative flex w-full flex-wrap items-center gap-1 rounded border border-border bg-background p-2',
           className,
         )}
         onClickCapture={(e) => {
           // Prevent toggling when clicking the Tag’s remove-button
           if ((e.target as HTMLElement).closest('button')) return;
-
           if (!isOpen) openDropdown();
         }}
       >
@@ -181,7 +176,6 @@ export function SelectTrigger<T extends string | number>({
             if (e.key === 'Enter') {
               e.preventDefault();
               handleKeyDown(e as any);
-              // As soon as the user “selects” via Enter, clear the box
               setLocalSearchQuery('');
               return;
             }
@@ -206,11 +200,11 @@ export function SelectTrigger<T extends string | number>({
         />
 
         <span className={cn('flex items-center', isDisabled && 'opacity-50')}>
-          {isLoading ? (
-            <IconLoader2 size={16} className="animate-spin text-muted" />
-          ) : !isIconTrigger ? (
-            (icon ?? <IconChevronDown size={small ? 16 : 20} />)
-          ) : null}
+          {
+            isLoading ? (
+              <IconLoader2 size={16} className="animate-spin text-muted" />
+            ) : null /* No chevron when hasSearch is true */
+          }
         </span>
       </div>
     );
@@ -254,11 +248,11 @@ export function SelectTrigger<T extends string | number>({
           isDisabled && 'opacity-50',
         )}
       >
-        {isLoading ? (
-          <IconLoader2 size={16} className="animate-spin text-muted" />
-        ) : !isIconTrigger ? (
-          (icon ?? <IconChevronDown size={small ? 16 : 20} />)
-        ) : null}
+        {
+          isLoading ? (
+            <IconLoader2 size={16} className="animate-spin text-muted" />
+          ) : null /* No chevron when hasSearch is true */
+        }
       </span>
     </div>
   );
@@ -321,7 +315,7 @@ export function SelectTrigger<T extends string | number>({
             {isLoading ? (
               <IconLoader2 size={16} className="animate-spin text-muted" />
             ) : !isIconTrigger ? (
-              (icon ?? <IconChevronDown size={small ? 16 : 20} />)
+              (icon ?? <IconChevronDown size={16} />)
             ) : null}
           </span>
         </Row>
