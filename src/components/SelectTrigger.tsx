@@ -147,7 +147,7 @@ export function SelectTrigger<T extends string | number>({
       <div
         ref={triggerRef}
         className={cn(
-          'relative flex w-full flex-wrap items-center gap-1 rounded border border-border bg-background p-2',
+          'relative flex w-full cursor-text flex-wrap items-center gap-1 rounded border border-border bg-background p-2',
           className,
         )}
         onClickCapture={(e) => {
