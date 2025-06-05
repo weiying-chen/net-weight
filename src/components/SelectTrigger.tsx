@@ -74,11 +74,39 @@ export function SelectTrigger<T extends string | number>({
     }
   }, [isOpen, setLocalSearchQuery]);
 
-  // Create a ref for the <input> in “Multi + Search” mode
+  // Ref for the <input> in "Multi + Search" mode
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // ——————————————————————————————————————————————————————————————————
-  // 1) Multi + No-Search (render tags inside a PseudoInput that wraps)
+  // Helper: render only the first tag + "and X more" if necessary
+  // ——————————————————————————————————————————————————————————————————
+  const renderMultiTagsSummary = () => {
+    if (selectedOptions.length === 0) {
+      return <span className="text-muted">{placeholder}</span>;
+    }
+
+    const first = selectedOptions[0];
+    const restCount = selectedOptions.length - 1;
+
+    return (
+      <>
+        <Tag
+          key={first.value}
+          onRemove={() => handleOptionClick(first, null)}
+          removeIconSize={12}
+          className="h-5 px-2 py-1 text-xs"
+        >
+          {first.label}
+        </Tag>
+        {restCount > 0 && (
+          <span className="px-1 text-sm">and {restCount} more</span>
+        )}
+      </>
+    );
+  };
+
+  // ——————————————————————————————————————————————————————————————————
+  // 1) Multi + No-Search (render summary inside a PseudoInput)
   // ——————————————————————————————————————————————————————————————————
   const renderMultiplePseudoInput = () => (
     <div
@@ -113,19 +141,7 @@ export function SelectTrigger<T extends string | number>({
         )}
       >
         <Row alignItems="center" className="min-w-0 flex-1 flex-wrap gap-1">
-          {selectedOptions.map((opt) => (
-            <Tag
-              key={opt.value}
-              onRemove={() => handleOptionClick(opt, null)}
-              removeIconSize={12}
-              className="h-5 px-2 py-1 text-xs"
-            >
-              {opt.label}
-            </Tag>
-          ))}
-          {selectedOptions.length === 0 && (
-            <span className="text-muted">{placeholder}</span>
-          )}
+          {renderMultiTagsSummary()}
         </Row>
 
         <span className={cn('flex items-center', isDisabled && 'opacity-50')}>
@@ -140,92 +156,83 @@ export function SelectTrigger<T extends string | number>({
   );
 
   // ——————————————————————————————————————————————————————————————————
-  // 2) Multi + Search (render tags + an unstyled <input>, wrapping)
+  // 2) Multi + Search (render only tags-summary when selected, plus an <input>)
   // ——————————————————————————————————————————————————————————————————
-  const renderMultipleSearchInput = () => {
-    return (
-      <div
-        ref={triggerRef}
-        className={cn(
-          'relative flex w-full cursor-text flex-wrap items-center gap-1 rounded border border-border bg-background p-2',
-          className,
-        )}
-        onClickCapture={(e) => {
-          // Prevent toggling when clicking the Tag’s remove-button
-          if ((e.target as HTMLElement).closest('button')) return;
+  const renderMultipleSearchInput = () => (
+    <div
+      ref={triggerRef}
+      className={cn(
+        'relative flex w-full cursor-text flex-wrap items-center gap-1 rounded border border-border bg-background p-2',
+        className,
+      )}
+      onClickCapture={(e) => {
+        // Prevent toggling when clicking the Tag’s remove-button
+        if ((e.target as HTMLElement).closest('button')) return;
 
-          if (!isDisabled) {
-            if (!isOpen) openDropdown();
-            // Always focus the <input> when clicking anywhere in this wrapper
-            searchInputRef.current?.focus();
+        if (!isDisabled) {
+          if (!isOpen) openDropdown();
+          // Focus the <input> if anywhere is clicked
+          searchInputRef.current?.focus();
+        }
+      }}
+    >
+      {/* Only render tags-summary if at least one option is selected.
+          Otherwise the <input> placeholder will show. */}
+      {selectedOptions.length > 0 && renderMultiTagsSummary()}
+
+      <input
+        ref={searchInputRef}
+        type="text"
+        // Show placeholder only when no tags are selected
+        placeholder={selectedOptions.length === 0 ? placeholder : ''}
+        value={localSearchQuery}
+        onChange={(e) => {
+          if (!isOpen) openDropdown();
+          setLocalSearchQuery(e.target.value);
+          onSearchChange?.(e.target.value);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            handleKeyDown(e as any);
+            setLocalSearchQuery('');
+            return;
+          }
+          if (
+            e.key === 'Backspace' &&
+            localSearchQuery === '' &&
+            selectedOptions.length > 0
+          ) {
+            e.preventDefault();
+            const last = selectedOptions[selectedOptions.length - 1];
+            handleOptionClick(last, null);
+          } else {
+            handleKeyDown(e as any);
           }
         }}
-      >
-        {selectedOptions.map((opt) => (
-          <Tag
-            key={opt.value}
-            onRemove={() => handleOptionClick(opt, null)}
-            removeIconSize={12}
-            className="h-5 px-2 py-1 text-xs"
-          >
-            {opt.label}
-          </Tag>
-        ))}
+        autoComplete="off"
+        disabled={isDisabled}
+        className={cn(
+          'min-w-[1px] max-w-full flex-grow border-none bg-transparent px-[1px] py-0 text-sm outline-none transition-colors placeholder:text-muted focus-visible:ring-0',
+          { 'cursor-not-allowed opacity-50': isDisabled },
+        )}
+        style={{
+          width:
+            localSearchQuery.length === 0
+              ? '1ch'
+              : `${localSearchQuery.length + 1}ch`,
+        }}
+      />
 
-        <input
-          ref={searchInputRef}
-          type="text"
-          // Only show placeholder when no tags are selected
-          placeholder={selectedOptions.length === 0 ? placeholder : ''}
-          value={localSearchQuery}
-          onChange={(e) => {
-            if (!isOpen) openDropdown();
-            setLocalSearchQuery(e.target.value);
-            onSearchChange?.(e.target.value);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              handleKeyDown(e as any);
-              setLocalSearchQuery('');
-              return;
-            }
-            if (
-              e.key === 'Backspace' &&
-              localSearchQuery === '' &&
-              selectedOptions.length > 0
-            ) {
-              e.preventDefault();
-              const last = selectedOptions[selectedOptions.length - 1];
-              handleOptionClick(last, null);
-            } else {
-              handleKeyDown(e as any);
-            }
-          }}
-          autoComplete="off"
-          disabled={isDisabled}
-          className={cn(
-            'placeholder:text-muted-foreground min-w-[1px] max-w-full flex-grow border-none bg-transparent px-[1px] py-0 text-sm outline-none transition-colors focus-visible:ring-0',
-            { 'cursor-not-allowed opacity-50': isDisabled },
-          )}
-          style={{
-            width:
-              localSearchQuery.length === 0
-                ? '1ch'
-                : `${localSearchQuery.length + 1}ch`,
-          }}
-        />
-
-        <span className={cn('flex items-center', isDisabled && 'opacity-50')}>
-          {
-            isLoading ? (
-              <IconLoader2 size={16} className="animate-spin text-muted" />
-            ) : null /* No chevron when hasSearch is true */
-          }
-        </span>
-      </div>
-    );
-  };
+      <span className={cn('flex items-center', isDisabled && 'opacity-50')}>
+        {
+          isLoading ? (
+            <IconLoader2 size={16} className="animate-spin text-muted" />
+          ) : null /* no chevron in search mode */
+        }
+      </span>
+    </div>
+  );
 
   // ——————————————————————————————————————————————————————————————————
   // 3) Single + Search (uses <Input> with IconSearch)
@@ -268,7 +275,7 @@ export function SelectTrigger<T extends string | number>({
         {
           isLoading ? (
             <IconLoader2 size={16} className="animate-spin text-muted" />
-          ) : null /* No chevron when hasSearch is true */
+          ) : null /* no chevron in search mode */
         }
       </span>
     </div>
