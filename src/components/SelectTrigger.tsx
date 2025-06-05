@@ -165,7 +165,8 @@ export function SelectTrigger<T extends string | number>({
 
         <input
           type="text"
-          placeholder={placeholder}
+          // Only show placeholder when no tags are selected
+          placeholder={selectedOptions.length === 0 ? placeholder : ''}
           value={localSearchQuery}
           onChange={(e) => {
             if (!isOpen) openDropdown();
@@ -194,9 +195,15 @@ export function SelectTrigger<T extends string | number>({
           autoComplete="off"
           disabled={isDisabled}
           className={cn(
-            'placeholder:text-muted-foreground flex-grow border-none bg-transparent p-0 text-sm outline-none transition-colors focus-visible:ring-0',
+            'placeholder:text-muted-foreground min-w-[1px] max-w-full flex-grow border-none bg-transparent px-[1px] py-0 text-sm outline-none transition-colors focus-visible:ring-0',
             { 'cursor-not-allowed opacity-50': isDisabled },
           )}
+          style={{
+            width:
+              localSearchQuery.length === 0
+                ? '1ch'
+                : `${localSearchQuery.length + 1}ch`,
+          }}
         />
 
         <span className={cn('flex items-center', isDisabled && 'opacity-50')}>
