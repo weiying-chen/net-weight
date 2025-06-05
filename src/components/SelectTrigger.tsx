@@ -85,7 +85,10 @@ export function SelectTrigger<T extends string | number>({
         className,
       )}
       onKeyDown={handleKeyDown}
-      onClick={(e) => {
+      onClickCapture={(e) => {
+        // If click originated from a <button> (i.e., the IconX), do nothing here
+        if ((e.target as HTMLElement).closest('button')) return;
+
         if (!isDisabled) {
           e.stopPropagation();
           isOpen ? closeDropdown() : openDropdown();
@@ -151,7 +154,12 @@ export function SelectTrigger<T extends string | number>({
           outerHeightClasses,
           className,
         )}
-        onClick={() => !isOpen && openDropdown()}
+        onClickCapture={(e) => {
+          // Prevent toggling when clicking the Tag’s remove-button
+          if ((e.target as HTMLElement).closest('button')) return;
+
+          if (!isOpen) openDropdown();
+        }}
       >
         {selectedOptions.map((opt) => (
           <Tag
