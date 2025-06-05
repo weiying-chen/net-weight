@@ -3,6 +3,7 @@ import {
   KeyboardEvent as ReactKeyboardEvent,
   MouseEvent as ReactMouseEvent,
   useEffect,
+  useRef,
 } from 'react';
 import { cn } from '@/utils';
 import { Row } from '@/components/Row';
@@ -72,6 +73,9 @@ export function SelectTrigger<T extends string | number>({
       setLocalSearchQuery('');
     }
   }, [isOpen, setLocalSearchQuery]);
+
+  // Create a ref for the <input> in “Multi + Search” mode
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // ——————————————————————————————————————————————————————————————————
   // 1) Multi + No-Search (render tags inside a PseudoInput that wraps)
@@ -149,7 +153,12 @@ export function SelectTrigger<T extends string | number>({
         onClickCapture={(e) => {
           // Prevent toggling when clicking the Tag’s remove-button
           if ((e.target as HTMLElement).closest('button')) return;
-          if (!isOpen) openDropdown();
+
+          if (!isDisabled) {
+            if (!isOpen) openDropdown();
+            // Always focus the <input> when clicking anywhere in this wrapper
+            searchInputRef.current?.focus();
+          }
         }}
       >
         {selectedOptions.map((opt) => (
@@ -164,6 +173,7 @@ export function SelectTrigger<T extends string | number>({
         ))}
 
         <input
+          ref={searchInputRef}
           type="text"
           // Only show placeholder when no tags are selected
           placeholder={selectedOptions.length === 0 ? placeholder : ''}
