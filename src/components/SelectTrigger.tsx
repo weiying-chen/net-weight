@@ -93,66 +93,125 @@ export function SelectTrigger<T extends string | number>({
   // ─────────────────────────────────────────────────────────────────────────────
   // 4) computeFitCount() measures the gap, then figures out how many tags fit.
   //    This version detects any wrap and subtracts the "and X more" width.
+  //    We only call setFitCount(...) when the new value differs from the old one.
+  //    We also log a few intermediate values for debugging.
   // ─────────────────────────────────────────────────────────────────────────────
   const computeFitCount = () => {
+    console.log('[SelectTrigger] computeFitCount start', {
+      selectedOptions,
+      fitCount,
+    });
+
+    // ── CASE A: missing refs ─────────────────────────────────────────────
     if (!tagsRef.current || !chevronRef.current || !moreRef.current) {
-      setFitCount(selectedOptions.length);
+      const newCount = selectedOptions.length;
+      console.log(
+        '[SelectTrigger] Missing refs → want setFitCount to:',
+        newCount,
+      );
+      if (newCount !== fitCount) {
+        console.log(
+          '[SelectTrigger]   ➔ actually updating fitCount to',
+          newCount,
+        );
+        setFitCount(newCount);
+      } else {
+        console.log('[SelectTrigger]   ➔ skip update (already that value)');
+      }
       return;
     }
 
     const children = Array.from(tagsRef.current.children) as HTMLElement[];
     const totalTags = children.length;
+    console.log('[SelectTrigger] totalTags:', totalTags);
+
+    // ── CASE B: no tags at all ────────────────────────────────────────────
     if (totalTags === 0) {
-      setFitCount(0);
+      console.log('[SelectTrigger] totalTags=0 → want setFitCount to 0');
+      if (0 !== fitCount) {
+        console.log('[SelectTrigger]   ➔ updating fitCount to 0');
+        setFitCount(0);
+      } else {
+        console.log('[SelectTrigger]   ➔ skip update (already 0)');
+      }
       return;
     }
 
-    // 4a) Determine which tags are on the first line
+    // 4a) Determine how many tags are on the first line
     const firstLineTop = children[0].offsetTop;
     let firstLineCount = 0;
     for (let i = 0; i < totalTags; i++) {
       if (children[i].offsetTop !== firstLineTop) break;
       firstLineCount++;
     }
+    console.log('[SelectTrigger] firstLineCount:', firstLineCount);
 
-    // 4b) Get bounding rectangles for last first-line tag and the chevron
+    // 4b) Get bounding rectangles for the last first-line tag + chevron
     const lastFirstLineTag = children[firstLineCount - 1];
     const lastRect = lastFirstLineTag.getBoundingClientRect();
     const chevronRect = chevronRef.current.getBoundingClientRect();
+    console.log(
+      '[SelectTrigger] lastRect, chevronRect:',
+      lastRect,
+      chevronRect,
+    );
 
-    // 4c) Build a dynamic threshold from the chevron’s rendered width + padding + a small buffer
+    // 4c) Build threshold (chevron width + padding + small buffer)
     const chevronStyles = getComputedStyle(chevronRef.current);
     const chevronPadLeft = parseFloat(chevronStyles.paddingLeft);
     const chevronPadRight = parseFloat(chevronStyles.paddingRight);
     const chevronTotalWidth =
       chevronRect.width + chevronPadLeft + chevronPadRight;
-    const BUFFER = 4; // a few pixels so tags don’t butt up against the icon
+    const BUFFER = 4;
     const THRESHOLD = Math.round(chevronTotalWidth + BUFFER);
+    console.log('[SelectTrigger] THRESHOLD (chevron + buffer):', THRESHOLD);
 
-    // 4d) Compute the gap between the last first-line tag and the chevron, then floor it
+    // 4d) Gap between last first-line tag and chevron
     const rawGap = chevronRect.left - lastRect.right;
     const flooredGap = Math.floor(rawGap);
+    console.log('[SelectTrigger] rawGap, flooredGap:', rawGap, flooredGap);
 
-    // 4e) If any tag has already wrapped to the second line, force truncation to firstLineCount
+    // ── CASE C: at least one tag has wrapped to a second line ───────────
     if (firstLineCount < totalTags) {
-      setFitCount(firstLineCount);
+      console.log(
+        '[SelectTrigger] Tag wrap detected (firstLineCount < totalTags) → want setFitCount to',
+        firstLineCount,
+      );
+      if (firstLineCount !== fitCount) {
+        console.log('[SelectTrigger]   ➔ updating fitCount to', firstLineCount);
+        setFitCount(firstLineCount);
+      } else {
+        console.log('[SelectTrigger]   ➔ skip update (already that)');
+      }
       return;
     }
 
-    // 4f) If there’s enough space for the entire first line (including "and X more"), show all tags
-    const moreWidth = moreRef.current.offsetWidth; // measure "and X more"
+    // 4f) Measure width of the “and X more” span
+    const moreWidth = moreRef.current.offsetWidth;
+    console.log('[SelectTrigger] moreWidth:', moreWidth);
+
+    // If there is enough gap to show all first-line tags + “and X more”, just show them all
     if (flooredGap >= THRESHOLD + moreWidth) {
-      setFitCount(totalTags);
+      console.log(
+        '[SelectTrigger] Enough space for all tags → want setFitCount to',
+        totalTags,
+      );
+      if (totalTags !== fitCount) {
+        console.log('[SelectTrigger]   ➔ updating fitCount to', totalTags);
+        setFitCount(totalTags);
+      } else {
+        console.log('[SelectTrigger]   ➔ skip update (already that)');
+      }
       return;
     }
 
-    // 4g) Otherwise, iterate over first-line tags, summing widths + margins,
-    //     stopping once adding another tag would exceed (chevron.left – container.left – THRESHOLD – moreWidth).
+    // 4g) Otherwise, sum widths + margins one by one, until exceeding maxAllowable
     let cumulative = 0;
     let count = 0;
     const containerLeft = tagsRef.current.getBoundingClientRect().left;
     const maxAllowable =
       chevronRect.left - containerLeft - THRESHOLD - moreWidth;
+    console.log('[SelectTrigger] maxAllowable:', maxAllowable);
 
     for (let i = 0; i < totalTags; i++) {
       const el = children[i];
@@ -165,20 +224,42 @@ export function SelectTrigger<T extends string | number>({
 
       const nextCumulative = cumulative + elWidth;
       if (nextCumulative > maxAllowable) {
+        console.log(
+          '[SelectTrigger] Breaking at tag index',
+          i,
+          'nextCumulative',
+          nextCumulative,
+        );
         break;
       }
 
       cumulative = nextCumulative;
       count++;
     }
+    console.log(
+      '[SelectTrigger] Computed count:',
+      count,
+      'previous fitCount:',
+      fitCount,
+    );
 
-    setFitCount(count);
+    // Final guard: only update if the new count is different
+    if (count !== fitCount) {
+      console.log('[SelectTrigger]   ➔ updating fitCount to', count);
+      setFitCount(count);
+    } else {
+      console.log('[SelectTrigger]   ➔ skip update (no change)');
+    }
   };
 
   // ─────────────────────────────────────────────────────────────────────────────
   // 5) Whenever selectedOptions change, re‐compute fitCount BEFORE paint
   // ─────────────────────────────────────────────────────────────────────────────
   useLayoutEffect(() => {
+    console.log(
+      '[SelectTrigger] useLayoutEffect triggered by selectedOptions change:',
+      selectedOptions,
+    );
     computeFitCount();
   }, [selectedOptions]);
 
@@ -188,6 +269,7 @@ export function SelectTrigger<T extends string | number>({
   useEffect(() => {
     if (!triggerRef.current) return;
     const observer = new ResizeObserver(() => {
+      console.log('[SelectTrigger] ResizeObserver callback');
       computeFitCount();
     });
     observer.observe(triggerRef.current);
