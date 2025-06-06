@@ -67,46 +67,77 @@ export function SelectTrigger<T extends string | number>({
   className,
   triggerRef,
 }: SelectTriggerProps<T>) {
-  // Clear search query whenever the dropdown closes
+  // 1) Clear search query whenever the dropdown closes
   useEffect(() => {
     if (!isOpen) {
       setLocalSearchQuery('');
     }
   }, [isOpen, setLocalSearchQuery]);
 
+  // 2) Refs for measuring tag container and chevron
+  const tagsRef = useRef<HTMLDivElement>(null);
+  const chevronRef = useRef<HTMLSpanElement>(null);
+
+  // 3) Compute visual gap between last tag and chevron
+  const logVisualGap = () => {
+    if (!tagsRef.current || !chevronRef.current) return;
+    const children = tagsRef.current.children;
+    if (children.length === 0) {
+      console.log('No tags present—full space available');
+      return;
+    }
+    const lastTag = children[children.length - 1] as HTMLElement;
+    const lastRect = lastTag.getBoundingClientRect();
+    const chevronRect = chevronRef.current.getBoundingClientRect();
+    const gap = chevronRect.left - lastRect.right;
+    console.log('Visual gap between last tag and chevron:', gap.toFixed(2));
+  };
+
+  // 4) Whenever selectedOptions changes, log the visual gap
+  useEffect(() => {
+    logVisualGap();
+  }, [selectedOptions]);
+
+  // 5) Also log on container resize (in case layout shifts)
+  useEffect(() => {
+    if (!triggerRef.current) return;
+    const observer = new ResizeObserver(() => {
+      logVisualGap();
+    });
+    observer.observe(triggerRef.current);
+    return () => {
+      observer.disconnect();
+    };
+  }, [triggerRef]);
+
   // Ref for the <input> in "Multi + Search" mode
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // ——————————————————————————————————————————————————————————————————
-  // Helper: render only the first tag + "and X more" if necessary
+  // Helper: render all tags (no "and X more" truncation)
   // ——————————————————————————————————————————————————————————————————
   const renderMultiTagsSummary = () => {
     if (selectedOptions.length === 0) {
       return <span className="text-muted">{placeholder}</span>;
     }
-
-    const first = selectedOptions[0];
-    const restCount = selectedOptions.length - 1;
-
     return (
       <>
-        <Tag
-          key={first.value}
-          onRemove={() => handleOptionClick(first, null)}
-          removeIconSize={12}
-          className="h-5 px-2 py-1 text-xs"
-        >
-          {first.label}
-        </Tag>
-        {restCount > 0 && (
-          <span className="px-1 text-sm">and {restCount} more</span>
-        )}
+        {selectedOptions.map((opt) => (
+          <Tag
+            key={opt.value}
+            onRemove={() => handleOptionClick(opt, null)}
+            removeIconSize={12}
+            className="h-5 px-2 py-1 text-xs"
+          >
+            {opt.label}
+          </Tag>
+        ))}
       </>
     );
   };
 
   // ——————————————————————————————————————————————————————————————————
-  // 1) Multi + No-Search (render summary inside a PseudoInput)
+  // 1) Multi + No-Search (render tags inside a PseudoInput)
   // ——————————————————————————————————————————————————————————————————
   const renderMultiplePseudoInput = () => (
     <div
@@ -114,9 +145,8 @@ export function SelectTrigger<T extends string | number>({
       className={cn('relative w-full min-w-0', className)}
       onKeyDown={handleKeyDown}
       onClickCapture={(e) => {
-        // If click originated from a <button> (i.e., the IconX), do nothing here
+        // If click came from a <button> (the tag’s "×"), do nothing
         if ((e.target as HTMLElement).closest('button')) return;
-
         if (!isDisabled) {
           e.stopPropagation();
           isOpen ? closeDropdown() : openDropdown();
@@ -140,11 +170,20 @@ export function SelectTrigger<T extends string | number>({
           },
         )}
       >
-        <Row alignItems="center" className="min-w-0 flex-1 flex-wrap gap-1">
+        {/* Tag container */}
+        <Row
+          ref={tagsRef}
+          alignItems="center"
+          className="min-w-0 flex-1 flex-wrap gap-1"
+        >
           {renderMultiTagsSummary()}
         </Row>
 
-        <span className={cn('flex items-center', isDisabled && 'opacity-50')}>
+        {/* Chevron/Icon */}
+        <span
+          ref={chevronRef}
+          className={cn('flex items-center', isDisabled && 'opacity-50')}
+        >
           {isLoading ? (
             <IconLoader2 size={16} className="animate-spin text-muted" />
           ) : !isIconTrigger ? (
@@ -156,7 +195,7 @@ export function SelectTrigger<T extends string | number>({
   );
 
   // ——————————————————————————————————————————————————————————————————
-  // 2) Multi + Search (render only tags-summary when selected, plus an <input>)
+  // 2) Multi + Search (render tags + input)
   // ——————————————————————————————————————————————————————————————————
   const renderMultipleSearchInput = () => (
     <div
@@ -166,24 +205,25 @@ export function SelectTrigger<T extends string | number>({
         className,
       )}
       onClickCapture={(e) => {
-        // Prevent toggling when clicking the Tag’s remove-button
+        // Prevent toggling when clicking the Tag’s "×"
         if ((e.target as HTMLElement).closest('button')) return;
-
         if (!isDisabled) {
           if (!isOpen) openDropdown();
-          // Focus the <input> if anywhere is clicked
           searchInputRef.current?.focus();
         }
       }}
     >
-      {/* Only render tags-summary if at least one option is selected.
-          Otherwise the <input> placeholder will show. */}
-      {selectedOptions.length > 0 && renderMultiTagsSummary()}
+      {/* Tag container */}
+      {selectedOptions.length > 0 && (
+        <div ref={tagsRef} className="flex flex-wrap items-center gap-1">
+          {renderMultiTagsSummary()}
+        </div>
+      )}
 
+      {/* Search input */}
       <input
         ref={searchInputRef}
         type="text"
-        // Show placeholder only when no tags are selected
         placeholder={selectedOptions.length === 0 ? placeholder : ''}
         value={localSearchQuery}
         onChange={(e) => {
@@ -224,18 +264,24 @@ export function SelectTrigger<T extends string | number>({
         }}
       />
 
-      <span className={cn('flex items-center', isDisabled && 'opacity-50')}>
-        {
-          isLoading ? (
-            <IconLoader2 size={16} className="animate-spin text-muted" />
-          ) : null /* no chevron in search mode */
-        }
+      {/* Chevron/Icon */}
+      <span
+        ref={chevronRef}
+        className={cn(
+          'absolute right-2 flex items-center',
+          isDisabled && 'opacity-50',
+        )}
+      >
+        {isLoading && (
+          <IconLoader2 size={16} className="animate-spin text-muted" />
+        )}
+        {!isLoading && <IconChevronDown size={16} />}
       </span>
     </div>
   );
 
   // ——————————————————————————————————————————————————————————————————
-  // 3) Single + Search (uses <Input> with IconSearch)
+  // 3) Single + Search (Input + IconSearch)
   // ——————————————————————————————————————————————————————————————————
   const renderRealInput = () => (
     <div
@@ -265,24 +311,21 @@ export function SelectTrigger<T extends string | number>({
         disabled={isDisabled}
         isLoading={isLoading}
       />
-
       <span
         className={cn(
           'pointer-events-none absolute inset-y-0 right-2 flex items-center',
           isDisabled && 'opacity-50',
         )}
       >
-        {
-          isLoading ? (
-            <IconLoader2 size={16} className="animate-spin text-muted" />
-          ) : null /* no chevron in search mode */
-        }
+        {isLoading && (
+          <IconLoader2 size={16} className="animate-spin text-muted" />
+        )}
       </span>
     </div>
   );
 
   // ——————————————————————————————————————————————————————————————————
-  // 4) Single + No-Search (renders a PseudoInput)
+  // 4) Single + No-Search (PseudoInput)
   // ——————————————————————————————————————————————————————————————————
   const renderPseudoInput = () => (
     <div

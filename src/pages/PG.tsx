@@ -42,8 +42,8 @@ export function PG() {
 
   return (
     <Col className="w-full gap-6">
-      {/* 1. Single-select, no search */}
-      <div>
+      {/*
+      <div className="w-full">
         <label className="mb-1 block text-sm font-semibold">
           1. Single-select, no search
         </label>
@@ -56,8 +56,7 @@ export function PG() {
         />
       </div>
 
-      {/* 2. Single-select, with search */}
-      <div>
+      <div className="w-full">
         <label className="mb-1 block text-sm font-semibold">
           2. Single-select, with search
         </label>
@@ -70,9 +69,10 @@ export function PG() {
           // `multiple` omitted → single mode
         />
       </div>
+      */}
 
       {/* 3. Multi-select, no search */}
-      <div>
+      <div className="w-full">
         <label className="mb-1 block text-sm font-semibold">
           3. Multi-select, no search
         </label>
@@ -86,8 +86,8 @@ export function PG() {
         />
       </div>
 
-      {/* 4. Multi-select, with search */}
-      <div>
+      {/*
+      <div className="w-full">
         <label className="mb-1 block text-sm font-semibold">
           4. Multi-select, with search
         </label>
@@ -100,6 +100,7 @@ export function PG() {
           hasSearch
         />
       </div>
+      */}
     </Col>
   );
 }
