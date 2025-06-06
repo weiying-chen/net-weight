@@ -97,18 +97,16 @@ export function SelectTrigger<T extends string | number>({
   //    We also log a few intermediate values for debugging.
   // ─────────────────────────────────────────────────────────────────────────────
   const computeFitCount = () => {
+    console.log('–––––––––––––––––––––––––––––––––––––––––');
     console.log('[SelectTrigger] computeFitCount start', {
-      selectedOptions,
-      fitCount,
+      totalSelected: selectedOptions.length,
+      currentFit: fitCount,
     });
 
     // ── CASE A: missing refs ─────────────────────────────────────────────
     if (!tagsRef.current || !chevronRef.current || !moreRef.current) {
       const newCount = selectedOptions.length;
-      console.log(
-        '[SelectTrigger] Missing refs → want setFitCount to:',
-        newCount,
-      );
+      console.log('[SelectTrigger] Missing refs → setFitCount →', newCount);
       if (newCount !== fitCount) {
         console.log(
           '[SelectTrigger]   ➔ actually updating fitCount to',
@@ -121,13 +119,14 @@ export function SelectTrigger<T extends string | number>({
       return;
     }
 
+    // Turn the collection of tags into an array:
     const children = Array.from(tagsRef.current.children) as HTMLElement[];
     const totalTags = children.length;
     console.log('[SelectTrigger] totalTags:', totalTags);
 
     // ── CASE B: no tags at all ────────────────────────────────────────────
     if (totalTags === 0) {
-      console.log('[SelectTrigger] totalTags=0 → want setFitCount to 0');
+      console.log('[SelectTrigger] totalTags=0 → setFitCount → 0');
       if (0 !== fitCount) {
         console.log('[SelectTrigger]   ➔ updating fitCount to 0');
         setFitCount(0);
@@ -151,9 +150,18 @@ export function SelectTrigger<T extends string | number>({
     const lastRect = lastFirstLineTag.getBoundingClientRect();
     const chevronRect = chevronRef.current.getBoundingClientRect();
     console.log(
-      '[SelectTrigger] lastRect, chevronRect:',
-      lastRect,
-      chevronRect,
+      '[SelectTrigger] lastRect:',
+      {
+        left: Math.round(lastRect.left),
+        right: Math.round(lastRect.right),
+        width: Math.round(lastRect.width),
+      },
+      'chevronRect:',
+      {
+        left: Math.round(chevronRect.left),
+        right: Math.round(chevronRect.right),
+        width: Math.round(chevronRect.width),
+      },
     );
 
     // 4c) Build threshold (chevron width + padding + small buffer)
@@ -162,19 +170,31 @@ export function SelectTrigger<T extends string | number>({
     const chevronPadRight = parseFloat(chevronStyles.paddingRight);
     const chevronTotalWidth =
       chevronRect.width + chevronPadLeft + chevronPadRight;
-    const BUFFER = 4;
+    const BUFFER = 8;
     const THRESHOLD = Math.round(chevronTotalWidth + BUFFER);
-    console.log('[SelectTrigger] THRESHOLD (chevron + buffer):', THRESHOLD);
+    console.log(
+      '[SelectTrigger] chevronPadLeft, chevronPadRight:',
+      chevronPadLeft,
+      chevronPadRight,
+    );
+    console.log(
+      '[SelectTrigger] chevronTotalWidth:',
+      Math.round(chevronTotalWidth),
+      'BUFFER:',
+      BUFFER,
+      '→ THRESHOLD:',
+      THRESHOLD,
+    );
 
     // 4d) Gap between last first-line tag and chevron
     const rawGap = chevronRect.left - lastRect.right;
     const flooredGap = Math.floor(rawGap);
-    console.log('[SelectTrigger] rawGap, flooredGap:', rawGap, flooredGap);
+    console.log('[SelectTrigger] rawGap:', rawGap, 'flooredGap:', flooredGap);
 
     // ── CASE C: at least one tag has wrapped to a second line ───────────
     if (firstLineCount < totalTags) {
       console.log(
-        '[SelectTrigger] Tag wrap detected (firstLineCount < totalTags) → want setFitCount to',
+        '[SelectTrigger] Tag wrap detected (firstLineCount < totalTags) → setFitCount →',
         firstLineCount,
       );
       if (firstLineCount !== fitCount) {
@@ -186,14 +206,27 @@ export function SelectTrigger<T extends string | number>({
       return;
     }
 
-    // 4f) Measure width of the “and X more” span
-    const moreWidth = moreRef.current.offsetWidth;
-    console.log('[SelectTrigger] moreWidth:', moreWidth);
+    // 4f) Measure width of the “and X more” span (+ margins) and log every piece
+    const moreStyles = getComputedStyle(moreRef.current);
+    const moreMarginLeft = parseFloat(moreStyles.marginLeft);
+    const moreMarginRight = parseFloat(moreStyles.marginRight);
+    const morePaddingLeft = parseFloat(moreStyles.paddingLeft);
+    const morePaddingRight = parseFloat(moreStyles.paddingRight);
+    const offsetW = moreRef.current.offsetWidth;
+    const moreTotalWidth = offsetW + moreMarginLeft + moreMarginRight;
+    console.log(
+      `[SelectTrigger] “and X more” raw offsetWidth: ${offsetW}`,
+      `marginLeft: ${moreMarginLeft}`,
+      `marginRight: ${moreMarginRight}`,
+      `paddingLeft: ${morePaddingLeft}`,
+      `paddingRight: ${morePaddingRight}`,
+      `→ moreTotalWidth: ${moreTotalWidth}`,
+    );
 
     // If there is enough gap to show all first-line tags + “and X more”, just show them all
-    if (flooredGap >= THRESHOLD + moreWidth) {
+    if (flooredGap >= THRESHOLD + moreTotalWidth) {
       console.log(
-        '[SelectTrigger] Enough space for all tags → want setFitCount to',
+        '[SelectTrigger] Enough space for all tags + “and X more” → setFitCount →',
         totalTags,
       );
       if (totalTags !== fitCount) {
@@ -210,25 +243,38 @@ export function SelectTrigger<T extends string | number>({
     let count = 0;
     const containerLeft = tagsRef.current.getBoundingClientRect().left;
     const maxAllowable =
-      chevronRect.left - containerLeft - THRESHOLD - moreWidth;
-    console.log('[SelectTrigger] maxAllowable:', maxAllowable);
+      chevronRect.left - containerLeft - THRESHOLD - moreTotalWidth;
+    console.log(
+      '[SelectTrigger] containerLeft:',
+      Math.round(containerLeft),
+      'maxAllowable:',
+      Math.round(maxAllowable),
+    );
 
     for (let i = 0; i < totalTags; i++) {
       const el = children[i];
       if (el.offsetTop !== firstLineTop) break;
 
       const style = getComputedStyle(el);
-      const marginLeft = parseFloat(style.marginLeft);
-      const marginRight = parseFloat(style.marginRight);
-      const elWidth = el.offsetWidth + marginLeft + marginRight;
-
+      const mLeft = parseFloat(style.marginLeft);
+      const mRight = parseFloat(style.marginRight);
+      const elWidth = el.offsetWidth + mLeft + mRight;
       const nextCumulative = cumulative + elWidth;
+
+      console.log(
+        `[SelectTrigger] Tag[${i}] width+margin: ${Math.round(
+          elWidth,
+        )}, cumulative + this = ${Math.round(nextCumulative)}`,
+      );
+
       if (nextCumulative > maxAllowable) {
         console.log(
-          '[SelectTrigger] Breaking at tag index',
+          '[SelectTrigger]  ✂ Breaking at tag index',
           i,
-          'nextCumulative',
-          nextCumulative,
+          'nextCumulative:',
+          Math.round(nextCumulative),
+          'exceeds maxAllowable:',
+          Math.round(maxAllowable),
         );
         break;
       }
@@ -237,10 +283,7 @@ export function SelectTrigger<T extends string | number>({
       count++;
     }
     console.log(
-      '[SelectTrigger] Computed count:',
-      count,
-      'previous fitCount:',
-      fitCount,
+      `[SelectTrigger] Computed count: ${count}, previous fitCount: ${fitCount}`,
     );
 
     // Final guard: only update if the new count is different

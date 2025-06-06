@@ -437,7 +437,9 @@ export const Select = <T extends string | number>(props: SelectProps<T>) => {
   );
 
   return (
-    <Col className={cn({ 'w-auto': isIconTrigger }, wrapperClassName)}>
+    <Col
+      className={cn('min-w-0', { 'w-auto': isIconTrigger }, wrapperClassName)}
+    >
       {label &&
         (typeof label === 'string' ? (
           <label className="text-sm font-semibold">
