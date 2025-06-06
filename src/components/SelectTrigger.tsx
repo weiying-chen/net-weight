@@ -1,5 +1,3 @@
-// SelectTrigger.tsx
-
 import {
   ReactNode,
   KeyboardEvent as ReactKeyboardEvent,

@@ -141,7 +141,13 @@ export const Select = <T extends string | number>(props: SelectProps<T>) => {
     if (multiple) {
       // In multi mode → `value` is guaranteed to be T[]
       const vals = Array.isArray(value) ? value : [];
-      setSelectedOptions(options.filter((o) => vals.includes(o.value)));
+
+      // Preserve selection order by mapping `value` array → corresponding option
+      setSelectedOptions(
+        vals
+          .map((v) => options.find((o) => o.value === v))
+          .filter((o): o is SelectOption<T> => !!o),
+      );
     } else {
       // In single mode → `value` is guaranteed to be T
       const singleVal = Array.isArray(value) ? undefined : (value as T);
