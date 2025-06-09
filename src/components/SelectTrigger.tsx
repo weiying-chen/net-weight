@@ -15,7 +15,7 @@ import { Tag } from '@/components/Tag';
 import { IconChevronDown, IconSearch, IconLoader2 } from '@tabler/icons-react';
 import { SelectOption } from '@/components/SelectDropdown';
 
-export type SelectTriggerProps<T> = {
+export type SelectTriggerProps<T extends string | number | null> = {
   multiple: boolean;
   hasSearch: boolean;
   selectedOptions: SelectOption<T>[];
@@ -45,7 +45,7 @@ export type SelectTriggerProps<T> = {
   triggerRef: React.RefObject<HTMLDivElement>;
 };
 
-export function SelectTrigger<T extends string | number>({
+export function SelectTrigger<T extends string | number | null>({
   multiple,
   hasSearch,
   selectedOptions,

@@ -19,7 +19,7 @@ export type SelectOption<T> = {
   tooltip?: ReactNode;
 };
 
-export type SelectDropdownProps<T> = {
+export type SelectDropdownProps<T extends string | number | null> = {
   /** Filtered options to display */
   filteredOptions: SelectOption<T>[];
   /** Currently highlighted index (for keyboard navigation) */
@@ -53,7 +53,7 @@ export type SelectDropdownProps<T> = {
   dropdownRef: MutableRefObject<HTMLDivElement | null>;
 };
 
-export function SelectDropdown<T extends string | number>({
+export function SelectDropdown<T extends string | number | null>({
   filteredOptions,
   focusedIndex,
   selectedValue,
