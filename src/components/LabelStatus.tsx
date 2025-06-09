@@ -47,7 +47,7 @@ export const LabelStatus = <T extends string | number>({
   return (
     <Row alignItems="center" className={className} locked>
       {label && (
-        <label className="text-sm font-semibold">
+        <label className="truncate text-sm font-semibold">
           {label}
           {required && <span className="ml-1 text-danger">*</span>}
         </label>
