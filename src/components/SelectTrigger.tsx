@@ -202,23 +202,33 @@ export function SelectTrigger<T extends string | number>({
   // 5) Whenever selectedOptions change, re‐compute fitCount BEFORE paint
   // ─────────────────────────────────────────────────────────────────────────────
   useLayoutEffect(() => {
-    computeFitCount();
-  }, [selectedOptions]);
+    if (isOpen) {
+      computeFitCount();
+    }
+  }, [selectedOptions, isOpen]);
 
   // ─────────────────────────────────────────────────────────────────────────────
   // 6) Also re‐compute fitCount whenever the trigger container resizes
   // ─────────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!triggerRef.current) return;
+
+    let rafId: number | null = null;
     const observer = new ResizeObserver(() => {
-      console.log('[SelectTrigger] ResizeObserver callback');
-      computeFitCount();
+      if (!isOpen) return;
+      if (rafId !== null) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        computeFitCount();
+        rafId = null;
+      });
     });
+
     observer.observe(triggerRef.current);
     return () => {
       observer.disconnect();
+      if (rafId !== null) cancelAnimationFrame(rafId);
     };
-  }, [triggerRef]);
+  }, [triggerRef, isOpen]);
 
   // ─────────────────────────────────────────────────────────────────────────────
   // 7) Ref for the <input> in “Multi + Search” mode
