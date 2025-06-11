@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
 import { Row } from '@/components/Row';
-import { Select, SelectProps } from '@/components/Select';
+import { Select, SingleSelectProps } from '@/components/Select';
 import { IconRosetteDiscountCheckFilled } from '@tabler/icons-react';
 
 type CommonProps = {
@@ -11,11 +10,7 @@ type CommonProps = {
 };
 
 type LabelStatusProps<T extends string | number> =
-  | (CommonProps & {
-      options: Array<SelectProps<T>['options'][number]>;
-      value: T;
-      onChange: (option: T) => void;
-    })
+  | (CommonProps & Omit<SingleSelectProps<T>, 'multiple'>) // force single-select only
   | CommonProps;
 
 export const LabelStatus = <T extends string | number>({
@@ -26,23 +21,12 @@ export const LabelStatus = <T extends string | number>({
   ...props
 }: LabelStatusProps<T>) => {
   const isInteractive = 'options' in props;
-  const selectProps = isInteractive ? (props as SelectProps<T>) : undefined;
-  const isSelectedDisabled = selectProps
-    ? selectProps.options.length === 1
-    : false;
 
-  const initialValue = selectProps?.value;
-  const [value, setValue] = useState<T | undefined>(initialValue);
+  const selectProps = isInteractive
+    ? (props as Omit<SingleSelectProps<T>, 'multiple'>)
+    : undefined;
 
-  const isValidValue = selectProps
-    ? selectProps.options.some((option) => option.value === initialValue)
-    : false;
-
-  useEffect(() => {
-    if (isValidValue) {
-      setValue(initialValue);
-    }
-  }, [initialValue, isValidValue]);
+  const isSelectedDisabled = selectProps && selectProps.options.length === 1;
 
   return (
     <Row alignItems="center" className={className} locked>
@@ -52,10 +36,9 @@ export const LabelStatus = <T extends string | number>({
           {required && <span className="ml-1 text-danger">*</span>}
         </label>
       )}
-      {isInteractive && selectProps && (
+      {selectProps && (
         <Select
           {...selectProps}
-          value={value as T}
           disabled={isSelectedDisabled}
           isIconTrigger
           small

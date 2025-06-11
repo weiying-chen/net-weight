@@ -1,106 +1,62 @@
 // PG.tsx
 import { useState } from 'react';
 import { Col } from '@/components/Col';
-import { Select } from '@/components/Select';
-import { SelectOption } from '@/components/SelectDropdown';
+import { FieldList, FieldStatus } from '@/components/FieldList';
+import { IconWorld, IconUsers, IconLock } from '@tabler/icons-react';
 
-const exampleOptions: SelectOption<string>[] = [
-  { label: 'Apple', value: 'apple' },
-  { label: 'Banana', value: 'banana' },
-  { label: 'Cherry', value: 'cherry' },
-  { label: 'Date', value: 'date' },
-  { label: 'Elderberry', value: 'elderberry' },
-  { label: 'Fig', value: 'fig' },
-  { label: 'Grape', value: 'grape' },
-  { label: 'Honeydew', value: 'honeydew' },
-  { label: 'Indian Fig', value: 'indian-fig' },
-  { label: 'Jackfruit', value: 'jackfruit' },
-  { label: 'Kiwi', value: 'kiwi' },
-  { label: 'Lemon', value: 'lemon' },
-  { label: 'Mango', value: 'mango' },
-  { label: 'Nectarine', value: 'nectarine' },
-  { label: 'Orange', value: 'orange' },
-  { label: 'Papaya', value: 'papaya' },
-  { label: 'Quince', value: 'quince' },
-  { label: 'Raspberry', value: 'raspberry' },
-  { label: 'Strawberry', value: 'strawberry' },
-  { label: 'Tomato', value: 'tomato' },
-];
+export type PersonVis = 'everyone' | 'friends' | 'only_me';
+
+const visibilityOptions = [
+  {
+    value: 'everyone',
+    label: 'Everyone',
+    icon: <IconWorld size={14} />,
+    tooltip: 'Visible to everyone',
+  },
+  {
+    value: 'friends',
+    label: 'Friends',
+    icon: <IconUsers size={14} />,
+    tooltip: 'Visible to friends only',
+  },
+  {
+    value: 'only_me',
+    label: 'Only Me',
+    icon: <IconLock size={14} />,
+    tooltip: 'Visible only to you',
+  },
+] satisfies {
+  value: PersonVis;
+  label: string;
+  icon?: React.ReactNode;
+  tooltip?: string;
+}[];
 
 export function PG() {
-  // 1. Single-select, no search
-  const [singleNoSearch, setSingleNoSearch] = useState<string>('');
-
-  // 2. Single-select, with search
-  const [singleWithSearch, setSingleWithSearch] = useState<string>('');
-
-  // 3. Multi-select, no search
-  const [multiNoSearch, setMultiNoSearch] = useState<string[]>([]);
-
-  // 4. Multi-select, with search
-  const [multiWithSearch, setMultiWithSearch] = useState<string[]>([]);
+  const [personalEmails, setPersonalEmails] = useState<
+    FieldStatus<string, PersonVis>[]
+  >([
+    {
+      value: 'alex@example.com',
+      verified: true,
+      visibleTo: 'friends',
+    },
+    {
+      value: 'hello@drypots.com',
+      verified: false,
+      visibleTo: 'only_me',
+    },
+  ]);
 
   return (
     <Col className="w-full gap-6">
-      {/*
-      <div className="w-full">
-        <label className="mb-1 block text-sm font-semibold">
-          1. Single-select, no search
-        </label>
-        <Select
-          options={exampleOptions}
-          value={singleNoSearch}
-          onChange={setSingleNoSearch}
-          placeholder="Pick one fruit…"
-          // (no `hasSearch`, no `multiple`)
-        />
-      </div>
-
-      <div className="w-full">
-        <label className="mb-1 block text-sm font-semibold">
-          2. Single-select, with search
-        </label>
-        <Select
-          options={exampleOptions}
-          value={singleWithSearch}
-          onChange={setSingleWithSearch}
-          placeholder="Pick one fruit…"
-          hasSearch
-          // `multiple` omitted → single mode
-        />
-      </div>
-      */}
-
-      {/* 3. Multi-select, no search */}
-      <div className="w-full">
-        <label className="mb-1 block text-sm font-semibold">
-          3. Multi-select, no search
-        </label>
-        <Select
-          options={exampleOptions}
-          value={multiNoSearch}
-          onChange={setMultiNoSearch}
-          placeholder="Pick one or more fruits…"
-          multiple
-          // `hasSearch` omitted → no search
-        />
-      </div>
-
-      {/*
-      <div className="w-full">
-        <label className="mb-1 block text-sm font-semibold">
-          4. Multi-select, with search
-        </label>
-        <Select
-          options={exampleOptions}
-          value={multiWithSearch}
-          onChange={setMultiWithSearch}
-          placeholder="Pick one or more fruits…"
-          multiple
-          hasSearch
-        />
-      </div>
-      */}
+      <FieldList
+        label="Email"
+        addButtonLabel="Add email"
+        value={personalEmails}
+        onChange={setPersonalEmails}
+        visibilityOptions={visibilityOptions}
+      />
     </Col>
   );
 }
