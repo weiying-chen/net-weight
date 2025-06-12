@@ -69,35 +69,19 @@ export function SelectTrigger<T extends string | number | null>({
   className,
   triggerRef,
 }: SelectTriggerProps<T>) {
-  // ─────────────────────────────────────────────────────────────────────────────
-  // 1) Clear search query whenever the dropdown closes
-  // ─────────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!isOpen) {
       setLocalSearchQuery('');
     }
   }, [isOpen, setLocalSearchQuery]);
 
-  // ─────────────────────────────────────────────────────────────────────────────
-  // 2) Refs for measuring tag container, chevron, and "and X more" span
-  // ─────────────────────────────────────────────────────────────────────────────
   const tagsRef = useRef<HTMLDivElement>(null);
   const chevronRef = useRef<HTMLSpanElement>(null);
   const moreRef = useRef<HTMLSpanElement>(null);
 
-  // ─────────────────────────────────────────────────────────────────────────────
-  // 3) State: how many tags actually fit before the chevron (accounting for "and X more")
-  // ─────────────────────────────────────────────────────────────────────────────
   const [fitCount, setFitCount] = useState<number>(selectedOptions.length);
 
-  // ─────────────────────────────────────────────────────────────────────────────
-  // 4) computeFitCount() measures the gap, then figures out how many tags fit.
-  //    This version detects any wrap and subtracts the "and X more" width.
-  //    We only call setFitCount(...) when the new value differs from the old one.
-  //    We also log a few intermediate values for debugging.
-  // ─────────────────────────────────────────────────────────────────────────────
   const computeFitCount = () => {
-    // ── CASE A: missing refs ─────────────────────────────────────────────
     if (!tagsRef.current || !chevronRef.current || !moreRef.current) {
       const newCount = selectedOptions.length;
       if (newCount !== fitCount) {
@@ -106,11 +90,9 @@ export function SelectTrigger<T extends string | number | null>({
       return;
     }
 
-    // Turn the collection of tags into an array:
     const children = Array.from(tagsRef.current.children) as HTMLElement[];
     const totalTags = children.length;
 
-    // ── CASE B: no tags at all ────────────────────────────────────────────
     if (totalTags === 0) {
       if (fitCount !== 0) {
         setFitCount(0);
@@ -118,7 +100,6 @@ export function SelectTrigger<T extends string | number | null>({
       return;
     }
 
-    // 4a) Determine how many tags are on the first line
     const firstLineTop = children[0].offsetTop;
     let firstLineCount = 0;
     for (let i = 0; i < totalTags; i++) {
@@ -126,12 +107,10 @@ export function SelectTrigger<T extends string | number | null>({
       firstLineCount++;
     }
 
-    // 4b) Get bounding rectangles for the last first-line tag + chevron
     const lastFirstLineTag = children[firstLineCount - 1];
     const lastRect = lastFirstLineTag.getBoundingClientRect();
     const chevronRect = chevronRef.current.getBoundingClientRect();
 
-    // 4c) Build threshold (chevron width + padding + small buffer)
     const chevronStyles = getComputedStyle(chevronRef.current);
     const chevronPadLeft = parseFloat(chevronStyles.paddingLeft);
     const chevronPadRight = parseFloat(chevronStyles.paddingRight);
@@ -140,11 +119,9 @@ export function SelectTrigger<T extends string | number | null>({
     const BUFFER = 8;
     const THRESHOLD = Math.round(chevronTotalWidth + BUFFER);
 
-    // 4d) Gap between last first-line tag and chevron
     const rawGap = chevronRect.left - lastRect.right;
     const flooredGap = Math.floor(rawGap);
 
-    // ── CASE C: at least one tag has wrapped to a second line ───────────
     if (firstLineCount < totalTags) {
       if (firstLineCount !== fitCount) {
         setFitCount(firstLineCount);
@@ -152,14 +129,12 @@ export function SelectTrigger<T extends string | number | null>({
       return;
     }
 
-    // 4f) Measure width of the “and X more” span (+ margins)
     const moreStyles = getComputedStyle(moreRef.current);
     const moreMarginLeft = parseFloat(moreStyles.marginLeft);
     const moreMarginRight = parseFloat(moreStyles.marginRight);
     const moreTotalWidth =
       moreRef.current.offsetWidth + moreMarginLeft + moreMarginRight;
 
-    // If there is enough gap to show all first-line tags + “and X more”, just show them all
     if (flooredGap >= THRESHOLD + moreTotalWidth) {
       if (totalTags !== fitCount) {
         setFitCount(totalTags);
@@ -167,7 +142,6 @@ export function SelectTrigger<T extends string | number | null>({
       return;
     }
 
-    // 4g) Otherwise, sum widths + margins one by one, until exceeding maxAllowable
     let cumulative = 0;
     let count = 0;
     const containerLeft = tagsRef.current.getBoundingClientRect().left;
@@ -192,24 +166,17 @@ export function SelectTrigger<T extends string | number | null>({
       count++;
     }
 
-    // Final guard: only update if the new count is different
     if (count !== fitCount) {
       setFitCount(count);
     }
   };
 
-  // ─────────────────────────────────────────────────────────────────────────────
-  // 5) Whenever selectedOptions change, re‐compute fitCount BEFORE paint
-  // ─────────────────────────────────────────────────────────────────────────────
   useLayoutEffect(() => {
     if (isOpen) {
       computeFitCount();
     }
   }, [selectedOptions, isOpen]);
 
-  // ─────────────────────────────────────────────────────────────────────────────
-  // 6) Also re‐compute fitCount whenever the trigger container resizes
-  // ─────────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!triggerRef.current) return;
 
@@ -230,20 +197,25 @@ export function SelectTrigger<T extends string | number | null>({
     };
   }, [triggerRef, isOpen]);
 
-  // ─────────────────────────────────────────────────────────────────────────────
-  // 7) Ref for the <input> in “Multi + Search” mode
-  // ─────────────────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(() => computeFitCount());
+      } else {
+        computeFitCount();
+      }
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, []);
+
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // ─────────────────────────────────────────────────────────────────────────────
-  // 8) renderMultiTagsSummary(): either all tags or “first + X more”
-  // ─────────────────────────────────────────────────────────────────────────────
   const renderMultiTagsSummary = () => {
     if (selectedOptions.length === 0) {
       return <span className="text-muted">{placeholder}</span>;
     }
 
-    // If fitCount ≥ total, just show every tag
     if (fitCount >= selectedOptions.length) {
       return (
         <>
@@ -261,7 +233,6 @@ export function SelectTrigger<T extends string | number | null>({
       );
     }
 
-    // Otherwise, show only the first fitCount tags + “and {remaining} more”
     const visible = selectedOptions.slice(0, fitCount);
     const hiddenCount = selectedOptions.length - fitCount;
     return (
@@ -291,18 +262,12 @@ export function SelectTrigger<T extends string | number | null>({
     );
   };
 
-  // ─────────────────────────────────────────────────────────────────────────────
-  // 9) Four “modes” of rendering (identical to your original logic, except flex-wrap → flex-nowrap)
-  // ─────────────────────────────────────────────────────────────────────────────
-
-  // 9.1) Multi + No‐Search (render tags inside a PseudoInput)
   const renderMultiplePseudoInput = () => (
     <div
       ref={triggerRef}
       className={cn('relative w-full min-w-0', className)}
       onKeyDown={handleKeyDown}
       onClickCapture={(e) => {
-        // If click came from a <button> (the tag’s “×”), do nothing
         if ((e.target as HTMLElement).closest('button')) return;
         if (!isDisabled) {
           e.stopPropagation();
@@ -320,7 +285,7 @@ export function SelectTrigger<T extends string | number | null>({
           'h-8 px-2 text-sm': small && !isIconTrigger,
           'h-10 px-3 text-sm': !small && !isIconTrigger,
           'border-0 bg-subtle shadow-none': muted,
-          // If using icon-trigger styling:
+
           'flex h-5 cursor-pointer items-center justify-between whitespace-nowrap rounded border-0 bg-subtle px-2 py-1 text-xs shadow-none outline-none ring-foreground ring-offset-2 ring-offset-background hover:shadow-dark focus-visible:ring-2':
             isIconTrigger,
         })}
@@ -349,7 +314,6 @@ export function SelectTrigger<T extends string | number | null>({
     </div>
   );
 
-  // 9.2) Multi + Search (render tags + <input>)
   const renderMultipleSearchInput = () => (
     <div
       ref={triggerRef}
@@ -358,7 +322,6 @@ export function SelectTrigger<T extends string | number | null>({
         className,
       )}
       onClickCapture={(e) => {
-        // Prevent toggling when clicking the Tag’s “×”
         if ((e.target as HTMLElement).closest('button')) return;
         if (!isDisabled) {
           if (!isOpen) openDropdown();
@@ -435,7 +398,6 @@ export function SelectTrigger<T extends string | number | null>({
     </div>
   );
 
-  // 9.3) Single + Search
   const renderRealInput = () => (
     <div
       ref={triggerRef}
@@ -477,7 +439,6 @@ export function SelectTrigger<T extends string | number | null>({
     </div>
   );
 
-  // 9.4) Single + No-Search
   const renderPseudoInput = () => (
     <div
       ref={triggerRef}
@@ -541,9 +502,6 @@ export function SelectTrigger<T extends string | number | null>({
     </div>
   );
 
-  // ─────────────────────────────────────────────────────────────────────────────
-  // 10) Pick which “mode” to render:
-  // ─────────────────────────────────────────────────────────────────────────────
   if (multiple && hasSearch) {
     return renderMultipleSearchInput();
   } else if (multiple && !hasSearch) {
