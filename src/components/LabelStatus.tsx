@@ -9,11 +9,12 @@ type CommonProps = {
   className?: string;
 };
 
-type LabelStatusProps<T extends string | number> =
+// Allow `T` to be string | number | null
+type LabelStatusProps<T extends string | number | null> =
   | (CommonProps & Omit<SingleSelectProps<T>, 'multiple'>) // force single-select only
   | CommonProps;
 
-export const LabelStatus = <T extends string | number>({
+export const LabelStatus = <T extends string | number | null>({
   label,
   verified,
   required,

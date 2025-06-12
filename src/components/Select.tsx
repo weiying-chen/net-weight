@@ -35,6 +35,7 @@ type CommonProps<T> = {
   icon?: ReactNode;
   noResultsLabel?: ReactNode;
   formatValue?: (label: string) => string;
+  allowCustomOptions?: boolean;
 };
 
 /**
@@ -71,7 +72,6 @@ export type SelectProps<T> = SingleSelectProps<T> | MultiSelectProps<T>;
 export const Select = <T extends string | number | null>(
   props: SelectProps<T>,
 ) => {
-  // — Destructure all common props first —
   const {
     label,
     options,
@@ -94,6 +94,7 @@ export const Select = <T extends string | number | null>(
     icon,
     noResultsLabel,
     formatValue,
+    allowCustomOptions,
   } = props as CommonProps<T>;
 
   const multiple = (props as any).multiple === true;
@@ -108,57 +109,100 @@ export const Select = <T extends string | number | null>(
   const [isOpen, setIsOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<SelectOption<T>[]>([]);
+  const [customOptions, setCustomOptions] = useState<SelectOption<T>[]>([]);
   const [localSearchQuery, setLocalSearchQuery] = useState('');
   const [dropdownStyles, setDropdownStyles] = useState<React.CSSProperties>({});
   const dropdownRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
   const hasRenderedDropdown = useRef(false);
 
-  useLayoutEffect(() => {
-    if (isOpen) {
-      hasRenderedDropdown.current = true;
-    }
-  }, [isOpen]);
+  const searchQuery = useMemo(() => {
+    const query = (extSearchQuery || localSearchQuery).trim();
+    return query;
+  }, [extSearchQuery, localSearchQuery]);
 
-  const searchQuery = useMemo(
-    () => (extSearchQuery || localSearchQuery).trim(),
-    [extSearchQuery, localSearchQuery],
-  );
+  const addCustomOption = () => {
+    if (!allowCustomOptions) return;
+
+    const trimmed = searchQuery.trim();
+    if (!trimmed) return;
+
+    const alreadyExists =
+      options.some(
+        (opt) => opt.label.toLowerCase() === trimmed.toLowerCase(),
+      ) ||
+      selectedOptions.some(
+        (opt) => opt.label.toLowerCase() === trimmed.toLowerCase(),
+      );
+
+    if (alreadyExists) return;
+
+    const newOption: SelectOption<T> = { label: trimmed, value: trimmed as T };
+    setCustomOptions((prev) => [...prev, newOption]);
+
+    if (multiple) {
+      const updated = [...selectedOptions, newOption];
+      setSelectedOptions(updated);
+      (onChange as (vals: T[]) => void)?.(updated.map((o) => o.value));
+    } else {
+      setSelectedOptions([newOption]);
+      (onChange as (val: T) => void)?.(newOption.value);
+      closeDropdown();
+    }
+
+    setLocalSearchQuery('');
+  };
+
+  useLayoutEffect(() => {
+    if (isOpen) hasRenderedDropdown.current = true;
+  }, [isOpen]);
 
   useLayoutEffect(() => {
     if (multiple) {
       const vals = Array.isArray(value) ? value : [];
       setSelectedOptions(
         vals
-          .map((v) => options.find((o) => o.value === v))
+          .map((v) => {
+            const allOptions = allowCustomOptions
+              ? [...options, ...customOptions]
+              : options;
+            return allOptions.find((o) => o.value === v);
+          })
           .filter((o): o is SelectOption<T> => !!o),
       );
     } else {
       const singleVal = !Array.isArray(value) ? value : undefined;
+      const allOptions = allowCustomOptions
+        ? [...options, ...customOptions]
+        : options;
       const found =
         singleVal !== undefined
-          ? options.find((o) => o.value === singleVal) || null
+          ? allOptions.find((o) => o.value === singleVal) || null
           : null;
       setSelectedOptions(found ? [found] : []);
     }
   }, [value, options, multiple]);
 
   const [filteredOptions, setFilteredOptions] = useState<SelectOption<T>[]>([]);
+
   useEffect(() => {
     if (isDropdownLoading) {
       setFilteredOptions([]);
-    } else if (extSearchQuery) {
-      setFilteredOptions(options);
     } else {
-      setFilteredOptions(
-        options.filter(
-          (opt) =>
-            !opt.isHidden &&
-            opt.label.toLowerCase().includes(searchQuery.toLowerCase()),
-        ),
+      const allOptions = allowCustomOptions
+        ? [...options, ...customOptions]
+        : options;
+
+      const filtered = allOptions.filter(
+        (opt, idx, arr) =>
+          !opt.isHidden &&
+          opt.label.toLowerCase().includes(searchQuery.toLowerCase()) &&
+          arr.findIndex((o) => o.value === opt.value) === idx, // remove duplicates
       );
+
+      setFilteredOptions(filtered);
     }
-  }, [isDropdownLoading, options, extSearchQuery, searchQuery]);
+  }, [isDropdownLoading, options, searchQuery]);
 
   useEffect(() => {
     if (isOpen && hasSearch) {
@@ -191,30 +235,32 @@ export const Select = <T extends string | number | null>(
     if (e) e.stopPropagation();
     if (multiple) {
       const exists = selectedOptions.some((s) => s.value === opt.value);
-      let newSelected: SelectOption<T>[] = exists
+      const newSelected = exists
         ? selectedOptions.filter((s) => s.value !== opt.value)
         : [...selectedOptions, opt];
       setSelectedOptions(newSelected);
       (onChange as (v: T[]) => void)?.(newSelected.map((s) => s.value));
-      setLocalSearchQuery('');
     } else {
       setSelectedOptions([opt]);
       (onChange as (v: T) => void)?.(opt.value);
-      setLocalSearchQuery('');
       closeDropdown();
     }
+    setLocalSearchQuery('');
   };
 
   const handleKeyDown = (
     e: ReactKeyboardEvent<HTMLDivElement | HTMLInputElement>,
   ) => {
     if (isDisabled) return;
+
     if (!isOpen && e.key === 'Enter') {
       e.preventDefault();
       openDropdown();
       return;
     }
+
     if (!isOpen) return;
+
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
@@ -230,8 +276,10 @@ export const Select = <T extends string | number | null>(
         break;
       case 'Enter':
         e.preventDefault();
-        if (focusedIndex !== null) {
+        if (focusedIndex !== null && filteredOptions[focusedIndex]) {
           handleOptionClick(filteredOptions[focusedIndex], e as any);
+        } else {
+          addCustomOption();
         }
         break;
     }
@@ -244,25 +292,8 @@ export const Select = <T extends string | number | null>(
     const maxH = 384;
     const vh = window.innerHeight;
     const belowSpace = Math.min(vh - rect.bottom, maxH);
-
-    if (hasSearch) {
-      const top = Math.round(rect.bottom) + rawGap;
-      setDropdownStyles({
-        position: 'fixed',
-        left: `${rect.left}px`,
-        top: `${top}px`,
-        minWidth: `${rect.width}px`,
-        maxHeight: `${belowSpace}px`,
-        overflowY: 'auto',
-        zIndex: 200,
-      });
-      return;
-    }
-
     const aboveSpace = Math.min(rect.top, maxH);
     const flipUp = aboveSpace > belowSpace;
-    const roundedBottom = Math.round(rect.bottom);
-    const roundedTop = Math.round(rect.top);
     const computedStyles: React.CSSProperties = {
       position: 'fixed',
       left: `${rect.left}px`,
@@ -272,9 +303,9 @@ export const Select = <T extends string | number | null>(
       zIndex: 200,
     };
     if (flipUp) {
-      computedStyles.bottom = `${vh - roundedTop + rawGap}px`;
+      computedStyles.bottom = `${vh - Math.round(rect.top) + rawGap}px`;
     } else {
-      computedStyles.top = `${roundedBottom + rawGap}px`;
+      computedStyles.top = `${Math.round(rect.bottom) + rawGap}px`;
     }
     setDropdownStyles(computedStyles);
   };

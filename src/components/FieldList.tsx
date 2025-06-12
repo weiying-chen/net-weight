@@ -17,6 +17,7 @@ export type FieldListProps<T = string, V extends string | number = string> = {
   value: FieldStatus<T, V>[];
   onChange: (value: FieldStatus<T, V>[]) => void;
   visibilityOpts: { value: V; label: string }[];
+  errors?: Array<{ value?: string }>;
 };
 
 export const FieldList = <T = string, V extends string | number = string>({
@@ -25,6 +26,7 @@ export const FieldList = <T = string, V extends string | number = string>({
   value,
   onChange,
   visibilityOpts,
+  errors = [],
 }: FieldListProps<T, V>) => {
   const handleChange = (
     index: number,
@@ -71,6 +73,7 @@ export const FieldList = <T = string, V extends string | number = string>({
             }
             value={(entry.value ?? '') as string}
             onChange={(e) => handleChange(i, 'value', e.target.value)}
+            error={errors?.[i]?.value}
             className="flex-1"
           />
           <Button
