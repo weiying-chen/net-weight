@@ -9,7 +9,7 @@ import {
 import { createPortal } from 'react-dom';
 import { Row } from '@/components/Row';
 import { cn } from '@/utils';
-import { IconCheck, IconLoader2 } from '@tabler/icons-react';
+import { IconCheck, IconLoader2, IconPlus } from '@tabler/icons-react';
 
 export type SelectOption<T> = {
   label: string;
@@ -17,6 +17,7 @@ export type SelectOption<T> = {
   icon?: ReactNode;
   isHidden?: boolean;
   tooltip?: ReactNode;
+  isAddNew?: boolean;
 };
 
 export type SelectDropdownProps<T extends string | number | null> = {
@@ -131,13 +132,17 @@ export function SelectDropdown<T extends string | number | null>({
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={(e) => onOptionClick(opt, e)}
               >
-                <Row align="between" alignItems="center" className="w-full">
+                {opt.isAddNew ? (
+                  <Row alignItems="center">
+                    <IconPlus size={16} />
+                    <span>{opt.label}</span>
+                  </Row>
+                ) : (
                   <div className="flex items-center gap-2">
                     {opt.icon && <span>{opt.icon}</span>}
                     <span>{opt.label}</span>
                   </div>
-                  {isSelected && <IconCheck size={16} className="text-muted" />}
-                </Row>
+                )}
               </li>
             );
           })}

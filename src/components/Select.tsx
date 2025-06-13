@@ -186,23 +186,44 @@ export const Select = <T extends string | number | null>(
   const [filteredOptions, setFilteredOptions] = useState<SelectOption<T>[]>([]);
 
   useEffect(() => {
+    const trimmed = searchQuery.trim();
+
     if (isDropdownLoading) {
       setFilteredOptions([]);
+      return;
+    }
+
+    const allOptions = allowCustomOptions
+      ? [...options, ...customOptions]
+      : options;
+
+    const filtered = allOptions.filter(
+      (opt, idx, arr) =>
+        !opt.isHidden &&
+        opt.label.toLowerCase().includes(trimmed.toLowerCase()) &&
+        arr.findIndex((o) => o.value === opt.value) === idx,
+    );
+
+    const exactMatchExists = allOptions.some(
+      (opt) => opt.label.toLowerCase() === trimmed.toLowerCase(),
+    );
+
+    if (
+      allowCustomOptions &&
+      trimmed &&
+      filtered.length === 0 &&
+      !exactMatchExists
+    ) {
+      const addNewOption: SelectOption<T> = {
+        label: `Add "${trimmed}"`,
+        value: trimmed as T,
+        isAddNew: true,
+      };
+      setFilteredOptions([addNewOption]);
     } else {
-      const allOptions = allowCustomOptions
-        ? [...options, ...customOptions]
-        : options;
-
-      const filtered = allOptions.filter(
-        (opt, idx, arr) =>
-          !opt.isHidden &&
-          opt.label.toLowerCase().includes(searchQuery.toLowerCase()) &&
-          arr.findIndex((o) => o.value === opt.value) === idx, // remove duplicates
-      );
-
       setFilteredOptions(filtered);
     }
-  }, [isDropdownLoading, options, searchQuery]);
+  }, [isDropdownLoading, options, customOptions, searchQuery]);
 
   useEffect(() => {
     if (isOpen && hasSearch) {
@@ -233,6 +254,12 @@ export const Select = <T extends string | number | null>(
     e: ReactMouseEvent<HTMLLIElement> | null,
   ) => {
     if (e) e.stopPropagation();
+
+    if (opt.isAddNew) {
+      addCustomOption();
+      return;
+    }
+
     if (multiple) {
       const exists = selectedOptions.some((s) => s.value === opt.value);
       const newSelected = exists
@@ -245,6 +272,7 @@ export const Select = <T extends string | number | null>(
       (onChange as (v: T) => void)?.(opt.value);
       closeDropdown();
     }
+
     setLocalSearchQuery('');
   };
 
