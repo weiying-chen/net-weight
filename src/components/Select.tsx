@@ -35,7 +35,7 @@ type CommonProps<T> = {
   icon?: ReactNode;
   noResultsLabel?: ReactNode;
   formatValue?: (label: string) => string;
-  allowCustomOptions?: boolean;
+  allowAddOptions?: boolean;
 };
 
 /**
@@ -94,7 +94,7 @@ export const Select = <T extends string | number | null>(
     icon,
     noResultsLabel,
     formatValue,
-    allowCustomOptions,
+    allowAddOptions,
   } = props as CommonProps<T>;
 
   const multiple = (props as any).multiple === true;
@@ -109,7 +109,7 @@ export const Select = <T extends string | number | null>(
   const [isOpen, setIsOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<SelectOption<T>[]>([]);
-  const [customOptions, setCustomOptions] = useState<SelectOption<T>[]>([]);
+  const [addedOptions, setAddedOptions] = useState<SelectOption<T>[]>([]);
   const [localSearchQuery, setLocalSearchQuery] = useState('');
   const [dropdownStyles, setDropdownStyles] = useState<React.CSSProperties>({});
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -122,7 +122,7 @@ export const Select = <T extends string | number | null>(
   }, [extSearchQuery, localSearchQuery]);
 
   const addCustomOption = () => {
-    if (!allowCustomOptions) return;
+    if (!allowAddOptions) return;
 
     const trimmed = searchQuery.trim();
     if (!trimmed) return;
@@ -138,7 +138,7 @@ export const Select = <T extends string | number | null>(
     if (alreadyExists) return;
 
     const newOption: SelectOption<T> = { label: trimmed, value: trimmed as T };
-    setCustomOptions((prev) => [...prev, newOption]);
+    setAddedOptions((prev) => [...prev, newOption]);
 
     if (multiple) {
       const updated = [...selectedOptions, newOption];
@@ -163,8 +163,8 @@ export const Select = <T extends string | number | null>(
       setSelectedOptions(
         vals
           .map((v) => {
-            const allOptions = allowCustomOptions
-              ? [...options, ...customOptions]
+            const allOptions = allowAddOptions
+              ? [...options, ...addedOptions]
               : options;
             return allOptions.find((o) => o.value === v);
           })
@@ -172,8 +172,8 @@ export const Select = <T extends string | number | null>(
       );
     } else {
       const singleVal = !Array.isArray(value) ? value : undefined;
-      const allOptions = allowCustomOptions
-        ? [...options, ...customOptions]
+      const allOptions = allowAddOptions
+        ? [...options, ...addedOptions]
         : options;
       const found =
         singleVal !== undefined
@@ -193,8 +193,8 @@ export const Select = <T extends string | number | null>(
       return;
     }
 
-    const allOptions = allowCustomOptions
-      ? [...options, ...customOptions]
+    const allOptions = allowAddOptions
+      ? [...options, ...addedOptions]
       : options;
 
     const filtered = allOptions.filter(
@@ -209,7 +209,7 @@ export const Select = <T extends string | number | null>(
     );
 
     if (
-      allowCustomOptions &&
+      allowAddOptions &&
       trimmed &&
       filtered.length === 0 &&
       !exactMatchExists
@@ -223,7 +223,7 @@ export const Select = <T extends string | number | null>(
     } else {
       setFilteredOptions(filtered);
     }
-  }, [isDropdownLoading, options, customOptions, searchQuery]);
+  }, [isDropdownLoading, options, addedOptions, searchQuery]);
 
   useEffect(() => {
     if (isOpen && hasSearch) {

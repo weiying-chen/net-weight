@@ -8,7 +8,7 @@ type ModalProps = {
   onClose: () => void;
   children: ReactNode;
   className?: string;
-  size?: 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg';
   locked?: boolean;
   position?: 'center' | 'top';
 };
@@ -28,7 +28,6 @@ export function Modal({
   useEffect(() => {
     if (isOpen) {
       setIsMounted(true);
-      // Delay the animation trigger slightly to allow initial render
       const timer = setTimeout(() => setIsAnimating(true), 20);
       return () => clearTimeout(timer);
     } else {
@@ -40,27 +39,23 @@ export function Modal({
 
   useEffect(() => {
     if (locked) return;
-
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && isOpen) {
         onClose();
       }
     };
-
     document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose, locked]);
 
   if (!isMounted) return null;
 
   const cnFromSize = {
+    sm: 'max-w-sm',
     md: 'max-w-lg',
     lg: 'max-w-screen-md',
   };
 
-  // Change vertical alignment based on the position prop.
   const containerClasses =
     position === 'top'
       ? 'fixed inset-x-0 top-0 z-[100] flex items-start justify-center'

@@ -195,16 +195,22 @@ export function Table<T, D extends object>({
   const renderHeader = () => (
     <div className="flex bg-subtle">
       {onRowSelect && (
-        <div className="flex items-center justify-center px-4 py-2">
-          <input
-            ref={setIndeterminateState}
-            type="checkbox"
-            checked={
-              originalData.length > 0 &&
-              selectedItems.length === originalData.length
-            }
-            onChange={handleSelectAll}
-          />
+        <div className="flex items-center justify-center">
+          <label
+            className="flex h-full w-full cursor-pointer items-center justify-center px-4 py-2"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <input
+              ref={setIndeterminateState}
+              type="checkbox"
+              checked={
+                originalData.length > 0 &&
+                selectedItems.length === originalData.length
+              }
+              onChange={handleSelectAll}
+              className="pointer-events-none"
+            />
+          </label>
         </div>
       )}
       <div className="flex w-12 items-center justify-center px-4 py-2 text-sm font-semibold">
@@ -247,13 +253,18 @@ export function Table<T, D extends object>({
       const rowContent = (
         <>
           {onRowSelect && (
-            <div className="flex items-center justify-center px-4 py-2">
-              <input
-                type="checkbox"
-                checked={selectedItems.includes(orig)}
+            <div className="flex items-center justify-center">
+              <label
+                className="flex h-full w-full cursor-pointer items-center justify-center px-4 py-2"
                 onClick={(e) => e.stopPropagation()}
-                onChange={() => handleRowSelect(ri)}
-              />
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedItems.includes(orig)}
+                  onChange={() => handleRowSelect(ri)}
+                  className="pointer-events-none"
+                />
+              </label>
             </div>
           )}
           <div className="flex w-12 items-center justify-center px-4 py-2 text-sm">
