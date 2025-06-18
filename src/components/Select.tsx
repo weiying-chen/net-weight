@@ -1,3 +1,5 @@
+'use client';
+
 import {
   useState,
   useRef,
@@ -36,6 +38,7 @@ type CommonProps<T> = {
   noResultsLabel?: ReactNode;
   formatValue?: (label: string) => string;
   allowAddOptions?: boolean;
+  allowSingleOption?: boolean;
 };
 
 /**
@@ -104,7 +107,8 @@ export const Select = <T extends string | number | null>(
     | ((vals: T[]) => void)
     | undefined;
 
-  const isDisabled = disabled || options.length === 1;
+  const isDisabled =
+    disabled || (options.length === 1 && !props.allowSingleOption);
 
   const [isOpen, setIsOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);

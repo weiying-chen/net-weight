@@ -9,7 +9,7 @@ import {
 import { createPortal } from 'react-dom';
 import { Row } from '@/components/Row';
 import { cn } from '@/utils';
-import { IconCheck, IconLoader2, IconPlus } from '@tabler/icons-react';
+import { IconLoader2, IconPlus } from '@tabler/icons-react';
 
 export type SelectOption<T> = {
   label: string;
@@ -57,8 +57,6 @@ export type SelectDropdownProps<T extends string | number | null> = {
 export function SelectDropdown<T extends string | number | null>({
   filteredOptions,
   focusedIndex,
-  selectedValue,
-  multiple = false,
   onOptionClick,
   setFocusedIndex,
   isDropdownLoading,
@@ -99,11 +97,6 @@ export function SelectDropdown<T extends string | number | null>({
             const isFirst = idx === 0;
             const isLast = idx === filteredOptions.length - 1;
             const isFocused = focusedIndex === idx;
-
-            const isSelected = multiple
-              ? Array.isArray(selectedValue) &&
-                selectedValue.includes(opt.value)
-              : selectedValue === opt.value;
 
             return (
               <li
