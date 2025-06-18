@@ -192,10 +192,10 @@ export const Select = <T extends string | number | null>(
   useEffect(() => {
     const trimmed = searchQuery.trim();
 
-    if (isDropdownLoading) {
-      setFilteredOptions([]);
-      return;
-    }
+    // if (isDropdownLoading) {
+    //   setFilteredOptions([]);
+    //   return;
+    // }
 
     const allOptions = allowAddOptions
       ? [...options, ...addedOptions]
@@ -227,7 +227,8 @@ export const Select = <T extends string | number | null>(
     } else {
       setFilteredOptions(filtered);
     }
-  }, [isDropdownLoading, options, addedOptions, searchQuery]);
+    // }, [isDropdownLoading, options, addedOptions, searchQuery]);
+  }, [options, addedOptions, searchQuery]);
 
   useEffect(() => {
     if (isOpen && hasSearch) {

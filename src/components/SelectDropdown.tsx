@@ -1,5 +1,3 @@
-// components/SelectDropdown.tsx
-
 import {
   ReactNode,
   MouseEvent as ReactMouseEvent,
@@ -9,7 +7,7 @@ import {
 import { createPortal } from 'react-dom';
 import { Row } from '@/components/Row';
 import { cn } from '@/utils';
-import { IconLoader2, IconPlus } from '@tabler/icons-react';
+import { IconLoader2, IconPlus, IconCheck } from '@tabler/icons-react';
 
 export type SelectOption<T> = {
   label: string;
@@ -21,42 +19,29 @@ export type SelectOption<T> = {
 };
 
 export type SelectDropdownProps<T extends string | number | null> = {
-  /** Filtered options to display */
   filteredOptions: SelectOption<T>[];
-  /** Currently highlighted index (for keyboard navigation) */
   focusedIndex: number | null;
-  /** The currently selected value(s) */
   selectedValue: T | T[] | null;
-  /** Whether multiple selection is enabled */
   multiple?: boolean;
-  /** Called when an option is clicked */
   onOptionClick: (
     opt: SelectOption<T>,
     e: ReactMouseEvent<HTMLLIElement>,
   ) => void;
-  /** Update focused index on hover */
   setFocusedIndex: (index: number) => void;
-  /** Whether the dropdown is in a loading state */
   isDropdownLoading: boolean;
-  /** Current search query (to decide loading vs. “no results found”) */
   localSearchQuery: string;
-  /** Label to show when no results are found */
   noResultsLabel?: ReactNode;
-  /** Inline styles for positioning the dropdown */
   dropdownStyles: CSSProperties;
-  /** The container element into which the dropdown is portaled */
   dropdownContainer: HTMLElement;
-  /** Ref to track if dropdown has already rendered once (for scrollIntoView) */
   hasRenderedDropdown: MutableRefObject<boolean>;
-  /** Whether the dropdown is currently open */
   isOpen: boolean;
-  /** Pass-down ref so parent can detect clicks inside */
   dropdownRef: MutableRefObject<HTMLDivElement | null>;
 };
 
 export function SelectDropdown<T extends string | number | null>({
   filteredOptions,
   focusedIndex,
+  selectedValue,
   onOptionClick,
   setFocusedIndex,
   isDropdownLoading,
@@ -98,6 +83,10 @@ export function SelectDropdown<T extends string | number | null>({
             const isLast = idx === filteredOptions.length - 1;
             const isFocused = focusedIndex === idx;
 
+            const isSelected = Array.isArray(selectedValue)
+              ? selectedValue.includes(opt.value)
+              : selectedValue === opt.value;
+
             return (
               <li
                 key={opt.value}
@@ -131,9 +120,12 @@ export function SelectDropdown<T extends string | number | null>({
                     <span>{opt.label}</span>
                   </Row>
                 ) : (
-                  <div className="flex items-center gap-2">
-                    {opt.icon && <span>{opt.icon}</span>}
-                    <span>{opt.label}</span>
+                  <div className="flex w-full items-center justify-between gap-2">
+                    <Row alignItems="center" className="gap-2">
+                      {opt.icon && <span>{opt.icon}</span>}
+                      <span>{opt.label}</span>
+                    </Row>
+                    {isSelected && <IconCheck size={16} />}
                   </div>
                 )}
               </li>
