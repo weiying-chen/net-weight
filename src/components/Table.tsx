@@ -169,7 +169,7 @@ export function Table<T, D extends object>({
       newW[i] = Math.min(base + pl + pr + 2, MAX_COL_WIDTH);
     });
     setWidths(newW);
-  }, [sortedPaired, cols]);
+  }, [cols]);
 
   // Row selection
   const handleRowSelect = (ri: number) => {
