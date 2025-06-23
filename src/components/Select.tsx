@@ -375,6 +375,23 @@ export const Select = <T extends string | number | null>(
     return () => window.removeEventListener('resize', adjustDropdownPosition);
   }, [isOpen, filteredOptions]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleScroll = (e: Event) => {
+      if (
+        e.target === document ||
+        e.target === document.body ||
+        e.target === document.scrollingElement
+      ) {
+        closeDropdown();
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isOpen]);
+
   const dropdownContainer = useMemo(() => {
     let el = document.getElementById('select-portal');
     if (!el) {
