@@ -5,6 +5,8 @@ import { Tooltip } from '@/components/Tooltip';
 type Cols<D> = {
   header: string;
   render: (item: D) => React.ReactNode;
+  sortable?: boolean;
+  width?: number;
 };
 
 const MIN_COL_WIDTH = 50;
@@ -86,8 +88,11 @@ export function Table<T, D extends object>({
   }, []);
 
   const handleSort = (ci: number) => {
+    if (cols[ci].sortable === false) return;
+
     const sample = cols[ci].render(paired[0]?.disp);
     if (typeof sample === 'object' && sample !== null) return;
+
     const dir =
       sortConfig?.index === ci && sortConfig.direction === 'asc'
         ? 'desc'
@@ -139,7 +144,13 @@ export function Table<T, D extends object>({
   useLayoutEffect(() => {
     if (!sortedPaired.length) return;
     const newW: { [i: number]: number } = {};
-    cols.forEach((_, i) => {
+
+    cols.forEach((col, i) => {
+      if (col.width) {
+        newW[i] = col.width; // ← use fixed width if provided
+        return;
+      }
+
       const hdrSpan = headerRefs.current[i]?.querySelector('span');
       const hW = hdrSpan?.scrollWidth ?? MIN_COL_WIDTH;
       const bW = Math.max(
@@ -160,6 +171,7 @@ export function Table<T, D extends object>({
       }
       newW[i] = Math.min(base + pl + pr + 2, MAX_COL_WIDTH);
     });
+
     setWidths(newW);
   }, [cols]);
 
@@ -209,10 +221,12 @@ export function Table<T, D extends object>({
       {cols.map((col, i) => (
         <div
           key={i}
-          className="relative flex min-w-0 cursor-pointer px-4 py-2 text-left"
+          className={`relative flex min-w-0 px-4 py-2 text-left ${
+            col.sortable === false ? 'cursor-default' : 'cursor-pointer'
+          }`}
           style={{ width: widths[i] ?? MIN_COL_WIDTH }}
           ref={(el) => (headerRefs.current[i] = el)}
-          onClick={() => handleSort(i)}
+          onClick={() => (col.sortable === false ? null : handleSort(i))}
         >
           <div className="flex min-w-0 items-center gap-2 text-sm font-semibold">
             <span className="block w-full truncate">{col.header}</span>
