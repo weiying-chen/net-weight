@@ -31,7 +31,6 @@ export function Table<T, D extends object>({
   asActions?: (item: T) => React.ReactNode;
   asTooltip?: (item: T) => React.ReactNode;
 }) {
-  // Pair originals with display copies
   const paired = useMemo(() => {
     const dispArr = formatData
       ? formatData(originalData)
@@ -54,7 +53,6 @@ export function Table<T, D extends object>({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const hoverRef = useRef<HTMLDivElement | null>(null);
 
-  // Sort logic
   const sortedPaired = useMemo(() => {
     if (!sortConfig) return paired;
     const { index, direction } = sortConfig;
@@ -67,12 +65,9 @@ export function Table<T, D extends object>({
     });
   }, [paired, sortConfig, cols]);
 
-  // GLOBAL MOUSE HANDLERS (for hover popover), but IGNORE clicks INSIDE the table
   useEffect(() => {
     const onDown = (e: MouseEvent) => {
-      // If cursor is in the hover-actions popover, ignore
       if (hoverRef.current?.contains(e.target as Node)) return;
-      // *** NEW: ignore any mousedown that starts inside our table container ***
       if (containerRef.current?.contains(e.target as Node)) return;
 
       isMouseDown.current = true;
@@ -90,7 +85,6 @@ export function Table<T, D extends object>({
     };
   }, []);
 
-  // Header click → sort
   const handleSort = (ci: number) => {
     const sample = cols[ci].render(paired[0]?.disp);
     if (typeof sample === 'object' && sample !== null) return;
@@ -101,7 +95,6 @@ export function Table<T, D extends object>({
     setSortConfig({ index: ci, direction: dir });
   };
 
-  // Hover row
   const handleMouseEnterRow = (ri: number, e: React.MouseEvent) => {
     if (isMouseDown.current) return;
     hideTimeout.current && window.clearTimeout(hideTimeout.current);
@@ -123,9 +116,9 @@ export function Table<T, D extends object>({
     hideTimeout.current && window.clearTimeout(hideTimeout.current);
   };
 
-  // Column resizing
   const startResizing = (ci: number, e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     const startX = e.clientX;
     const startW = widths[ci] ?? MIN_COL_WIDTH;
     const onMove = (ev: MouseEvent) => {
@@ -143,7 +136,6 @@ export function Table<T, D extends object>({
     document.addEventListener('mouseup', onUp);
   };
 
-  // Auto-calc widths
   useLayoutEffect(() => {
     if (!sortedPaired.length) return;
     const newW: { [i: number]: number } = {};
@@ -171,7 +163,6 @@ export function Table<T, D extends object>({
     setWidths(newW);
   }, [cols]);
 
-  // Row selection
   const handleRowSelect = (ri: number) => {
     const { orig } = sortedPaired[ri];
     const next = selectedItems.includes(orig)
@@ -191,7 +182,6 @@ export function Table<T, D extends object>({
     );
   };
 
-  // HEADER RENDER
   const renderHeader = () => (
     <div className="flex bg-subtle">
       {onRowSelect && (
@@ -219,14 +209,12 @@ export function Table<T, D extends object>({
       {cols.map((col, i) => (
         <div
           key={i}
-          className="relative flex min-w-0 px-4 py-2 text-left"
+          className="relative flex min-w-0 cursor-pointer px-4 py-2 text-left"
           style={{ width: widths[i] ?? MIN_COL_WIDTH }}
           ref={(el) => (headerRefs.current[i] = el)}
+          onClick={() => handleSort(i)}
         >
-          <div
-            className="flex min-w-0 cursor-pointer items-center gap-2 text-sm font-semibold"
-            onClick={() => handleSort(i)}
-          >
+          <div className="flex min-w-0 items-center gap-2 text-sm font-semibold">
             <span className="block w-full truncate">{col.header}</span>
             {sortConfig?.index === i &&
               (sortConfig.direction === 'asc' ? (
@@ -238,6 +226,7 @@ export function Table<T, D extends object>({
           <div
             className="absolute right-0 top-0 flex h-full w-2 cursor-col-resize items-center justify-center"
             onMouseDown={(e) => startResizing(i, e)}
+            onClick={(e) => e.stopPropagation()}
           >
             <div className="h-full w-[2px] bg-background" />
           </div>
@@ -246,7 +235,6 @@ export function Table<T, D extends object>({
     </div>
   );
 
-  // BODY RENDER
   const renderBody = () =>
     sortedPaired.map(({ orig, disp }, ri) => {
       const wrapTooltip = !!(asTooltip && !isMouseDown.current);
@@ -311,7 +299,6 @@ export function Table<T, D extends object>({
       return rowNode;
     });
 
-  // HOVER ACTIONS
   const renderHover = () => {
     if (
       isMouseDown.current ||
