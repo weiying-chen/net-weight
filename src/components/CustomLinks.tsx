@@ -7,7 +7,7 @@ import { Select } from '@/components/Select';
 import { IconTrash } from '@tabler/icons-react';
 
 export type CustomLink<T extends string | null = string, U = {}> = {
-  type: T | null;
+  type: T;
   value: string | null;
 } & U;
 

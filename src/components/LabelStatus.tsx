@@ -1,5 +1,6 @@
 import { Row } from '@/components/Row';
 import { Select, SingleSelectProps } from '@/components/Select';
+import { cn } from '@/utils';
 import { IconRosetteDiscountCheckFilled } from '@tabler/icons-react';
 
 type CommonProps = {
@@ -30,7 +31,7 @@ export const LabelStatus = <T extends string | number | null>({
   const isSelectedDisabled = selectProps && selectProps.options.length === 1;
 
   return (
-    <Row alignItems="center" className={className} locked>
+    <Row alignItems="center" className={cn('w-auto', className)} locked>
       {label && (
         <label className="truncate text-sm font-semibold">
           {label}

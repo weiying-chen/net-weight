@@ -18,6 +18,15 @@ export type FieldListProps<T = string, V extends string | number = string> = {
   onChange: (value: FieldStatus<T, V>[]) => void;
   visibilityOpts: { value: V; label: string }[];
   errors?: Array<{ value?: string }>;
+  renderFields?: (
+    item: FieldStatus<T, V>,
+    index: number,
+    handleChange: (
+      index: number,
+      field: keyof FieldStatus<T, V>,
+      newValue: any,
+    ) => void,
+  ) => React.ReactNode;
 };
 
 export const FieldList = <T = string, V extends string | number = string>({
@@ -27,6 +36,7 @@ export const FieldList = <T = string, V extends string | number = string>({
   onChange,
   visibilityOpts,
   errors = [],
+  renderFields,
 }: FieldListProps<T, V>) => {
   const handleChange = (
     index: number,
@@ -61,21 +71,25 @@ export const FieldList = <T = string, V extends string | number = string>({
     <Col>
       {value.map((entry, i) => (
         <Row key={i} alignItems="start">
-          <Input
-            label={
-              <LabelStatus
-                label={label}
-                value={entry.visibleTo}
-                options={visibilityOpts}
-                onChange={(v) => handleChange(i, 'visibleTo', v)}
-                verified={entry.verified}
-              />
-            }
-            value={(entry.value ?? '') as string}
-            onChange={(e) => handleChange(i, 'value', e.target.value)}
-            error={errors?.[i]?.value}
-            className="flex-1"
-          />
+          {renderFields ? (
+            renderFields(entry, i, handleChange)
+          ) : (
+            <Input
+              label={
+                <LabelStatus
+                  label={label}
+                  value={entry.visibleTo}
+                  options={visibilityOpts}
+                  onChange={(v) => handleChange(i, 'visibleTo', v)}
+                  verified={entry.verified}
+                />
+              }
+              value={(entry.value ?? '') as string}
+              onChange={(e) => handleChange(i, 'value', e.target.value)}
+              error={errors?.[i]?.value}
+              className="flex-1"
+            />
+          )}
           <Button
             type="button"
             variant="secondary"
