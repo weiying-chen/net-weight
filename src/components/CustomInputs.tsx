@@ -65,7 +65,7 @@ export function CustomInputs<T = any>({
         ))}
 
       {value.map((item, i) => (
-        <Row key={i} alignItems="start" gap="sm" className="mb-2">
+        <Row key={i} alignItems="start" gap="sm">
           {renderFields(item, i, handleChange)}
           <Button
             type="button"
@@ -79,7 +79,7 @@ export function CustomInputs<T = any>({
         </Row>
       ))}
 
-      <Button type="button" onClick={handleAdd} className="mt-1 self-start">
+      <Button type="button" onClick={handleAdd} className="self-start">
         {addButtonLabel}
       </Button>
     </Col>

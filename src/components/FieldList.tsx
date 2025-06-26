@@ -101,7 +101,7 @@ export const FieldList = <T = string, V extends string | number = string>({
           </Button>
         </Row>
       ))}
-      <Button type="button" onClick={handleAdd} className="mt-2 self-start">
+      <Button type="button" onClick={handleAdd} className="self-start">
         {addButtonLabel}
       </Button>
     </Col>

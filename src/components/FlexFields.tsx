@@ -222,7 +222,7 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
   const blueprintKeys = ['type', 'method', 'item', 'value'];
 
   return (
-    <Col className="w-full space-y-2">
+    <Col>
       {label && <label className="text-sm font-semibold">{label}</label>}
       {fields.map((field, fi) => {
         const extras = field.inputs.filter(

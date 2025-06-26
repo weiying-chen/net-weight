@@ -8,7 +8,7 @@ type DynFieldsProps<T extends Record<string, string | number>> = {
   label?: string;
   fields?: T[];
   fieldTemplate: T;
-  labels?: Partial<Record<keyof T, string>>; // Optional localized labels
+  labels?: Partial<Record<keyof T, string>>;
   addFieldLabel?: string;
   onChange: (fields: T[]) => void;
 };
@@ -54,7 +54,7 @@ export const DynFields = <T extends Record<string, string | number>>({
   const keys = Object.keys(fieldTemplate) as (keyof T)[];
 
   return (
-    <Col className="w-full space-y-2">
+    <Col>
       {label && <label className="text-sm font-semibold">{label}</label>}
       {fields.map((field, fi) => (
         <div
@@ -79,7 +79,7 @@ export const DynFields = <T extends Record<string, string | number>>({
                     : e.target.value,
                 )
               }
-              className="w-full min-w-0" // ensure full width inside grid
+              className="w-full min-w-0"
             />
           ))}
           <Button
