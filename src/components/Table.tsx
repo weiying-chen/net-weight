@@ -3,9 +3,10 @@ import { IconArrowUp, IconArrowDown } from '@tabler/icons-react';
 import { Tooltip } from '@/components/Tooltip';
 
 type Cols<D> = {
-  header: string;
+  header?: string;
   render: (item: D) => React.ReactNode;
   sortable?: boolean;
+  sortValue?: (item: D) => string | number;
   width?: number;
 };
 
@@ -58,10 +59,26 @@ export function Table<T, D extends object>({
   const sortedPaired = useMemo(() => {
     if (!sortConfig) return paired;
     const { index, direction } = sortConfig;
+    const col = cols[index];
+
     return [...paired].sort((a, b) => {
-      const sa = String(cols[index].render(a.disp) ?? '');
-      const sb = String(cols[index].render(b.disp) ?? '');
-      if (sa === '[object Object]' || sb === '[object Object]') return 0;
+      const sa = col.sortValue
+        ? col.sortValue(a.disp)
+        : String(col.render(a.disp) ?? '');
+      const sb = col.sortValue
+        ? col.sortValue(b.disp)
+        : String(col.render(b.disp) ?? '');
+
+      // If values are not comparable, skip sort
+      if (
+        typeof sa !== 'string' &&
+        typeof sa !== 'number' &&
+        typeof sb !== 'string' &&
+        typeof sb !== 'number'
+      ) {
+        return 0;
+      }
+
       if (direction === 'asc') return sa < sb ? -1 : sa > sb ? 1 : 0;
       return sa > sb ? -1 : sa < sb ? 1 : 0;
     });
@@ -90,13 +107,18 @@ export function Table<T, D extends object>({
   const handleSort = (ci: number) => {
     if (cols[ci].sortable === false) return;
 
-    const sample = cols[ci].render(paired[0]?.disp);
-    if (typeof sample === 'object' && sample !== null) return;
+    const col = cols[ci];
+    const sample = col.sortValue
+      ? col.sortValue(paired[0]?.disp)
+      : col.render(paired[0]?.disp);
+
+    if (typeof sample !== 'string' && typeof sample !== 'number') return;
 
     const dir =
       sortConfig?.index === ci && sortConfig.direction === 'asc'
         ? 'desc'
         : 'asc';
+
     setSortConfig({ index: ci, direction: dir });
   };
 
@@ -229,12 +251,14 @@ export function Table<T, D extends object>({
           onClick={() => (col.sortable === false ? null : handleSort(i))}
         >
           <div className="flex min-w-0 items-center gap-2 text-sm font-semibold">
-            <span className="block w-full truncate">{col.header}</span>
+            {col.header !== undefined && (
+              <span className="block w-full truncate">{col.header}</span>
+            )}
             {sortConfig?.index === i &&
               (sortConfig.direction === 'asc' ? (
-                <IconArrowUp size={16} />
+                <IconArrowUp size={16} className="flex-shrink-0" />
               ) : (
-                <IconArrowDown size={16} />
+                <IconArrowDown size={16} className="flex-shrink-0" />
               ))}
           </div>
           <div
