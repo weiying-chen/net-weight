@@ -1,17 +1,24 @@
-import { ReactNode, useState, useRef, useEffect, CSSProperties } from 'react';
+import {
+  ReactNode,
+  useState,
+  useRef,
+  useEffect,
+  useLayoutEffect,
+  CSSProperties,
+} from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from '@/utils';
 
 interface TooltipProps {
   children: ReactNode;
-  content: ReactNode;
+  content: React.ReactNode;
   className?: string;
   transient?: boolean;
   /**
-   * CSS max-width for the tooltip box. Accepts any valid CSS width value,
-   * e.g. "200px", "50%", "20rem". Defaults to "180px".
+   * Width in pixels. If you pass a number (e.g. 200), the tooltip will be 200px wide.
+   * If omitted, the tooltip will size itself to fit its content exactly (no wrapping).
    */
-  maxWidth?: string;
+  width?: number;
 }
 
 const TOOLTIP_OFFSET = { x: 10, y: 10 };
@@ -21,7 +28,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
   content,
   className,
   transient = false,
-  maxWidth = '180px',
+  width,
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
@@ -31,84 +38,90 @@ export const Tooltip: React.FC<TooltipProps> = ({
     top: 0,
     left: 0,
     zIndex: 9999,
-    maxWidth, // apply default or incoming maxWidth
+    ...(width != null ? { width } : {}),
   });
 
-  const triggerRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
+  const mousePos = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
-  const handleMouseEnter = () => setIsVisible(true);
-  const handleMouseLeave = () => setIsVisible(false);
+  // clamp & position logic
+  const positionTooltip = (clientX: number, clientY: number) => {
+    if (!tooltipRef.current) return;
+    const rect = tooltipRef.current.getBoundingClientRect();
+    const vw = document.documentElement.clientWidth;
+    const vh = document.documentElement.clientHeight;
 
-  const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
-    requestAnimationFrame(() => {
-      if (!tooltipRef.current) return;
+    let top = clientY + window.scrollY + TOOLTIP_OFFSET.y;
+    let left = clientX + window.scrollX + TOOLTIP_OFFSET.x;
 
-      const tooltipRect = tooltipRef.current.getBoundingClientRect();
-      const viewportWidth = window.innerWidth;
-      const viewportHeight = window.innerHeight;
+    // vertical clamp
+    const maxTop = window.scrollY + vh - rect.height - 5;
+    top = Math.min(Math.max(top, window.scrollY + 5), maxTop);
 
-      let top = event.clientY + window.scrollY + TOOLTIP_OFFSET.y;
-      let left = event.clientX + window.scrollX + TOOLTIP_OFFSET.x;
+    // horizontal clamp
+    const maxLeft = window.scrollX + vw - rect.width - 5;
+    left = Math.min(Math.max(left, window.scrollX + 5), maxLeft);
 
-      // Prevent bottom overflow
-      if (
-        event.clientY + TOOLTIP_OFFSET.y + tooltipRect.height >
-        viewportHeight
-      ) {
-        top =
-          event.clientY +
-          window.scrollY -
-          TOOLTIP_OFFSET.y -
-          tooltipRect.height;
-      }
-      // Prevent right overflow
-      if (
-        event.clientX + TOOLTIP_OFFSET.x + tooltipRect.width >
-        viewportWidth
-      ) {
-        left = window.scrollX + viewportWidth - tooltipRect.width - 5;
-      }
-      // Prevent left overflow
-      if (left < window.scrollX) {
-        left = window.scrollX + 5;
-      }
-
-      setStyle((prev) => ({
-        ...prev,
-        top,
-        left,
-        maxWidth, // ensure we carry over the prop on each move
-      }));
-      setIsMeasured(true);
-    });
+    setStyle((prev) => ({ ...prev, top, left }));
+    setIsMeasured(true);
   };
 
-  // Show portal when visible, hide after fade-out
+  const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
+    mousePos.current = { x: e.clientX, y: e.clientY };
+    setShouldRender(true);
+    setIsVisible(true);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    mousePos.current = { x: e.clientX, y: e.clientY };
+    positionTooltip(e.clientX, e.clientY);
+  };
+
+  const handleMouseLeave = () => {
+    setIsVisible(false);
+  };
+
+  // measure natural width and clamp on mount
+  useLayoutEffect(() => {
+    if (!shouldRender) return;
+
+    if (width == null && tooltipRef.current) {
+      // lock in the natural width (pre-wrap)
+      const naturalW = tooltipRef.current.scrollWidth;
+      setStyle((prev) => ({ ...prev, width: naturalW }));
+    }
+
+    positionTooltip(mousePos.current.x, mousePos.current.y);
+  }, [shouldRender, width]);
+
+  // fade-out & unmount
   useEffect(() => {
-    if (isVisible) {
-      setShouldRender(true);
-    } else {
-      const timeout = setTimeout(() => setShouldRender(false), 200);
-      return () => clearTimeout(timeout);
+    if (!isVisible) {
+      const t = window.setTimeout(() => setShouldRender(false), 200);
+      return () => clearTimeout(t);
     }
   }, [isVisible]);
 
-  // Reset measurement state when hidden
+  // reset measurement
   useEffect(() => {
-    if (!isVisible) {
-      setIsMeasured(false);
-    }
+    if (!isVisible) setIsMeasured(false);
   }, [isVisible]);
+
+  // respond to width prop changes
+  useEffect(() => {
+    setStyle((prev) => ({
+      ...prev,
+      ...(width != null ? { width } : { width: undefined }),
+    }));
+  }, [width]);
 
   return (
     <>
       <div
-        ref={triggerRef}
         className={cn(className)}
         onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
         onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
       >
         {children}
       </div>
@@ -120,7 +133,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
             style={style}
             className={cn(
               'pointer-events-none transform rounded bg-foreground px-3 py-2 text-sm text-background shadow',
-              'whitespace-pre-line transition duration-200 ease-in-out',
+              'whitespace-nowrap transition duration-200 ease-in-out',
               isVisible && isMeasured
                 ? 'scale-100 opacity-100'
                 : 'scale-95 opacity-0',

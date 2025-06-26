@@ -305,7 +305,7 @@ export function Table<T, D extends object>({
 
       if (wrapTooltip) {
         return (
-          <Tooltip key={ri} content={asTooltip!(orig)} maxWidth="280px">
+          <Tooltip key={ri} content={asTooltip!(orig)}>
             {rowNode}
           </Tooltip>
         );
