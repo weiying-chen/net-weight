@@ -2,7 +2,6 @@ import {
   ReactNode,
   useState,
   useRef,
-  useEffect,
   useLayoutEffect,
   CSSProperties,
 } from 'react';
@@ -14,14 +13,11 @@ interface TooltipProps {
   content: React.ReactNode;
   className?: string;
   transient?: boolean;
-  /**
-   * Width in pixels. If you pass a number (e.g. 200), the tooltip will be 200px wide.
-   * If omitted, the tooltip will size itself to fit its content exactly (no wrapping).
-   */
+  /** width in px; omit for auto-size */
   width?: number;
 }
 
-const TOOLTIP_OFFSET = { x: 10, y: 10 };
+const TOOLTIP_OFFSET = 10;
 
 export const Tooltip: React.FC<TooltipProps> = ({
   children,
@@ -30,116 +26,97 @@ export const Tooltip: React.FC<TooltipProps> = ({
   transient = false,
   width,
 }) => {
-  const [isVisible, setIsVisible] = useState(false);
-  const [shouldRender, setShouldRender] = useState(false);
-  const [isMeasured, setIsMeasured] = useState(false);
+  const [visible, setVisible] = useState(false);
   const [style, setStyle] = useState<CSSProperties>({
-    position: 'absolute',
+    position: 'fixed',
     top: 0,
     left: 0,
     zIndex: 9999,
+    visibility: 'hidden',
     ...(width != null ? { width } : {}),
   });
 
-  const tooltipRef = useRef<HTMLDivElement>(null);
-  const mousePos = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const ref = useRef<HTMLDivElement>(null);
+  const lastPos = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
-  // clamp & position logic
-  const positionTooltip = (clientX: number, clientY: number) => {
-    if (!tooltipRef.current) return;
-    const rect = tooltipRef.current.getBoundingClientRect();
-    const vw = document.documentElement.clientWidth;
-    const vh = document.documentElement.clientHeight;
+  const position = (x: number, y: number) => {
+    if (!ref.current) return;
+    const rect = ref.current.getBoundingClientRect();
+    const vw = window.visualViewport?.width ?? window.innerWidth;
+    const vh = window.visualViewport?.height ?? window.innerHeight;
 
-    let top = clientY + window.scrollY + TOOLTIP_OFFSET.y;
-    let left = clientX + window.scrollX + TOOLTIP_OFFSET.x;
-
-    // vertical clamp
-    const maxTop = window.scrollY + vh - rect.height - 5;
-    top = Math.min(Math.max(top, window.scrollY + 5), maxTop);
-
-    // horizontal clamp
-    const maxLeft = window.scrollX + vw - rect.width - 5;
-    left = Math.min(Math.max(left, window.scrollX + 5), maxLeft);
-
-    setStyle((prev) => ({ ...prev, top, left }));
-    setIsMeasured(true);
-  };
-
-  const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
-    mousePos.current = { x: e.clientX, y: e.clientY };
-    setShouldRender(true);
-    setIsVisible(true);
-  };
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    mousePos.current = { x: e.clientX, y: e.clientY };
-    positionTooltip(e.clientX, e.clientY);
-  };
-
-  const handleMouseLeave = () => {
-    setIsVisible(false);
-  };
-
-  // measure natural width and clamp on mount
-  useLayoutEffect(() => {
-    if (!shouldRender) return;
-
-    if (width == null && tooltipRef.current) {
-      // lock in the natural width (pre-wrap)
-      const naturalW = tooltipRef.current.scrollWidth;
-      setStyle((prev) => ({ ...prev, width: naturalW }));
+    // 1) If no prop-width AND we haven't yet set style.width, lock in full box-width now:
+    if (width == null && style.width == null) {
+      setStyle((s) => ({ ...s, width: rect.width }));
+      return; // wait for next frame to do the clamp+reveal
     }
 
-    positionTooltip(mousePos.current.x, mousePos.current.y);
-  }, [shouldRender, width]);
+    // 2) Clamp & reveal
+    const top = Math.min(
+      Math.max(y + TOOLTIP_OFFSET, TOOLTIP_OFFSET),
+      vh - rect.height - TOOLTIP_OFFSET,
+    );
+    const left = Math.min(
+      Math.max(x + TOOLTIP_OFFSET, TOOLTIP_OFFSET),
+      vw - rect.width - TOOLTIP_OFFSET,
+    );
 
-  // fade-out & unmount
-  useEffect(() => {
-    if (!isVisible) {
-      const t = window.setTimeout(() => setShouldRender(false), 200);
-      return () => clearTimeout(t);
-    }
-  }, [isVisible]);
-
-  // reset measurement
-  useEffect(() => {
-    if (!isVisible) setIsMeasured(false);
-  }, [isVisible]);
-
-  // respond to width prop changes
-  useEffect(() => {
-    setStyle((prev) => ({
-      ...prev,
-      ...(width != null ? { width } : { width: undefined }),
+    setStyle((s) => ({
+      ...s,
+      top,
+      left,
+      visibility: 'visible',
     }));
-  }, [width]);
+  };
+
+  const onEnter = (e: React.MouseEvent<HTMLDivElement>) => {
+    lastPos.current = { x: e.clientX, y: e.clientY };
+    setVisible(true);
+  };
+  const onMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    lastPos.current = { x: e.clientX, y: e.clientY };
+    position(e.clientX, e.clientY);
+  };
+  const onLeave = () => {
+    setVisible(false);
+    // reset so next time we re-measure if necessary
+    setStyle((s) => ({
+      ...s,
+      visibility: 'hidden',
+      top: 0,
+      left: 0,
+      ...(width != null ? {} : { width: undefined }),
+    }));
+  };
+
+  // Measure & position *before* paint any time we go visible or width changes
+  useLayoutEffect(() => {
+    if (visible) {
+      position(lastPos.current.x, lastPos.current.y);
+    }
+  }, [visible, width]);
 
   return (
     <>
       <div
         className={cn(className)}
-        onMouseEnter={handleMouseEnter}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
+        onMouseEnter={onEnter}
+        onMouseMove={onMove}
+        onMouseLeave={onLeave}
       >
         {children}
       </div>
 
-      {shouldRender &&
+      {visible &&
         createPortal(
           <div
-            ref={tooltipRef}
+            ref={ref}
             style={style}
             className={cn(
-              'pointer-events-none transform rounded bg-foreground px-3 py-2 text-sm text-background shadow',
-              'whitespace-nowrap transition duration-200 ease-in-out',
-              isVisible && isMeasured
-                ? 'scale-100 opacity-100'
-                : 'scale-95 opacity-0',
-              isVisible && !isMeasured && 'invisible',
+              'pointer-events-none fixed rounded bg-foreground px-3 py-2 text-sm text-background shadow',
+              'whitespace-pre transition duration-150 ease-in-out',
             )}
-            onMouseEnter={transient ? handleMouseLeave : undefined}
+            onMouseEnter={transient ? onLeave : undefined}
           >
             {content}
           </div>,
