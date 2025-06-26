@@ -470,9 +470,10 @@ export function SelectTrigger<T extends string | number | null>({
         <Row
           align="between"
           alignItems="center"
+          locked
           className={cn('min-w-0', isIconTrigger && 'gap-0')}
         >
-          <Row alignItems="center" className="min-w-0 gap-1">
+          <Row alignItems="center" className="min-w-0 gap-1" fluid>
             {selectedOptions[0]?.icon && <span>{selectedOptions[0].icon}</span>}
             {!isIconTrigger && (
               <span

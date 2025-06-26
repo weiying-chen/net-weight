@@ -20,7 +20,7 @@ export const PseudoInput = forwardRef<HTMLDivElement, PseudoInputProps>(
       <Row
         ref={ref}
         alignItems="center"
-        locked={true}
+        locked
         tabIndex={tabIndex}
         onClick={onClick}
         className={cn(
