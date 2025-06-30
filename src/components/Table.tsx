@@ -318,97 +318,120 @@ export function Table<T, D extends object>({
     </div>
   );
 
-  const renderBody = () =>
-    sortedPaired.map(({ orig, disp }, ri) => {
-      const wrapTooltip = !!(asTooltip && !isMouseDown.current);
-      const rowContent = (
-        <>
-          {onRowSelect && (
-            <div className="flex items-center justify-center">
-              <label
-                className="flex h-full w-full cursor-pointer items-center justify-center px-4 py-2"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleRowSelect(ri, e);
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedItems.includes(orig)}
-                  readOnly
-                />
-              </label>
-            </div>
-          )}
-          <div className="flex w-12 items-center justify-center px-4 py-2 text-sm">
-            {ri + 1}
-          </div>
-          {cols.map((col, ci) => (
-            <div
-              key={ci}
-              className="flex min-w-0 px-4 py-2 text-sm"
-              style={{ width: widths[ci] ?? MIN_COL_WIDTH }}
-              ref={(el) => {
-                bodyRefs.current[ri] = bodyRefs.current[ri] || [];
-                bodyRefs.current[ri][ci] = el;
+  // Helper function to render the content of a row
+  const renderRowContent = (ri: number, orig: T, disp: D) => {
+    return (
+      <>
+        {onRowSelect && (
+          <div className="flex items-center justify-center">
+            <label
+              className="flex h-full w-full cursor-pointer items-center justify-center px-4 py-2"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleRowSelect(ri, e);
               }}
             >
-              <TableCell
-                value={String(col.render(disp))}
-                isEditing={
-                  col.editable !== false &&
-                  editingCell?.row === ri &&
-                  editingCell?.col === ci
-                }
-                onDoubleClick={() => {
-                  if (!editingCell && col.editable !== false) {
-                    setEditingCell({ row: ri, col: ci });
-                  }
-                }}
-                onChange={(newValue) => {
-                  console.log(`Edited cell [${ri}, ${ci}] to:`, newValue);
-                  setEditingCell(null);
-                }}
-                onCancel={() => setEditingCell(null)}
+              <input
+                type="checkbox"
+                checked={selectedItems.includes(orig)}
+                readOnly
               />
-            </div>
-          ))}
-        </>
-      );
-
-      const rowNode = (
-        <div
-          key={ri}
-          className={`flex cursor-pointer border-b border-subtle ${
-            hoveredRow === ri ? 'bg-subtle' : ''
-          }`}
-          onClick={(e) => {
-            if (clickTimeoutRef.current) {
-              clearTimeout(clickTimeoutRef.current); // it's a double-click, cancel single click
-              clickTimeoutRef.current = null;
-              return;
-            }
-
-            clickTimeoutRef.current = setTimeout(() => {
-              onRowClick?.(e, orig); // now we know it's a real single click
-              clickTimeoutRef.current = null;
-            }, 200); // or 250 if you want a more generous threshold
-          }}
-          onMouseEnter={(e) => handleMouseEnterRow(ri, e)}
-          onMouseLeave={handleMouseLeaveRow}
-          onMouseMove={() => handleMouseMoveRow(ri)}
-        >
-          {rowContent}
+            </label>
+          </div>
+        )}
+        <div className="flex w-12 items-center justify-center px-4 py-2 text-sm">
+          {ri + 1}
         </div>
-      );
+        {cols.map((col, ci) => (
+          <div
+            key={ci}
+            className={`relative box-border flex min-w-0 px-4 py-2 text-sm`}
+            style={{
+              width: widths[ci] ?? MIN_COL_WIDTH,
+            }}
+            ref={(el) => {
+              bodyRefs.current[ri] = bodyRefs.current[ri] || [];
+              bodyRefs.current[ri][ci] = el;
+            }}
+          >
+            {/* Absolutely positioned overlay (border or shadow) */}
+            {editingCell?.row === ri && editingCell?.col === ci && (
+              <div
+                className="pointer-events-none absolute inset-0 border-2 border-foreground"
+                style={{
+                  zIndex: 1, // Ensure it's above the cell content
+                }}
+              />
+            )}
 
-      if (wrapTooltip) {
+            <TableCell
+              value={String(col.render(disp))}
+              isEditing={
+                col.editable !== false &&
+                editingCell?.row === ri &&
+                editingCell?.col === ci
+              }
+              onDoubleClick={() => {
+                if (!editingCell && col.editable !== false) {
+                  setEditingCell({ row: ri, col: ci });
+                }
+              }}
+              onChange={(newValue) => {
+                console.log(`Edited cell [${ri}, ${ci}] to:`, newValue);
+                setEditingCell(null);
+              }}
+              onCancel={() => setEditingCell(null)}
+            />
+          </div>
+        ))}
+      </>
+    );
+  };
+
+  // Helper function to render the entire row
+  const renderRowNode = (ri: number, orig: T, rowContent: JSX.Element) => {
+    return (
+      <div
+        key={ri}
+        className={`flex cursor-pointer border-b border-subtle ${
+          hoveredRow === ri ? 'bg-subtle' : ''
+        }`}
+        onClick={(e) => {
+          if (clickTimeoutRef.current) {
+            clearTimeout(clickTimeoutRef.current); // it's a double-click, cancel single click
+            clickTimeoutRef.current = null;
+            return;
+          }
+
+          clickTimeoutRef.current = setTimeout(() => {
+            onRowClick?.(e, orig); // now we know it's a real single click
+            clickTimeoutRef.current = null;
+          }, 200); // or 250 if you want a more generous threshold
+        }}
+        onMouseEnter={(e) => handleMouseEnterRow(ri, e)}
+        onMouseLeave={handleMouseLeaveRow}
+        onMouseMove={() => handleMouseMoveRow(ri)}
+      >
+        {rowContent}
+      </div>
+    );
+  };
+
+  // Main renderBody function
+  const renderBody = () =>
+    sortedPaired.map(({ orig, disp }, ri) => {
+      const rowContent = renderRowContent(ri, orig, disp);
+      const rowNode = renderRowNode(ri, orig, rowContent);
+
+      // Only use wrapTooltip here to wrap with Tooltip if necessary
+      if (asTooltip && !isMouseDown.current) {
         return (
           <Tooltip key={ri} content={asTooltip!(orig)}>
             {rowNode}
           </Tooltip>
         );
       }
+
       return rowNode;
     });
 
