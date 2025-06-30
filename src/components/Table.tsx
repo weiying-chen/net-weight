@@ -345,7 +345,12 @@ export function Table<T, D extends object>({
         {cols.map((col, ci) => (
           <div
             key={ci}
-            className={`relative box-border flex min-w-0 px-4 py-2 text-sm`}
+            className={`relative box-border flex min-w-0 px-4 py-2 text-sm ${
+              // Add bg-background if the cell is being edited
+              editingCell?.row === ri && editingCell?.col === ci
+                ? 'bg-background'
+                : ''
+            }`}
             style={{
               width: widths[ci] ?? MIN_COL_WIDTH,
             }}
