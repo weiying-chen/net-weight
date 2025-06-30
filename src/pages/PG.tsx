@@ -1,30 +1,41 @@
-import { useState } from 'react';
 import { Col } from '@/components/Col';
-import { Select } from '@/components/Select';
+import { Table } from '@/components/Table'; // Adjust the import path if needed
+
+type Item = {
+  id: string;
+  fruit: string;
+  color: string;
+};
 
 export function PG() {
-  const [traits, setTraits] = useState<string[]>([]);
+  const items: Item[] = [
+    { id: '1', fruit: 'Apple', color: 'Red' },
+    { id: '2', fruit: 'Banana', color: 'Yellow' },
+    { id: '3', fruit: 'Grape', color: 'Purple' },
+  ];
 
-  const traitOptions = [
-    { value: 'Logical thinker', label: 'Logical thinker' },
-    { value: 'Creative/Imaginative', label: 'Creative/Imaginative' },
-    { value: 'Problem-solver', label: 'Problem-solver' },
-    { value: 'Quick learner', label: 'Quick learner' },
-    { value: 'Analytical', label: 'Analytical' },
-    { value: 'Intuitive', label: 'Intuitive' },
+  const columns = [
+    {
+      header: 'Fruit',
+      render: (item: Item) => item.fruit,
+      editable: true, // this one can be edited
+    },
+    {
+      header: 'Color',
+      render: (item: Item) => item.color,
+      editable: false, // disable editing for this column
+    },
   ];
 
   return (
     <Col className="w-full gap-6 p-6">
-      <Select
-        multiple
-        hasSearch
-        allowCustomOptions
-        label="Intelligence traits"
-        placeholder="Type or select traits"
-        value={traits}
-        onChange={setTraits}
-        options={traitOptions}
+      <Table
+        data={items}
+        cols={columns}
+        selectedItems={[]}
+        onRowClick={(e, item) => {
+          console.log('Clicked row:', item);
+        }}
       />
     </Col>
   );

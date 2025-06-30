@@ -1,6 +1,7 @@
 import { useState, useRef, useLayoutEffect, useEffect, useMemo } from 'react';
 import { IconArrowUp, IconArrowDown } from '@tabler/icons-react';
 import { Tooltip } from '@/components/Tooltip';
+import { TableCell } from '@/components/TableCell';
 
 type Cols<D> = {
   header?: string;
@@ -8,6 +9,7 @@ type Cols<D> = {
   sortable?: boolean;
   sortValue?: (item: D) => string | number;
   width?: number;
+  editable?: boolean;
 };
 
 const MIN_COL_WIDTH = 50;
@@ -56,6 +58,12 @@ export function Table<T, D extends object>({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const hoverRef = useRef<HTMLDivElement | null>(null);
   const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
+  const [editingCell, setEditingCell] = useState<{
+    row: number;
+    col: number;
+  } | null>(null);
+
+  const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const sortedPaired = useMemo(() => {
     if (!sortConfig) return paired;
@@ -84,26 +92,6 @@ export function Table<T, D extends object>({
       return sa > sb ? -1 : sa < sb ? 1 : 0;
     });
   }, [paired, sortConfig, cols]);
-
-  useEffect(() => {
-    const onDown = (e: MouseEvent) => {
-      if (hoverRef.current?.contains(e.target as Node)) return;
-      if (containerRef.current?.contains(e.target as Node)) return;
-
-      isMouseDown.current = true;
-      hideTimeout.current && window.clearTimeout(hideTimeout.current);
-      setHoveredRow(null);
-    };
-    const onUp = () => {
-      isMouseDown.current = false;
-    };
-    document.addEventListener('mousedown', onDown);
-    document.addEventListener('mouseup', onUp);
-    return () => {
-      document.removeEventListener('mousedown', onDown);
-      document.removeEventListener('mouseup', onUp);
-    };
-  }, []);
 
   const handleSort = (ci: number) => {
     if (cols[ci].sortable === false) return;
@@ -164,40 +152,6 @@ export function Table<T, D extends object>({
     document.addEventListener('mouseup', onUp);
   };
 
-  useLayoutEffect(() => {
-    if (!sortedPaired.length) return;
-    const newW: { [i: number]: number } = {};
-
-    cols.forEach((col, i) => {
-      if (col.width) {
-        newW[i] = col.width; // ← use fixed width if provided
-        return;
-      }
-
-      const hdrSpan = headerRefs.current[i]?.querySelector('span');
-      const hW = hdrSpan?.scrollWidth ?? MIN_COL_WIDTH;
-      const bW = Math.max(
-        ...bodyRefs.current.map((row) => {
-          const span = row[i]?.querySelector('span');
-          return span?.scrollWidth ?? MIN_COL_WIDTH;
-        }),
-        MIN_COL_WIDTH,
-      );
-      const base = Math.max(hW, bW, MIN_COL_WIDTH);
-      let pl = 0,
-        pr = 0;
-      const el = headerRefs.current[i];
-      if (el) {
-        const st = getComputedStyle(el);
-        pl = parseFloat(st.paddingLeft);
-        pr = parseFloat(st.paddingRight);
-      }
-      newW[i] = Math.min(base + pl + pr + 2, MAX_COL_WIDTH);
-    });
-
-    setWidths(newW);
-  }, [cols]);
-
   const handleRowSelect = (
     ri: number,
     e?: MouseEvent | React.MouseEvent | React.ChangeEvent,
@@ -244,6 +198,68 @@ export function Table<T, D extends object>({
       selectedItems.length === originalData.length ? [] : [...originalData],
     );
   };
+
+  useEffect(() => {
+    const onDown = (e: MouseEvent) => {
+      if (hoverRef.current?.contains(e.target as Node)) return;
+      if (containerRef.current?.contains(e.target as Node)) return;
+
+      isMouseDown.current = true;
+      hideTimeout.current && window.clearTimeout(hideTimeout.current);
+      setHoveredRow(null);
+    };
+    const onUp = () => {
+      isMouseDown.current = false;
+    };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('mouseup', onUp);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('mouseup', onUp);
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (clickTimeoutRef.current) {
+        clearTimeout(clickTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!sortedPaired.length) return;
+    const newW: { [i: number]: number } = {};
+
+    cols.forEach((col, i) => {
+      if (col.width) {
+        newW[i] = col.width; // ← use fixed width if provided
+        return;
+      }
+
+      const hdrSpan = headerRefs.current[i]?.querySelector('span');
+      const hW = hdrSpan?.scrollWidth ?? MIN_COL_WIDTH;
+      const bW = Math.max(
+        ...bodyRefs.current.map((row) => {
+          const span = row[i]?.querySelector('span');
+          return span?.scrollWidth ?? MIN_COL_WIDTH;
+        }),
+        MIN_COL_WIDTH,
+      );
+      const base = Math.max(hW, bW, MIN_COL_WIDTH);
+      let pl = 0,
+        pr = 0;
+      const el = headerRefs.current[i];
+      if (el) {
+        const st = getComputedStyle(el);
+        pl = parseFloat(st.paddingLeft);
+        pr = parseFloat(st.paddingRight);
+      }
+      newW[i] = Math.min(base + pl + pr + 2, MAX_COL_WIDTH);
+    });
+
+    setWidths(newW);
+  }, [cols]);
 
   const renderHeader = () => (
     <div className="flex bg-subtle">
@@ -337,7 +353,24 @@ export function Table<T, D extends object>({
                 bodyRefs.current[ri][ci] = el;
               }}
             >
-              <span className="block w-full truncate">{col.render(disp)}</span>
+              <TableCell
+                value={String(col.render(disp))}
+                isEditing={
+                  col.editable !== false &&
+                  editingCell?.row === ri &&
+                  editingCell?.col === ci
+                }
+                onDoubleClick={() => {
+                  if (!editingCell && col.editable !== false) {
+                    setEditingCell({ row: ri, col: ci });
+                  }
+                }}
+                onChange={(newValue) => {
+                  console.log(`Edited cell [${ri}, ${ci}] to:`, newValue);
+                  setEditingCell(null);
+                }}
+                onCancel={() => setEditingCell(null)}
+              />
             </div>
           ))}
         </>
@@ -349,7 +382,18 @@ export function Table<T, D extends object>({
           className={`flex cursor-pointer border-b border-subtle ${
             hoveredRow === ri ? 'bg-subtle' : ''
           }`}
-          onClick={(e) => onRowClick?.(e, orig)}
+          onClick={(e) => {
+            if (clickTimeoutRef.current) {
+              clearTimeout(clickTimeoutRef.current); // it's a double-click, cancel single click
+              clickTimeoutRef.current = null;
+              return;
+            }
+
+            clickTimeoutRef.current = setTimeout(() => {
+              onRowClick?.(e, orig); // now we know it's a real single click
+              clickTimeoutRef.current = null;
+            }, 200); // or 250 if you want a more generous threshold
+          }}
           onMouseEnter={(e) => handleMouseEnterRow(ri, e)}
           onMouseLeave={handleMouseLeaveRow}
           onMouseMove={() => handleMouseMoveRow(ri)}

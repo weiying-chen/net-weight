@@ -13,6 +13,8 @@ type InputProps = InputHTMLAttributes<HTMLInputElement> & {
   triggerOnly?: boolean;
   /** Optional display-only transformation */
   formatValue?: (value: any) => string;
+  /** Additional className applied directly to the <input> */
+  inputClassName?: string;
 };
 
 const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
@@ -29,6 +31,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
     formatValue,
     value,
     type,
+    inputClassName,
     ...props
   },
   ref,
@@ -82,6 +85,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
               'border-danger': error,
               'pointer-events-none opacity-50': disabled,
             },
+            inputClassName, // ← your update applied here
           )}
           {...props}
         />
