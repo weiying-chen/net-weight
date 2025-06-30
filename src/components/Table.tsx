@@ -55,6 +55,7 @@ export function Table<T, D extends object>({
   const bodyRefs = useRef<(HTMLDivElement | null)[][]>([]);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const hoverRef = useRef<HTMLDivElement | null>(null);
+  const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
 
   const sortedPaired = useMemo(() => {
     if (!sortConfig) return paired;
@@ -197,12 +198,40 @@ export function Table<T, D extends object>({
     setWidths(newW);
   }, [cols]);
 
-  const handleRowSelect = (ri: number) => {
+  const handleRowSelect = (
+    ri: number,
+    e?: MouseEvent | React.MouseEvent | React.ChangeEvent,
+  ) => {
     const { orig } = sortedPaired[ri];
-    const next = selectedItems.includes(orig)
-      ? selectedItems.filter((x) => x !== orig)
-      : [...selectedItems, orig];
-    onRowSelect?.(next);
+
+    // Narrow type to check for shiftKey safely
+    const isShiftClick =
+      !!e && 'shiftKey' in e && typeof e.shiftKey === 'boolean' && e.shiftKey;
+
+    if (isShiftClick && lastClickedIndex !== null) {
+      const rangeStart = Math.min(lastClickedIndex, ri);
+      const rangeEnd = Math.max(lastClickedIndex, ri);
+      const rangeItems = sortedPaired
+        .slice(rangeStart, rangeEnd + 1)
+        .map((p) => p.orig);
+
+      const selectedSet = new Set(selectedItems);
+      const shouldSelect = !rangeItems.every((item) => selectedSet.has(item));
+
+      const next = shouldSelect
+        ? [...selectedItems, ...rangeItems.filter((i) => !selectedSet.has(i))]
+        : selectedItems.filter((item) => !rangeItems.includes(item));
+
+      onRowSelect?.(next);
+    } else {
+      // Normal toggle
+      const next = selectedItems.includes(orig)
+        ? selectedItems.filter((x) => x !== orig)
+        : [...selectedItems, orig];
+
+      setLastClickedIndex(ri);
+      onRowSelect?.(next);
+    }
   };
 
   const setIndeterminateState = (el: HTMLInputElement | null) => {
@@ -282,13 +311,15 @@ export function Table<T, D extends object>({
             <div className="flex items-center justify-center">
               <label
                 className="flex h-full w-full cursor-pointer items-center justify-center px-4 py-2"
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleRowSelect(ri, e);
+                }}
               >
                 <input
                   type="checkbox"
                   checked={selectedItems.includes(orig)}
-                  onChange={() => handleRowSelect(ri)}
-                  className="pointer-events-none"
+                  readOnly
                 />
               </label>
             </div>
