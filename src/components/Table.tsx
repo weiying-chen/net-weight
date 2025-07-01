@@ -199,6 +199,14 @@ export function Table<T, D extends object>({
     );
   };
 
+  const handleDoubleClick = (ri: number, ci: number) => {
+    const col = cols[ci];
+    // Only allow double-click if the cell is editable and we're not already editing
+    if (!editingCell && col.editable !== false) {
+      setEditingCell({ row: ri, col: ci });
+    }
+  };
+
   useEffect(() => {
     const onDown = (e: MouseEvent) => {
       if (hoverRef.current?.contains(e.target as Node)) return;
@@ -351,6 +359,7 @@ export function Table<T, D extends object>({
                 ? 'bg-background'
                 : ''
             }`}
+            onDoubleClick={() => handleDoubleClick(ri, ci)} // Handle double-click here
             style={{
               width: widths[ci] ?? MIN_COL_WIDTH,
             }}
@@ -361,12 +370,7 @@ export function Table<T, D extends object>({
           >
             {/* Absolutely positioned overlay (border or shadow) */}
             {editingCell?.row === ri && editingCell?.col === ci && (
-              <div
-                className="pointer-events-none absolute inset-0 border-2 border-foreground"
-                style={{
-                  zIndex: 1, // Ensure it's above the cell content
-                }}
-              />
+              <div className="pointer-events-none absolute inset-0 z-10 border-2 border-foreground" />
             )}
 
             <TableCell
@@ -376,11 +380,7 @@ export function Table<T, D extends object>({
                 editingCell?.row === ri &&
                 editingCell?.col === ci
               }
-              onDoubleClick={() => {
-                if (!editingCell && col.editable !== false) {
-                  setEditingCell({ row: ri, col: ci });
-                }
-              }}
+              // onDoubleClick={() => handleDoubleClick(ri, ci)} // Propagate the double-click
               onChange={(newValue) => {
                 console.log(`Edited cell [${ri}, ${ci}] to:`, newValue);
                 setEditingCell(null);

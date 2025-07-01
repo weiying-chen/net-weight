@@ -4,7 +4,6 @@ import { Input } from '@/components/Input';
 type TableCellProps = {
   value: string;
   isEditing: boolean;
-  onDoubleClick: () => void;
   onChange: (newValue: string) => void;
   onCancel: () => void;
 };
@@ -12,7 +11,6 @@ type TableCellProps = {
 export function TableCell({
   value,
   isEditing,
-  onDoubleClick,
   onChange,
   onCancel,
 }: TableCellProps) {
@@ -41,12 +39,5 @@ export function TableCell({
     );
   }
 
-  return (
-    <span
-      className="block w-full cursor-text truncate"
-      onDoubleClick={onDoubleClick}
-    >
-      {value}
-    </span>
-  );
+  return <span className="block w-full cursor-text truncate">{value}</span>;
 }
