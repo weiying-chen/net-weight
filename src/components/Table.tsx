@@ -274,8 +274,17 @@ export function Table<T, D extends object>({
     };
   }, []);
 
+  const prevCols = useRef<Cols<D>[]>([]); // Ref to track previous cols
+
   useLayoutEffect(() => {
-    // Do not include `cols` in the dependency array if not necessary
+    // Only recalculate if cols have changed
+    const colsChanged = !cols.every((col, i) => {
+      return col.header === prevCols.current[i]?.header; // Compare headers
+    });
+
+    if (!colsChanged) return; // Skip recalculation if no change
+
+    // Recalculate column widths when cols have changed
     const newW: { [i: number]: number } = {};
 
     cols.forEach((col, i) => {
@@ -308,7 +317,8 @@ export function Table<T, D extends object>({
     });
 
     setWidths(newW);
-  }, []); // Empty dependency array means it only runs on initial mount
+    prevCols.current = cols;
+  }, [cols]);
 
   const renderHeader = () => (
     <div className="flex bg-subtle">

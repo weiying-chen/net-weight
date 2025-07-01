@@ -21,7 +21,6 @@ export function PG() {
     {
       header: 'Fruit',
       render: (item: Item) => item.fruit,
-      editable: true, // this one can be edited
     },
     {
       header: 'Color',
