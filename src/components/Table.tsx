@@ -275,19 +275,15 @@ export function Table<T, D extends object>({
   }, []);
 
   useLayoutEffect(() => {
-    // Prevent recalculation if we're editing a cell or if sortedPaired is empty
-    if (!sortedPaired.length) return;
-
+    // Do not include `cols` in the dependency array if not necessary
     const newW: { [i: number]: number } = {};
 
     cols.forEach((col, i) => {
-      // Use fixed width if provided
       if (col.width) {
         newW[i] = col.width;
         return;
       }
 
-      // Otherwise, calculate based on content
       const hdrSpan = headerRefs.current[i]?.querySelector('span');
       const hW = hdrSpan?.scrollWidth ?? MIN_COL_WIDTH;
       const bW = Math.max(
@@ -299,7 +295,6 @@ export function Table<T, D extends object>({
       );
       const base = Math.max(hW, bW, MIN_COL_WIDTH);
 
-      // Calculate padding
       let pl = 0,
         pr = 0;
       const el = headerRefs.current[i];
@@ -312,14 +307,8 @@ export function Table<T, D extends object>({
       newW[i] = Math.min(base + pl + pr + 2, MAX_COL_WIDTH);
     });
 
-    // Update widths only if there’s a change
-    setWidths((prevWidths) => {
-      if (JSON.stringify(newW) !== JSON.stringify(prevWidths)) {
-        return newW;
-      }
-      return prevWidths;
-    });
-  }, [cols]); // Do not include `editingCell` in the dependency array
+    setWidths(newW);
+  }, []); // Empty dependency array means it only runs on initial mount
 
   const renderHeader = () => (
     <div className="flex bg-subtle">
