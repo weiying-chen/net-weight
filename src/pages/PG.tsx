@@ -36,18 +36,23 @@ export function PG() {
     colIndex: number,
     newValue: string,
   ) => {
+    // Log the values
+    console.log('Row Index:', rowIndex);
+    console.log('Column Index:', colIndex);
+    console.log('New Value:', newValue);
+
     // Get the column header to know which property to update
-    const columnHeader = columns[colIndex].header;
+    // const columnHeader = columns[colIndex].header;
 
     // If column is editable, update the corresponding item
-    if (columnHeader) {
-      const updatedItems = [...items];
-      updatedItems[rowIndex] = {
-        ...updatedItems[rowIndex],
-        [columnHeader.toLowerCase()]: newValue, // Dynamically update the property
-      };
-      setItems(updatedItems); // Update the state with the new items array
-    }
+    // if (columnHeader) {
+    //   const updatedItems = [...items];
+    //   updatedItems[rowIndex] = {
+    //     ...updatedItems[rowIndex],
+    //     [columnHeader.toLowerCase()]: newValue, // Dynamically update the property
+    //   };
+    //   setItems(updatedItems); // Update the state with the new items array
+    // }
   };
 
   return (

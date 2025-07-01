@@ -319,7 +319,7 @@ export function Table<T, D extends object>({
       }
       return prevWidths;
     });
-  }, [cols, sortedPaired]); // Do not include `editingCell` in the dependency array
+  }, [cols]); // Do not include `editingCell` in the dependency array
 
   const renderHeader = () => (
     <div className="flex bg-subtle">

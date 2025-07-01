@@ -28,12 +28,17 @@ export function TableCell({
         autoFocus
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
-        onBlur={onBlur} // Trigger onBlur when input loses focus
+        onBlur={() => {
+          onChange(inputValue); // Trigger onChange when input loses focus
+          onBlur(); // Optionally trigger onBlur as well if needed
+        }}
         onKeyDown={(e) => {
           if (e.key === 'Enter') {
             onChange(inputValue); // Trigger onChange when pressing Enter
+            onBlur(); // Trigger onBlur when pressing Enter to remove focus
           } else if (e.key === 'Escape') {
             onCancel(); // Trigger onCancel when pressing Escape
+            onBlur(); // Trigger onBlur when pressing Escape
           }
         }}
         inputClassName="h-auto w-full border-none bg-transparent px-0 py-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 "
