@@ -20,6 +20,7 @@ type SortConfig = { index: number; direction: 'asc' | 'desc' } | null;
 export function Table<T, D extends object>({
   data: originalData,
   formatData,
+  formatHeader,
   selectedItems,
   cols,
   onRowClick,
@@ -30,6 +31,7 @@ export function Table<T, D extends object>({
 }: {
   data: T[];
   formatData?: (items: T[]) => D[];
+  formatHeader?: (header: string) => string;
   selectedItems: T[];
   cols: Cols<D>[];
   onRowClick?: (e: React.MouseEvent, item: T) => void;
@@ -44,6 +46,13 @@ export function Table<T, D extends object>({
       : (originalData as unknown as D[]);
     return dispArr.map((disp, i) => ({ orig: originalData[i], disp }));
   }, [originalData, formatData]);
+
+  const renderedCols = useMemo(() => {
+    return cols.map((col) => ({
+      ...col,
+      header: formatHeader ? formatHeader(col.header || '') : col.header,
+    }));
+  }, [cols, formatHeader]);
 
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
@@ -69,7 +78,7 @@ export function Table<T, D extends object>({
   const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const [localData, setLocalData] = useState<Record<string, any>[]>(
-    originalData as Record<string, any>[],
+    JSON.parse(JSON.stringify(originalData)), // Deep copy of originalData
   );
 
   const sortedPaired = useMemo(() => {
@@ -344,7 +353,7 @@ export function Table<T, D extends object>({
       <div className="flex w-12 items-center justify-center px-4 py-2 text-sm font-semibold">
         #
       </div>
-      {cols.map((col, i) => (
+      {renderedCols.map((col, i) => (
         <div
           key={i}
           className={`relative flex min-w-0 px-4 py-2 text-left ${
