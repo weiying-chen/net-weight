@@ -46,5 +46,5 @@ export function TableCell({
     );
   }
 
-  return <span className="block w-full cursor-text truncate">{value}</span>;
+  return <span className="block w-full select-none truncate">{value}</span>;
 }

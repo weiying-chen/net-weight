@@ -421,7 +421,7 @@ export function Table<T, D extends object>({
           >
             {/* Absolutely positioned overlay (border or shadow) */}
             {editingCell?.row === ri && editingCell?.col === ci && (
-              <div className="pointer-events-none absolute inset-0 z-10 border-2 border-foreground" />
+              <div className="pointer-events-none absolute inset-0 z-10 rounded border-2 border-border" />
             )}
 
             <TableCell
