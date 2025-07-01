@@ -40,12 +40,16 @@ export function Table<T, D extends object>({
   asActions?: (item: T) => React.ReactNode;
   asTooltip?: (item: T) => React.ReactNode;
 }) {
+  const [localData, setLocalData] = useState<T[]>(
+    JSON.parse(JSON.stringify(originalData)),
+  );
+
   const paired = useMemo(() => {
     const dispArr = formatData
-      ? formatData(originalData)
-      : (originalData as unknown as D[]);
-    return dispArr.map((disp, i) => ({ orig: originalData[i], disp }));
-  }, [originalData, formatData]);
+      ? formatData(localData) // Use localData here
+      : (localData as unknown as D[]);
+    return dispArr.map((disp, i) => ({ orig: localData[i], disp })); // Use localData here
+  }, [localData, formatData]);
 
   const renderedCols = useMemo(() => {
     return cols.map((col) => ({
@@ -76,10 +80,6 @@ export function Table<T, D extends object>({
   } | null>(null);
 
   const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  const [localData, setLocalData] = useState<Record<string, any>[]>(
-    JSON.parse(JSON.stringify(originalData)), // Deep copy of originalData
-  );
 
   const sortedPaired = useMemo(() => {
     if (!sortConfig) return paired;
