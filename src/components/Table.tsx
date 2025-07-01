@@ -241,6 +241,9 @@ export function Table<T, D extends object>({
     if (onCellChange) {
       onCellChange(ri, ci, newValue);
     }
+
+    // Reset editingCell after cell change
+    // setEditingCell(null);
   };
 
   useEffect(() => {
@@ -272,8 +275,8 @@ export function Table<T, D extends object>({
   }, []);
 
   useLayoutEffect(() => {
-    // Prevent recalculation if we're editing a cell
-    if (editingCell || !sortedPaired.length) return;
+    // Prevent recalculation if we're editing a cell or if sortedPaired is empty
+    if (!sortedPaired.length) return;
 
     const newW: { [i: number]: number } = {};
 
@@ -316,7 +319,7 @@ export function Table<T, D extends object>({
       }
       return prevWidths;
     });
-  }, [cols, sortedPaired, editingCell]); // Recalculate when `cols` or `sortedPaired` changes, but **not when editing**
+  }, [cols, sortedPaired]); // Do not include `editingCell` in the dependency array
 
   const renderHeader = () => (
     <div className="flex bg-subtle">
@@ -431,6 +434,7 @@ export function Table<T, D extends object>({
               }
               onChange={(newValue) => handleCellChange(ri, ci, newValue)} // Trigger cell change
               onCancel={() => setEditingCell(null)}
+              onBlur={() => setEditingCell(null)} // Add onBlur to exit edit mode
             />
           </div>
         ))}

@@ -6,6 +6,7 @@ type TableCellProps = {
   isEditing: boolean;
   onChange: (newValue: string) => void;
   onCancel: () => void;
+  onBlur: () => void; // Add onBlur here
 };
 
 export function TableCell({
@@ -13,6 +14,7 @@ export function TableCell({
   isEditing,
   onChange,
   onCancel,
+  onBlur, // Receive onBlur as a prop
 }: TableCellProps) {
   const [inputValue, setInputValue] = useState(value);
 
@@ -26,15 +28,15 @@ export function TableCell({
         autoFocus
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
-        onBlur={() => onChange(inputValue)}
+        onBlur={onBlur} // Trigger onBlur when input loses focus
         onKeyDown={(e) => {
           if (e.key === 'Enter') {
-            onChange(inputValue);
+            onChange(inputValue); // Trigger onChange when pressing Enter
           } else if (e.key === 'Escape') {
-            onCancel();
+            onCancel(); // Trigger onCancel when pressing Escape
           }
         }}
-        inputClassName="h-auto w-full border-none bg-transparent px-0 py-0 shadow-none focus: focus-visible:ring-0 focus-visible:ring-offset-0 "
+        inputClassName="h-auto w-full border-none bg-transparent px-0 py-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 "
       />
     );
   }
