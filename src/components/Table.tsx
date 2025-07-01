@@ -24,6 +24,7 @@ export function Table<T, D extends object>({
   cols,
   onRowClick,
   onRowSelect,
+  onCellChange,
   asActions,
   asTooltip,
 }: {
@@ -33,6 +34,7 @@ export function Table<T, D extends object>({
   cols: Cols<D>[];
   onRowClick?: (e: React.MouseEvent, item: T) => void;
   onRowSelect?: (sel: T[]) => void;
+  onCellChange?: (rowIndex: number, colIndex: number, newValue: string) => void; // Define the prop type
   asActions?: (item: T) => React.ReactNode;
   asTooltip?: (item: T) => React.ReactNode;
 }) {
@@ -58,12 +60,17 @@ export function Table<T, D extends object>({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const hoverRef = useRef<HTMLDivElement | null>(null);
   const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
+
   const [editingCell, setEditingCell] = useState<{
     row: number;
     col: number;
   } | null>(null);
 
   const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const [localData, setLocalData] = useState<Record<string, any>[]>(
+    originalData as Record<string, any>[],
+  );
 
   const sortedPaired = useMemo(() => {
     if (!sortConfig) return paired;
@@ -200,10 +207,36 @@ export function Table<T, D extends object>({
   };
 
   const handleDoubleClick = (ri: number, ci: number) => {
-    const col = cols[ci];
     // Only allow double-click if the cell is editable and we're not already editing
-    if (!editingCell && col.editable !== false) {
+    if (!editingCell || editingCell.row !== ri || editingCell.col !== ci) {
+      // Update editing cell to the new one
       setEditingCell({ row: ri, col: ci });
+    }
+  };
+
+  const handleCellChange = (ri: number, ci: number, newValue: string) => {
+    const col = cols[ci];
+
+    // Check if the column header is defined
+    if (col.header === undefined) {
+      console.error(`Column header at index ${ci} is undefined.`);
+      return;
+    }
+
+    const columnHeader = col.header;
+
+    // Copy the data to avoid mutating the original state
+    const updatedData = [...localData];
+
+    // Update the specific cell based on column header (dynamic key)
+    (updatedData[ri] as Record<string, any>)[columnHeader] = newValue;
+
+    // Optimistically update the table with the new value
+    setLocalData(updatedData);
+
+    // Call the parent function to notify about the cell change
+    if (onCellChange) {
+      onCellChange(ri, ci, newValue);
     }
   };
 
@@ -380,11 +413,7 @@ export function Table<T, D extends object>({
                 editingCell?.row === ri &&
                 editingCell?.col === ci
               }
-              // onDoubleClick={() => handleDoubleClick(ri, ci)} // Propagate the double-click
-              onChange={(newValue) => {
-                console.log(`Edited cell [${ri}, ${ci}] to:`, newValue);
-                setEditingCell(null);
-              }}
+              onChange={(newValue) => handleCellChange(ri, ci, newValue)} // Trigger cell change
               onCancel={() => setEditingCell(null)}
             />
           </div>

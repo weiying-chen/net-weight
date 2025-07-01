@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Col } from '@/components/Col';
 import { Table } from '@/components/Table'; // Adjust the import path if needed
 
@@ -8,12 +9,14 @@ type Item = {
 };
 
 export function PG() {
-  const items: Item[] = [
+  // State to store the items data
+  const [items, setItems] = useState<Item[]>([
     { id: '1', fruit: 'Apple', color: 'Red' },
     { id: '2', fruit: 'Banana', color: 'Yellow' },
     { id: '3', fruit: 'Grape', color: 'Purple' },
-  ];
+  ]);
 
+  // Define columns for the table
   const columns = [
     {
       header: 'Fruit',
@@ -27,6 +30,26 @@ export function PG() {
     },
   ];
 
+  // Handle cell changes
+  const handleCellChange = (
+    rowIndex: number,
+    colIndex: number,
+    newValue: string,
+  ) => {
+    // Get the column header to know which property to update
+    const columnHeader = columns[colIndex].header;
+
+    // If column is editable, update the corresponding item
+    if (columnHeader) {
+      const updatedItems = [...items];
+      updatedItems[rowIndex] = {
+        ...updatedItems[rowIndex],
+        [columnHeader.toLowerCase()]: newValue, // Dynamically update the property
+      };
+      setItems(updatedItems); // Update the state with the new items array
+    }
+  };
+
   return (
     <Col className="w-full gap-6 p-6">
       <Table
@@ -36,6 +59,7 @@ export function PG() {
         onRowClick={(e, item) => {
           console.log('Clicked row:', item);
         }}
+        onCellChange={handleCellChange} // Pass the handleCellChange function
       />
     </Col>
   );
