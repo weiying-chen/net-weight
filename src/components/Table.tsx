@@ -207,8 +207,11 @@ export function Table<T, D extends object>({
   };
 
   const handleDoubleClick = (ri: number, ci: number) => {
-    // Only allow double-click if the cell is editable and we're not already editing
-    if (!editingCell || editingCell.row !== ri || editingCell.col !== ci) {
+    const isColumnEditable = cols[ci].editable !== false;
+    const isCellNotBeingEdited =
+      !editingCell || editingCell.row !== ri || editingCell.col !== ci;
+
+    if (isColumnEditable && isCellNotBeingEdited) {
       // Update editing cell to the new one
       setEditingCell({ row: ri, col: ci });
     }
@@ -269,15 +272,19 @@ export function Table<T, D extends object>({
   }, []);
 
   useLayoutEffect(() => {
-    if (!sortedPaired.length) return;
+    // Prevent recalculation if we're editing a cell
+    if (editingCell || !sortedPaired.length) return;
+
     const newW: { [i: number]: number } = {};
 
     cols.forEach((col, i) => {
+      // Use fixed width if provided
       if (col.width) {
-        newW[i] = col.width; // ← use fixed width if provided
+        newW[i] = col.width;
         return;
       }
 
+      // Otherwise, calculate based on content
       const hdrSpan = headerRefs.current[i]?.querySelector('span');
       const hW = hdrSpan?.scrollWidth ?? MIN_COL_WIDTH;
       const bW = Math.max(
@@ -288,6 +295,8 @@ export function Table<T, D extends object>({
         MIN_COL_WIDTH,
       );
       const base = Math.max(hW, bW, MIN_COL_WIDTH);
+
+      // Calculate padding
       let pl = 0,
         pr = 0;
       const el = headerRefs.current[i];
@@ -296,11 +305,18 @@ export function Table<T, D extends object>({
         pl = parseFloat(st.paddingLeft);
         pr = parseFloat(st.paddingRight);
       }
+
       newW[i] = Math.min(base + pl + pr + 2, MAX_COL_WIDTH);
     });
 
-    setWidths(newW);
-  }, [cols]);
+    // Update widths only if there’s a change
+    setWidths((prevWidths) => {
+      if (JSON.stringify(newW) !== JSON.stringify(prevWidths)) {
+        return newW;
+      }
+      return prevWidths;
+    });
+  }, [cols, sortedPaired, editingCell]); // Recalculate when `cols` or `sortedPaired` changes, but **not when editing**
 
   const renderHeader = () => (
     <div className="flex bg-subtle">
