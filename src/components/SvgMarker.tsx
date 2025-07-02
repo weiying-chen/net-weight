@@ -13,6 +13,7 @@ export type SvgMarkerProps = {
   onClick?: () => void;
   ringProgress?: number;
   tooltip?: ReactNode;
+  style?: React.CSSProperties; // Allow custom styles
 };
 
 function darkenHex(hex: string, amount = 0.2): string {
@@ -36,6 +37,7 @@ export function SvgMarker({
   onClick,
   ringProgress = 0,
   tooltip,
+  style, // Accept style prop
 }: SvgMarkerProps) {
   const theta = (angle * Math.PI) / 180;
   const x = 50 + Math.sin(theta) * radiusPct;
@@ -64,6 +66,7 @@ export function SvgMarker({
         width: totalSize,
         height: totalSize,
         cursor: 'pointer',
+        ...style, // Apply custom styles passed via the style prop
       }}
     >
       {/* Ring always rendered; opacity animated */}

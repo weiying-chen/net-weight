@@ -64,6 +64,7 @@ export function PG() {
           console.log('Clicked row:', item);
         }}
         onCellChange={handleCellChange} // Pass the handleCellChange function
+        editable={false}
       />
     </Col>
   );

@@ -28,6 +28,7 @@ export function Table<T, D extends object>({
   onCellChange,
   asActions,
   asTooltip,
+  editable = true, // Add the `editable` prop for the whole table
 }: {
   data: T[];
   formatData?: (items: T[]) => D[];
@@ -39,6 +40,7 @@ export function Table<T, D extends object>({
   onCellChange?: (rowIndex: number, colIndex: number, newValue: string) => void; // Define the prop type
   asActions?: (item: T) => React.ReactNode;
   asTooltip?: (item: T) => React.ReactNode;
+  editable?: boolean; // Editable prop for the entire table
 }) {
   const [localData, setLocalData] = useState<T[]>(
     JSON.parse(JSON.stringify(originalData)),
@@ -393,16 +395,15 @@ export function Table<T, D extends object>({
         {onRowSelect && (
           <div className="flex items-center justify-center">
             <label
+              htmlFor={`checkbox-body-${ri}`} // Unique ID for each row's checkbox
               className="flex h-full w-full cursor-pointer items-center justify-center px-4 py-2"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleRowSelect(ri, e);
-              }}
             >
               <input
+                id={`checkbox-body-${ri}`} // Unique ID for the checkbox
                 type="checkbox"
                 checked={selectedItems.includes(orig)}
-                readOnly
+                onChange={() => handleRowSelect(ri)} // Trigger the selection toggle here
+                className="pointer-events-auto" // Allow checkbox input to be clickable
               />
             </label>
           </div>
@@ -415,7 +416,7 @@ export function Table<T, D extends object>({
             key={ci}
             className={`relative box-border flex min-w-0 px-4 py-2 text-sm ${
               // Add bg-background if the cell is being edited
-              editingCell?.row === ri && editingCell?.col === ci
+              editable && editingCell?.row === ri && editingCell?.col === ci
                 ? 'bg-background'
                 : ''
             }`}
@@ -429,13 +430,13 @@ export function Table<T, D extends object>({
             }}
           >
             {/* Absolutely positioned overlay (border or shadow) */}
-            {editingCell?.row === ri && editingCell?.col === ci && (
-              <div className="pointer-events-none absolute inset-0 z-10 rounded border-2 border-border" />
+            {editable && editingCell?.row === ri && editingCell?.col === ci && (
+              <div className="pointer-events-none absolute inset-0 z-10 rounded border border-border" />
             )}
-
             <TableCell
               value={String(col.render(disp))}
               isEditing={
+                editable && // Check if the table is editable
                 col.editable !== false &&
                 editingCell?.row === ri &&
                 editingCell?.col === ci

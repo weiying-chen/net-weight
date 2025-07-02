@@ -14,7 +14,7 @@ export function TableCell({
   isEditing,
   onChange,
   onCancel,
-  onBlur, // Receive onBlur as a prop
+  onBlur,
 }: TableCellProps) {
   const [inputValue, setInputValue] = useState(value);
 
