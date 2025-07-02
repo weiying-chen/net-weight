@@ -1,7 +1,7 @@
-import { useState, useRef, useLayoutEffect, useEffect, useMemo } from "react";
-import { IconArrowUp, IconArrowDown } from "@tabler/icons-react";
-import { Tooltip } from "@/components/Tooltip";
-import { TableCell } from "@/components/TableCell";
+import { useState, useRef, useLayoutEffect, useEffect, useMemo } from 'react';
+import { IconArrowUp, IconArrowDown } from '@tabler/icons-react';
+import { Tooltip } from '@/components/Tooltip';
+import { TableCell } from '@/components/TableCell';
 
 type Cols<D> = {
   header?: string;
@@ -15,7 +15,7 @@ type Cols<D> = {
 const MIN_COL_WIDTH = 50;
 const MAX_COL_WIDTH = 300;
 
-type SortConfig = { index: number; direction: "asc" | "desc" } | null;
+type SortConfig = { index: number; direction: 'asc' | 'desc' } | null;
 
 export function Table<T, D extends object>({
   data: originalData,
@@ -28,7 +28,8 @@ export function Table<T, D extends object>({
   onCellChange,
   asActions,
   asTooltip,
-  editable = false, // Add the `editable` prop for the whole table
+  editable = false,
+  isLoading = false,
 }: {
   data: T[];
   formatData?: (items: T[]) => D[];
@@ -41,6 +42,7 @@ export function Table<T, D extends object>({
   asActions?: (item: T) => React.ReactNode;
   asTooltip?: (item: T) => React.ReactNode;
   editable?: boolean; // Editable prop for the entire table
+  isLoading?: boolean;
 }) {
   const isCellEditable = (ri: number, ci: number, col: Cols<D>, disp: D) => {
     return (
@@ -48,7 +50,7 @@ export function Table<T, D extends object>({
       col.editable !== false &&
       editingCell?.row === ri &&
       editingCell?.col === ci &&
-      typeof col.render(disp) === "string" // Ensure the value is a string
+      typeof col.render(disp) === 'string' // Ensure the value is a string
     );
   };
 
@@ -66,7 +68,7 @@ export function Table<T, D extends object>({
   const renderedCols = useMemo(() => {
     return cols.map((col) => ({
       ...col,
-      header: formatHeader ? formatHeader(col.header || "") : col.header,
+      header: formatHeader ? formatHeader(col.header || '') : col.header,
     }));
   }, [cols, formatHeader]);
 
@@ -101,22 +103,22 @@ export function Table<T, D extends object>({
     return [...paired].sort((a, b) => {
       const sa = col.sortValue
         ? col.sortValue(a.disp)
-        : String(col.render(a.disp) ?? "");
+        : String(col.render(a.disp) ?? '');
       const sb = col.sortValue
         ? col.sortValue(b.disp)
-        : String(col.render(b.disp) ?? "");
+        : String(col.render(b.disp) ?? '');
 
       // If values are not comparable, skip sort
       if (
-        typeof sa !== "string" &&
-        typeof sa !== "number" &&
-        typeof sb !== "string" &&
-        typeof sb !== "number"
+        typeof sa !== 'string' &&
+        typeof sa !== 'number' &&
+        typeof sb !== 'string' &&
+        typeof sb !== 'number'
       ) {
         return 0;
       }
 
-      if (direction === "asc") return sa < sb ? -1 : sa > sb ? 1 : 0;
+      if (direction === 'asc') return sa < sb ? -1 : sa > sb ? 1 : 0;
       return sa > sb ? -1 : sa < sb ? 1 : 0;
     });
   }, [paired, sortConfig, cols]);
@@ -129,12 +131,12 @@ export function Table<T, D extends object>({
       ? col.sortValue(paired[0]?.disp)
       : col.render(paired[0]?.disp);
 
-    if (typeof sample !== "string" && typeof sample !== "number") return;
+    if (typeof sample !== 'string' && typeof sample !== 'number') return;
 
     const dir =
-      sortConfig?.index === ci && sortConfig.direction === "asc"
-        ? "desc"
-        : "asc";
+      sortConfig?.index === ci && sortConfig.direction === 'asc'
+        ? 'desc'
+        : 'asc';
 
     setSortConfig({ index: ci, direction: dir });
   };
@@ -173,11 +175,11 @@ export function Table<T, D extends object>({
       }));
     };
     const onUp = () => {
-      document.removeEventListener("mousemove", onMove);
-      document.removeEventListener("mouseup", onUp);
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
     };
-    document.addEventListener("mousemove", onMove);
-    document.addEventListener("mouseup", onUp);
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
   };
 
   const handleRowSelect = (
@@ -188,7 +190,7 @@ export function Table<T, D extends object>({
 
     // Narrow type to check for shiftKey safely
     const isShiftClick =
-      !!e && "shiftKey" in e && typeof e.shiftKey === "boolean" && e.shiftKey;
+      !!e && 'shiftKey' in e && typeof e.shiftKey === 'boolean' && e.shiftKey;
 
     if (isShiftClick && lastClickedIndex !== null) {
       const rangeStart = Math.min(lastClickedIndex, ri);
@@ -279,11 +281,11 @@ export function Table<T, D extends object>({
     const onUp = () => {
       isMouseDown.current = false;
     };
-    document.addEventListener("mousedown", onDown);
-    document.addEventListener("mouseup", onUp);
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('mouseup', onUp);
     return () => {
-      document.removeEventListener("mousedown", onDown);
-      document.removeEventListener("mouseup", onUp);
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('mouseup', onUp);
     };
   }, []);
 
@@ -314,11 +316,11 @@ export function Table<T, D extends object>({
         return;
       }
 
-      const hdrSpan = headerRefs.current[i]?.querySelector("span");
+      const hdrSpan = headerRefs.current[i]?.querySelector('span');
       const hW = hdrSpan?.scrollWidth ?? MIN_COL_WIDTH;
       const bW = Math.max(
         ...bodyRefs.current.map((row) => {
-          const span = row[i]?.querySelector("span");
+          const span = row[i]?.querySelector('span');
           return span?.scrollWidth ?? MIN_COL_WIDTH;
         }),
         MIN_COL_WIDTH,
@@ -369,7 +371,7 @@ export function Table<T, D extends object>({
         <div
           key={i}
           className={`relative flex min-w-0 px-4 py-2 text-left ${
-            col.sortable === false ? "cursor-default" : "cursor-pointer"
+            col.sortable === false ? 'cursor-default' : 'cursor-pointer'
           }`}
           style={{ width: widths[i] ?? MIN_COL_WIDTH }}
           ref={(el) => (headerRefs.current[i] = el)}
@@ -380,7 +382,7 @@ export function Table<T, D extends object>({
               <span className="block w-full truncate">{col.header}</span>
             )}
             {sortConfig?.index === i &&
-              (sortConfig.direction === "asc" ? (
+              (sortConfig.direction === 'asc' ? (
                 <IconArrowUp size={16} className="flex-shrink-0" />
               ) : (
                 <IconArrowDown size={16} className="flex-shrink-0" />
@@ -425,7 +427,7 @@ export function Table<T, D extends object>({
           <div
             key={ci}
             className={`relative box-border flex min-w-0 px-4 py-2 text-sm ${
-              isCellEditable(ri, ci, col, disp) ? "bg-background" : ""
+              isCellEditable(ri, ci, col, disp) ? 'bg-background' : ''
             }`}
             onDoubleClick={() => handleDoubleClick(ri, ci)} // Handle double-click here
             style={{
@@ -459,7 +461,7 @@ export function Table<T, D extends object>({
       <div
         key={ri}
         className={`flex cursor-pointer border-b border-subtle ${
-          hoveredRow === ri ? "bg-subtle" : ""
+          hoveredRow === ri ? 'bg-subtle' : ''
         }`}
         onClick={(e) => {
           if (clickTimeoutRef.current) {
@@ -528,7 +530,10 @@ export function Table<T, D extends object>({
   };
 
   return (
-    <div className="relative w-full overflow-x-auto" ref={containerRef}>
+    <div
+      ref={containerRef}
+      className={`relative w-full overflow-x-auto ${isLoading ? 'pointer-events-none opacity-50' : ''}`}
+    >
       <div className="min-w-max">
         {renderHeader()}
         {renderBody()}
