@@ -41,17 +41,17 @@ export function PG() {
     console.log('New Value:', newValue);
 
     // Get the column header to know which property to update
-    const columnHeader = columns[colIndex].header;
+    // const columnHeader = columns[colIndex].header;
 
     // If column is editable, update the corresponding item
-    if (columnHeader) {
-      const updatedItems = [...items];
-      updatedItems[rowIndex] = {
-        ...updatedItems[rowIndex],
-        [columnHeader.toLowerCase()]: newValue, // Dynamically update the property
-      };
-      setItems(updatedItems); // Update the state with the new items array
-    }
+    // if (columnHeader) {
+    //   const updatedItems = [...items];
+    //   updatedItems[rowIndex] = {
+    //     ...updatedItems[rowIndex],
+    //     [columnHeader.toLowerCase()]: newValue, // Dynamically update the property
+    //   };
+    //   setItems(updatedItems); // Update the state with the new items array
+    // }
   };
 
   return (
@@ -64,7 +64,7 @@ export function PG() {
           console.log('Clicked row:', item);
         }}
         onCellChange={handleCellChange} // Pass the handleCellChange function
-        editable={false}
+        // editable={false}
       />
     </Col>
   );
