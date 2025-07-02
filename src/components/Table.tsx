@@ -3,7 +3,7 @@ import { IconArrowUp, IconArrowDown } from '@tabler/icons-react';
 import { Tooltip } from '@/components/Tooltip';
 import { TableCell } from '@/components/TableCell';
 
-type Cols<D> = {
+export type Cols<D> = {
   header?: string;
   render: (item: D) => React.ReactNode;
   sortable?: boolean;
