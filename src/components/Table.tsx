@@ -407,15 +407,16 @@ export function Table<T, D extends object>({
         {onRowSelect && (
           <div className="flex items-center justify-center">
             <label
-              htmlFor={`checkbox-body-${ri}`} // Unique ID for each row's checkbox
+              htmlFor={`checkbox-body-${ri}`}
               className="flex h-full w-full cursor-pointer items-center justify-center px-4 py-2"
+              onClick={(e) => e.stopPropagation()} // Stop the event from propagating
             >
               <input
-                id={`checkbox-body-${ri}`} // Unique ID for the checkbox
+                id={`checkbox-body-${ri}`}
                 type="checkbox"
                 checked={selectedItems.includes(orig)}
-                onChange={() => handleRowSelect(ri)} // Trigger the selection toggle here
-                className="pointer-events-auto" // Allow checkbox input to be clickable
+                onChange={() => handleRowSelect(ri)}
+                className="pointer-events-auto"
               />
             </label>
           </div>
@@ -460,9 +461,7 @@ export function Table<T, D extends object>({
     return (
       <div
         key={ri}
-        className={`flex cursor-pointer border-b border-subtle ${
-          hoveredRow === ri ? 'bg-subtle' : ''
-        }`}
+        className={`flex cursor-pointer border-b border-subtle ${hoveredRow === ri ? 'bg-subtle' : ''}`}
         onClick={(e) => {
           if (clickTimeoutRef.current) {
             clearTimeout(clickTimeoutRef.current); // it's a double-click, cancel single click
