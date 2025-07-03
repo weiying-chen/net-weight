@@ -10,12 +10,27 @@ export type Cols<D> = {
   sortValue?: (item: D) => string | number;
   width?: number;
   editable?: boolean;
+  path?: string; // The path for nested fields (e.g., 'address.street')
 };
 
 const MIN_COL_WIDTH = 50;
 const MAX_COL_WIDTH = 300;
 
 type SortConfig = { index: number; direction: 'asc' | 'desc' } | null;
+
+const updateNestedValue = (obj: any, path: string, value: any) => {
+  const keys = path.split('.'); // Split the path string (e.g., 'address.street' -> ['address', 'street'])
+  let current = obj;
+
+  // Traverse the object using the keys and update the value
+  keys.slice(0, -1).forEach((key) => {
+    if (!current[key]) current[key] = {}; // Create missing nested objects if necessary
+    current = current[key];
+  });
+
+  // Set the value at the final key
+  current[keys[keys.length - 1]] = value;
+};
 
 export function Table<T, D extends object>({
   data: originalData,
@@ -54,9 +69,15 @@ export function Table<T, D extends object>({
     );
   };
 
-  const [localData, setLocalData] = useState<T[]>(
-    JSON.parse(JSON.stringify(originalData)),
-  );
+  // const [localData, setLocalData] = useState<T[]>(
+  //   JSON.parse(JSON.stringify(originalData)),
+  // );
+
+  const [localData, setLocalData] = useState<T[]>(originalData);
+
+  useEffect(() => {
+    setLocalData(originalData);
+  }, [originalData]);
 
   const paired = useMemo(() => {
     const dispArr = formatData
@@ -243,30 +264,32 @@ export function Table<T, D extends object>({
   const handleCellChange = (ri: number, ci: number, newValue: string) => {
     const col = cols[ci];
 
-    // Check if the column header is defined
-    if (col.header === undefined) {
-      console.error(`Column header at index ${ci} is undefined.`);
+    // Check if the column header and path are defined
+    if (col.header === undefined || col.path === undefined) {
+      console.error(`Column header or path is undefined for column ${ci}`);
       return;
     }
 
-    const columnHeader = col.header;
+    const flatField = col.header; // Flattened field (e.g., 'address_street')
+    const path = col.path; // Path to the nested field (e.g., 'address.street')
 
     // Copy the data to avoid mutating the original state
     const updatedData = [...localData];
 
-    // Update the specific cell based on column header (dynamic key)
-    (updatedData[ri] as Record<string, any>)[columnHeader] = newValue;
+    // Update the flattened data first
+    updatedData[ri] = { ...updatedData[ri], [flatField]: newValue };
 
-    // Optimistically update the table with the new value
+    // Now update the nested data using the path
+    const updatedRow = updatedData[ri];
+    updateNestedValue(updatedRow, path, newValue);
+
+    // Update the local state with the modified data
     setLocalData(updatedData);
 
-    // Call the parent function to notify about the cell change
+    // Notify parent if needed
     if (onCellChange) {
       onCellChange(ri, ci, newValue);
     }
-
-    // Reset editingCell after cell change
-    // setEditingCell(null);
   };
 
   useEffect(() => {
@@ -461,7 +484,9 @@ export function Table<T, D extends object>({
     return (
       <div
         key={ri}
-        className={`flex cursor-pointer border-b border-subtle ${hoveredRow === ri ? 'bg-subtle' : ''}`}
+        className={`flex cursor-pointer border-b border-subtle ${
+          hoveredRow === ri ? 'bg-subtle' : ''
+        }`}
         onClick={(e) => {
           if (clickTimeoutRef.current) {
             clearTimeout(clickTimeoutRef.current); // it's a double-click, cancel single click
