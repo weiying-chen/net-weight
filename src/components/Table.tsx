@@ -214,9 +214,8 @@ export function Table<T, D extends object>({
   ) => {
     const { orig } = sortedPaired[ri];
 
-    // Narrow type to check for shiftKey safely
     const isShiftClick =
-      !!e && 'shiftKey' in e && typeof e.shiftKey === 'boolean' && e.shiftKey;
+      !!e && 'nativeEvent' in e && (e.nativeEvent as MouseEvent).shiftKey;
 
     if (isShiftClick && lastClickedIndex !== null) {
       const rangeStart = Math.min(lastClickedIndex, ri);
@@ -437,13 +436,13 @@ export function Table<T, D extends object>({
             <label
               htmlFor={`checkbox-body-${ri}`}
               className="flex h-full w-full cursor-pointer items-center justify-center px-4 py-2"
-              onClick={(e) => e.stopPropagation()} // Stop the event from propagating
+              onClick={(e) => e.stopPropagation()}
             >
               <input
                 id={`checkbox-body-${ri}`}
                 type="checkbox"
                 checked={selectedItems.includes(orig)}
-                onChange={() => handleRowSelect(ri)}
+                onChange={(e) => handleRowSelect(ri, e)}
                 className="pointer-events-auto"
               />
             </label>
