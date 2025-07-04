@@ -492,16 +492,18 @@ export function Table<T, D extends object>({
           hoveredRow === ri ? 'bg-subtle' : ''
         }`}
         onClick={(e) => {
+          if (editingCell && editingCell.row === ri) return;
+
           if (clickTimeoutRef.current) {
-            clearTimeout(clickTimeoutRef.current); // it's a double-click, cancel single click
+            clearTimeout(clickTimeoutRef.current);
             clickTimeoutRef.current = null;
             return;
           }
 
           clickTimeoutRef.current = setTimeout(() => {
-            onRowClick?.(e, orig); // now we know it's a real single click
+            onRowClick?.(e, orig);
             clickTimeoutRef.current = null;
-          }, 200); // or 250 if you want a more generous threshold
+          }, 200);
         }}
         onMouseEnter={(e) => handleMouseEnterRow(ri, e)}
         onMouseLeave={handleMouseLeaveRow}

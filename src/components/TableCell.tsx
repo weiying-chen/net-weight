@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Input } from "@/components/Input";
+import { useEffect, useState } from 'react';
+import { Input } from '@/components/Input';
 
 type TableCellProps = {
   value: string | React.ReactNode; // Can be a string or any React node
@@ -16,17 +16,17 @@ export function TableCell({
   onCancel,
   onBlur,
 }: TableCellProps) {
-  const [inputValue, setInputValue] = useState<string>("");
+  const [inputValue, setInputValue] = useState<string>('');
 
   // Only set input value if the value is a string
   useEffect(() => {
-    if (typeof value === "string") {
+    if (typeof value === 'string') {
       setInputValue(value);
     }
   }, [value]);
 
   // If we're in edit mode and value is a string, show input
-  if (isEditing && typeof value === "string") {
+  if (isEditing && typeof value === 'string') {
     return (
       <Input
         autoFocus
@@ -37,10 +37,10 @@ export function TableCell({
           onBlur(); // Optionally trigger onBlur as well if needed
         }}
         onKeyDown={(e) => {
-          if (e.key === "Enter") {
+          if (e.key === 'Enter') {
             onChange(inputValue); // Trigger onChange when pressing Enter
             onBlur(); // Trigger onBlur when pressing Enter to remove focus
-          } else if (e.key === "Escape") {
+          } else if (e.key === 'Escape') {
             onCancel(); // Trigger onCancel when pressing Escape
             onBlur(); // Trigger onBlur when pressing Escape
           }

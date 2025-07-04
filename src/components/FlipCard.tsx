@@ -1,50 +1,34 @@
-import { useState, useEffect } from 'react';
-
 interface FlipCardProps {
   front: React.ReactNode;
   back: React.ReactNode;
   className?: string;
-  flipped?: boolean; // External control of the flipped state
+  flipped?: boolean;
+  direction?: 'left' | 'right';
 }
 
 export const FlipCard = ({
   front,
   back,
   className = '',
-  flipped: flippedBase = false,
+  flipped = false,
+  direction = 'right',
 }: FlipCardProps) => {
-  const [flipped, setFlipped] = useState(flippedBase);
-
-  // If the external flip prop changes, update the internal state
-  useEffect(() => {
-    setFlipped(flippedBase);
-  }, [flippedBase]);
+  const angle = direction === 'left' ? '-180deg' : '180deg';
 
   return (
-    <div className={`perspective-1000 mb-8 h-64 w-56 ${className}`}>
+    <div className={`h-64 w-56 [perspective:1000px] ${className}`}>
       <div
-        className={`h-full w-full transition-all duration-500 [transform-style:preserve-3d]`}
+        className="relative h-full w-full transition-transform duration-500 [transform-style:preserve-3d]"
         style={{
-          transform: flipped ? 'rotateY(180deg)' : '', // Flip rotation based on the state
+          transform: flipped ? `rotateY(${angle})` : undefined,
         }}
       >
-        {/* Front side */}
-        <div
-          className={`absolute inset-0 [backface-visibility:hidden]`}
-          style={{
-            backfaceVisibility: flipped ? 'hidden' : 'visible', // Hide front side when flipped
-          }}
-        >
+        <div className="absolute inset-0 [backface-visibility:hidden]">
           {front}
         </div>
-
-        {/* Back side */}
         <div
-          className={`absolute inset-0 [backface-visibility:hidden]`}
-          style={{
-            transform: 'rotateY(180deg)', // Rotate the back side when flipped
-            backfaceVisibility: flipped ? 'visible' : 'hidden', // Show the back when flipped
-          }}
+          className="absolute inset-0 [backface-visibility:hidden]"
+          style={{ transform: `rotateY(${angle})` }}
         >
           {back}
         </div>
