@@ -23,13 +23,28 @@ export const FlipCard = ({
   return (
     <div className={`perspective-1000 mb-8 h-64 w-56 ${className}`}>
       <div
-        className={`h-full w-full transition-transform duration-500 [transform-style:preserve-3d] ${flipped ? 'rotate-y-180' : ''}`}
+        className={`h-full w-full transition-all duration-500 [transform-style:preserve-3d]`}
+        style={{
+          transform: flipped ? 'rotateY(180deg)' : '', // Flip rotation based on the state
+        }}
       >
-        <div className={`absolute inset-0 [backface-visibility:hidden]`}>
+        {/* Front side */}
+        <div
+          className={`absolute inset-0 [backface-visibility:hidden]`}
+          style={{
+            backfaceVisibility: flipped ? 'hidden' : 'visible', // Hide front side when flipped
+          }}
+        >
           {front}
         </div>
+
+        {/* Back side */}
         <div
-          className={`absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)]`}
+          className={`absolute inset-0 [backface-visibility:hidden]`}
+          style={{
+            transform: 'rotateY(180deg)', // Rotate the back side when flipped
+            backfaceVisibility: flipped ? 'visible' : 'hidden', // Show the back when flipped
+          }}
         >
           {back}
         </div>

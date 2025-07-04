@@ -3,7 +3,7 @@ import { IconArrowUp, IconArrowDown } from '@tabler/icons-react';
 import { Tooltip } from '@/components/Tooltip';
 import { TableCell } from '@/components/TableCell';
 
-export type Cols<D> = {
+export type TableCol<D> = {
   header?: string;
   render: (item: D) => React.ReactNode;
   sortable?: boolean;
@@ -50,7 +50,7 @@ export function Table<T, D extends object>({
   formatData?: (items: T[]) => D[];
   formatHeader?: (header: string) => string;
   selectedItems: T[];
-  cols: Cols<D>[];
+  cols: TableCol<D>[];
   onRowClick?: (e: React.MouseEvent, item: T) => void;
   onRowSelect?: (sel: T[]) => void;
   onCellChange?: (rowIndex: number, colIndex: number, newValue: string) => void; // Define the prop type
@@ -59,7 +59,12 @@ export function Table<T, D extends object>({
   editable?: boolean; // Editable prop for the entire table
   isLoading?: boolean;
 }) {
-  const isCellEditable = (ri: number, ci: number, col: Cols<D>, disp: D) => {
+  const isCellEditable = (
+    ri: number,
+    ci: number,
+    col: TableCol<D>,
+    disp: D,
+  ) => {
     return (
       editable && // Access directly from component props
       col.editable !== false &&
@@ -73,7 +78,7 @@ export function Table<T, D extends object>({
   //   JSON.parse(JSON.stringify(originalData)),
   // );
 
-  const [localData, setLocalData] = useState<T[]>(originalData);
+  const [localData, setLocalData] = useState<T[]>([]);
 
   useEffect(() => {
     setLocalData(originalData);
@@ -320,7 +325,7 @@ export function Table<T, D extends object>({
     };
   }, []);
 
-  const prevCols = useRef<Cols<D>[]>([]); // Ref to track previous cols
+  const prevCols = useRef<TableCol<D>[]>([]); // Ref to track previous cols
 
   useLayoutEffect(() => {
     // Only recalculate if cols have changed

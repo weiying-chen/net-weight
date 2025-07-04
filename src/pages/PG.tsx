@@ -16,6 +16,9 @@ export function PG() {
     { id: '3', fruit: 'Grape', color: 'Purple' },
   ]);
 
+  // State to track selected rows
+  const [selectedItems, setSelectedItems] = useState<Item[]>([]);
+
   // Define columns for the table
   const columns = [
     {
@@ -54,12 +57,40 @@ export function PG() {
     // }
   };
 
+  // Handle row selection
+  const handleRowSelect = (item: Item) => {
+    const isSelected = selectedItems.some(
+      (selectedItem) => selectedItem.id === item.id,
+    );
+    if (isSelected) {
+      setSelectedItems(
+        selectedItems.filter((selectedItem) => selectedItem.id !== item.id),
+      );
+    } else {
+      setSelectedItems([...selectedItems, item]);
+    }
+  };
+
   return (
     <Col className="w-full gap-6 p-6">
       <Table
         data={items}
-        cols={columns}
-        selectedItems={[]}
+        cols={[
+          {
+            header: 'Select',
+            render: (item: Item) => (
+              <input
+                type="checkbox"
+                checked={selectedItems.some(
+                  (selectedItem) => selectedItem.id === item.id,
+                )}
+                onChange={() => handleRowSelect(item)} // Toggle selection on checkbox change
+              />
+            ),
+          },
+          ...columns, // Spread the original columns here
+        ]}
+        selectedItems={selectedItems}
         onRowClick={(e, item) => {
           console.log('Clicked row:', item);
         }}
