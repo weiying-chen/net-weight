@@ -38,6 +38,7 @@ export function Table<T, D extends object>({
   formatHeader,
   selectedItems,
   cols,
+  pinData,
   onRowClick,
   onRowSelect,
   onCellChange,
@@ -51,6 +52,7 @@ export function Table<T, D extends object>({
   formatHeader?: (header: string) => string;
   selectedItems: T[];
   cols: TableCol<D>[];
+  pinData?: (item: T) => boolean;
   onRowClick?: (e: React.MouseEvent, item: T) => void;
   onRowSelect?: (sel: T[]) => void;
   onCellChange?: (rowIndex: number, colIndex: number, newValue: string) => void; // Define the prop type
@@ -122,32 +124,37 @@ export function Table<T, D extends object>({
   const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const sortedPaired = useMemo(() => {
-    if (!sortConfig) return paired;
-    const { index, direction } = sortConfig;
-    const col = cols[index];
-
-    return [...paired].sort((a, b) => {
+    const sortFn = (a: (typeof paired)[0], b: (typeof paired)[0]) => {
+      if (!sortConfig) return 0;
+      const { index, direction } = sortConfig;
+      const col = cols[index];
       const sa = col.sortValue
         ? col.sortValue(a.disp)
         : String(col.render(a.disp) ?? '');
       const sb = col.sortValue
         ? col.sortValue(b.disp)
         : String(col.render(b.disp) ?? '');
+      if (typeof sa !== 'string' && typeof sa !== 'number') return 0;
+      if (typeof sb !== 'string' && typeof sb !== 'number') return 0;
+      return direction === 'asc'
+        ? sa < sb
+          ? -1
+          : sa > sb
+            ? 1
+            : 0
+        : sa > sb
+          ? -1
+          : sa < sb
+            ? 1
+            : 0;
+    };
 
-      // If values are not comparable, skip sort
-      if (
-        typeof sa !== 'string' &&
-        typeof sa !== 'number' &&
-        typeof sb !== 'string' &&
-        typeof sb !== 'number'
-      ) {
-        return 0;
-      }
+    if (!pinData) return [...paired].sort(sortFn);
 
-      if (direction === 'asc') return sa < sb ? -1 : sa > sb ? 1 : 0;
-      return sa > sb ? -1 : sa < sb ? 1 : 0;
-    });
-  }, [paired, sortConfig, cols]);
+    const pinned = paired.filter(({ orig }) => pinData(orig));
+    const others = paired.filter(({ orig }) => !pinData(orig));
+    return [...pinned.sort(sortFn), ...others.sort(sortFn)];
+  }, [paired, sortConfig, cols, pinData]);
 
   const handleSort = (ci: number) => {
     if (cols[ci].sortable === false) return;
@@ -386,7 +393,7 @@ export function Table<T, D extends object>({
                 selectedItems.length === originalData.length
               }
               onChange={handleSelectAll}
-              className="pointer-events-none"
+              className="custom-checkbox pointer-events-none"
             />
           </label>
         </div>
@@ -443,7 +450,7 @@ export function Table<T, D extends object>({
                 type="checkbox"
                 checked={selectedItems.includes(orig)}
                 onChange={(e) => handleRowSelect(ri, e)}
-                className="pointer-events-auto"
+                className="custom-checkbox pointer-events-auto"
               />
             </label>
           </div>
