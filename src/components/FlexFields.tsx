@@ -10,8 +10,8 @@ import { format } from 'date-fns';
 
 export type ValueType =
   | 'text'
+  | 'integer'
   | 'number'
-  | 'float'
   | 'switch'
   | 'select'
   | 'password'
@@ -68,7 +68,6 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
   viewModeLabels,
 }) => {
   const [fields, setFields] = useState<FlexField[]>(initialFields);
-  useEffect(() => setFields(initialFields), [initialFields]);
 
   const updateFields = (newFields: FlexField[]) => {
     setFields(newFields);
@@ -114,6 +113,8 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
   const handleRemoveField = (i: number) =>
     updateFields(fields.filter((_, idx) => idx !== i));
 
+  useEffect(() => setFields(initialFields), [initialFields]);
+
   const renderInput = (
     field: FlexField,
     fi: number,
@@ -130,12 +131,23 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
 
     let element;
     switch (inp.type) {
-      case 'number':
-      case 'float':
+      case 'integer':
         element = (
           <Input
             type="number"
-            step={inp.type === 'float' ? '0.1' : undefined}
+            step="1"
+            inputMode="numeric"
+            value={String(inp.value)}
+            onChange={(e) => handleInputChange(fi, ii, Number(e.target.value))}
+            error={errorMsg}
+          />
+        );
+        break;
+      case 'number':
+        element = (
+          <Input
+            type="number"
+            step="0.1"
             value={String(inp.value)}
             onChange={(e) => handleInputChange(fi, ii, Number(e.target.value))}
             error={errorMsg}
