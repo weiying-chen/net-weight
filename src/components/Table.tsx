@@ -36,7 +36,7 @@ export function Table<T, D extends object>({
   data: originalData,
   formatData,
   formatHeader,
-  selectedItems,
+  selectedData,
   cols,
   pinData,
   onRowClick,
@@ -50,7 +50,7 @@ export function Table<T, D extends object>({
   data: T[];
   formatData?: (items: T[]) => D[];
   formatHeader?: (header: string) => string;
-  selectedItems: T[];
+  selectedData: T[];
   cols: TableCol<D>[];
   pinData?: (item: T) => boolean;
   onRowClick?: (e: React.MouseEvent, item: T) => void;
@@ -231,19 +231,19 @@ export function Table<T, D extends object>({
         .slice(rangeStart, rangeEnd + 1)
         .map((p) => p.orig);
 
-      const selectedSet = new Set(selectedItems);
+      const selectedSet = new Set(selectedData);
       const shouldSelect = !rangeItems.every((item) => selectedSet.has(item));
 
       const next = shouldSelect
-        ? [...selectedItems, ...rangeItems.filter((i) => !selectedSet.has(i))]
-        : selectedItems.filter((item) => !rangeItems.includes(item));
+        ? [...selectedData, ...rangeItems.filter((i) => !selectedSet.has(i))]
+        : selectedData.filter((item) => !rangeItems.includes(item));
 
       onRowSelect?.(next);
     } else {
       // Normal toggle
-      const next = selectedItems.includes(orig)
-        ? selectedItems.filter((x) => x !== orig)
-        : [...selectedItems, orig];
+      const next = selectedData.includes(orig)
+        ? selectedData.filter((x) => x !== orig)
+        : [...selectedData, orig];
 
       setLastClickedIndex(ri);
       onRowSelect?.(next);
@@ -253,11 +253,11 @@ export function Table<T, D extends object>({
   const setIndeterminateState = (el: HTMLInputElement | null) => {
     if (!el) return;
     el.indeterminate =
-      selectedItems.length > 0 && selectedItems.length < originalData.length;
+      selectedData.length > 0 && selectedData.length < originalData.length;
   };
   const handleSelectAll = () => {
     onRowSelect?.(
-      selectedItems.length === originalData.length ? [] : [...originalData],
+      selectedData.length === originalData.length ? [] : [...originalData],
     );
   };
 
@@ -390,7 +390,7 @@ export function Table<T, D extends object>({
               type="checkbox"
               checked={
                 originalData.length > 0 &&
-                selectedItems.length === originalData.length
+                selectedData.length === originalData.length
               }
               onChange={handleSelectAll}
               className="custom-checkbox pointer-events-none"
@@ -448,7 +448,7 @@ export function Table<T, D extends object>({
               <input
                 id={`checkbox-body-${ri}`}
                 type="checkbox"
-                checked={selectedItems.includes(orig)}
+                checked={selectedData.includes(orig)}
                 onChange={(e) => handleRowSelect(ri, e)}
                 className="custom-checkbox pointer-events-auto"
               />
