@@ -7,6 +7,8 @@ import { IconTrash } from '@tabler/icons-react';
 import { Switch } from '@/components/Switch';
 import { DatePicker } from '@/components/DatePicker';
 import { format } from 'date-fns';
+import { LabelTooltip } from '@/components/LabelTooltip';
+import { Row } from '@/components/Row';
 
 export type ValueType =
   | 'text'
@@ -17,7 +19,7 @@ export type ValueType =
   | 'password'
   | 'date';
 
-export type Option = { value: string | number; label: string };
+export type Option = { value: string | number | boolean; label: string };
 
 export type FlexFieldInput = {
   key: string;
@@ -226,14 +228,14 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
 
     return (
       <Col key={`${field.id}-${inp.key}-${ii}`}>
-        <div className="flex w-full items-center justify-between">
-          <label className="truncate text-sm font-medium">{displayLabel}</label>
+        <Row gap="sm" alignItems="center">
+          <LabelTooltip text={displayLabel} />
           {inp.unit && (
-            <span className="ml-1 text-xs text-muted">
+            <span className="text-xs text-muted">
               {asUnit?.(inp.unit) ?? inp.unit}
             </span>
           )}
-        </div>
+        </Row>
         {element}
       </Col>
     );

@@ -72,7 +72,7 @@ export type SelectProps<T> = SingleSelectProps<T> | MultiSelectProps<T>;
  * Select component now accepts T extending string, number, or null.
  * This allows `value` and `onChange` to handle null directly.
  */
-export const Select = <T extends string | number | null>(
+export const Select = <T extends string | number | boolean | null>(
   props: SelectProps<T>,
 ) => {
   const {

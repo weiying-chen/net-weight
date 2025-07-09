@@ -18,7 +18,7 @@ export type SelectOption<T> = {
   isAddNew?: boolean;
 };
 
-export type SelectDropdownProps<T extends string | number | null> = {
+export type SelectDropdownProps<T extends string | number | boolean | null> = {
   filteredOptions: SelectOption<T>[];
   focusedIndex: number | null;
   selectedValue: T | T[] | null;
@@ -38,7 +38,7 @@ export type SelectDropdownProps<T extends string | number | null> = {
   dropdownRef: MutableRefObject<HTMLDivElement | null>;
 };
 
-export function SelectDropdown<T extends string | number | null>({
+export function SelectDropdown<T extends string | number | boolean | null>({
   filteredOptions,
   focusedIndex,
   selectedValue,
@@ -89,7 +89,7 @@ export function SelectDropdown<T extends string | number | null>({
 
             return (
               <li
-                key={opt.value}
+                key={String(opt.value)}
                 ref={(el) => {
                   if (
                     hasRenderedDropdown.current &&
