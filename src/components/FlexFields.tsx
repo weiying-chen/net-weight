@@ -26,6 +26,10 @@ export type FlexFieldInput = {
   type: ValueType;
   options?: Option[];
   unit?: string;
+  condition?: {
+    key: string;
+    equals: string;
+  };
 };
 
 export type FlexField = { id: string; inputs: FlexFieldInput[] };
@@ -68,6 +72,12 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
   viewModeLabels,
 }) => {
   const [fields, setFields] = useState<FlexField[]>(initialFields);
+
+  const shouldShow = (inp: FlexFieldInput, inputs: FlexFieldInput[]) => {
+    if (!inp.condition) return true;
+    const controlling = inputs.find((i) => i.key === inp.condition!.key);
+    return controlling?.value === inp.condition.equals;
+  };
 
   const updateFields = (newFields: FlexField[]) => {
     setFields(newFields);
@@ -112,8 +122,6 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
 
   const handleRemoveField = (i: number) =>
     updateFields(fields.filter((_, idx) => idx !== i));
-
-  useEffect(() => setFields(initialFields), [initialFields]);
 
   const renderInput = (
     field: FlexField,
@@ -218,8 +226,8 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
 
     return (
       <Col key={`${field.id}-${inp.key}-${ii}`}>
-        <div className="flex items-center justify-between">
-          <label className="text-sm font-medium">{displayLabel}</label>
+        <div className="flex w-full items-center justify-between">
+          <label className="truncate text-sm font-medium">{displayLabel}</label>
           {inp.unit && (
             <span className="ml-1 text-xs text-muted">
               {asUnit?.(inp.unit) ?? inp.unit}
@@ -232,6 +240,8 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
   };
 
   const blueprintKeys = ['type', 'method', 'item', 'value'];
+
+  useEffect(() => setFields(initialFields), [initialFields]);
 
   return (
     <Col>
@@ -250,10 +260,13 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
         return (
           <div
             key={field.id}
-            className="grid w-full gap-2"
-            style={{
-              gridTemplateColumns: `repeat(${blueprintKeys.length}, minmax(0, 1fr)) auto`,
-            }}
+            className="grid-cols-flexfields grid w-full gap-2"
+            // className="grid w-full gap-2"
+            style={
+              {
+                // gridTemplateColumns: `repeat(${blueprintKeys.length}, minmax(0, 1fr)) auto`,
+              }
+            }
           >
             {blueprintKeys.map((key, idx) => {
               if (key !== 'value') {
@@ -273,21 +286,25 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
                 <div key={`${field.id}-value-${idx}`}>
                   {extras.length > 1 ? (
                     <div className="flex gap-2">
-                      {extras.map((inp, ii) => {
-                        const realIdx = field.inputs.findIndex(
-                          (x) => x.key === inp.key,
-                        );
-                        return (
-                          <div
-                            key={`${field.id}-${inp.key}-${ii}`}
-                            className="min-w-0 flex-1"
-                          >
-                            {renderInput(field, fi, inp, realIdx)}
-                          </div>
-                        );
-                      })}
+                      {extras
+                        .filter((inp) => shouldShow(inp, field.inputs))
+                        .map((inp, ii) => {
+                          const realIdx = field.inputs.findIndex(
+                            (x) => x.key === inp.key,
+                          );
+                          return (
+                            <div
+                              key={`${field.id}-${inp.key}-${ii}`}
+                              className="min-w-0 flex-1"
+                            >
+                              {renderInput(field, fi, inp, realIdx)}
+                            </div>
+                          );
+                        })}
                     </div>
-                  ) : onlyExtra && onlyExtraIdx >= 0 ? (
+                  ) : onlyExtra &&
+                    onlyExtraIdx >= 0 &&
+                    shouldShow(onlyExtra, field.inputs) ? (
                     renderInput(field, fi, onlyExtra, onlyExtraIdx)
                   ) : (
                     <div style={{ visibility: 'hidden' }} />
