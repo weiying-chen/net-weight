@@ -21,7 +21,7 @@ export type ValueType =
 
 export type Option = { value: string | number | boolean; label: string };
 
-export type FlexFieldInput = {
+export type SchemaFieldInput = {
   key: string;
   label: string;
   value: string | number | boolean;
@@ -36,14 +36,14 @@ export type FlexFieldInput = {
   required?: boolean;
 };
 
-export type FlexField = { id: string; inputs: FlexFieldInput[] };
+export type SchemaField = { id: string; inputs: SchemaFieldInput[] };
 
-export type FlexFieldsProps = {
+export type SchemaFieldsProps = {
   label?: string;
-  fields?: FlexField[];
+  fields?: SchemaField[];
   addFieldLabel?: string;
-  fieldTemplate?: FlexField;
-  onChange: (fields: FlexField[]) => void;
+  fieldTemplate?: SchemaField;
+  onChange: (fields: SchemaField[]) => void;
   asLabel?: (label: string) => string;
   asOption?: (option: Option) => Option;
   asUnit?: (unit?: string) => string | undefined;
@@ -57,7 +57,7 @@ export type FlexFieldsProps = {
   viewModeLabels?: { day: string; month: string };
 };
 
-export const FlexFields: React.FC<FlexFieldsProps> = ({
+export const SchemaFields: React.FC<SchemaFieldsProps> = ({
   label,
   fields: initialFields = [],
   addFieldLabel = 'Add Field',
@@ -75,25 +75,25 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
   errors,
   viewModeLabels,
 }) => {
-  const [fields, setFields] = useState<FlexField[]>(initialFields);
+  const [fields, setFields] = useState<SchemaField[]>(initialFields);
 
-  const shouldShow = (inp: FlexFieldInput, inputs: FlexFieldInput[]) => {
+  const shouldShow = (inp: SchemaFieldInput, inputs: SchemaFieldInput[]) => {
     if (!inp.showIf) return true;
     const controlling = inputs.find((i) => i.key === inp.showIf!.key);
     return controlling?.value === inp.showIf.equals;
   };
 
-  const updateFields = (newFields: FlexField[]) => {
+  const updateFields = (newFields: SchemaField[]) => {
     setFields(newFields);
     onChange(newFields);
   };
 
-  const cloneInput = (inp: FlexFieldInput): FlexFieldInput => ({
+  const cloneInput = (inp: SchemaFieldInput): SchemaFieldInput => ({
     ...inp,
     options: inp.options ? [...inp.options] : undefined,
   });
 
-  const makeDefaultField = (): FlexField =>
+  const makeDefaultField = (): SchemaField =>
     fieldTemplate
       ? {
           id: crypto.randomUUID().slice(0, 8),
@@ -128,9 +128,9 @@ export const FlexFields: React.FC<FlexFieldsProps> = ({
     updateFields(fields.filter((_, idx) => idx !== i));
 
   const renderInput = (
-    field: FlexField,
+    field: SchemaField,
     fi: number,
-    inp: FlexFieldInput,
+    inp: SchemaFieldInput,
     ii: number,
   ) => {
     const displayLabel = asLabel?.(inp.label) ?? inp.label;
