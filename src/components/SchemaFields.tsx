@@ -280,9 +280,19 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
                     className="min-w-0 gap-1"
                   >
                     <TextTooltip
-                      text={getLabel(inp.value, inp.options, asOption)}
+                      content={
+                        <>
+                          {getLabel(inp.value, inp.options, asOption)}
+                          {hasRequired && (
+                            <>
+                              {' '}
+                              <span className="text-danger">*</span>
+                            </>
+                          )}
+                        </>
+                      }
+                      tooltipText={getLabel(inp.value, inp.options, asOption)}
                     />
-                    {hasRequired && <span className="text-danger">*</span>}
                   </Row>
                 );
               }
