@@ -56,7 +56,8 @@ export type SchemaFieldsProps = {
   viewModeLabels?: { day: string; month: string };
 };
 
-const blueprintKeys = ['item', 'value'];
+const baseKeys = ['category', 'method', 'item'];
+const displayKeys = ['item', 'value'];
 
 function getLabel(
   value: string | number | boolean,
@@ -124,10 +125,7 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
     ii: number,
   ) => {
     const displayLabel = asLabel?.(inp.label) ?? inp.label;
-    const labelIgnoreKeys = ['category', 'method', 'item'];
-    const realInputs = field.inputs.filter(
-      (i) => !labelIgnoreKeys.includes(i.key),
-    );
+    const realInputs = field.inputs.filter((i) => !baseKeys.includes(i.key));
     const shouldHideLabel =
       realInputs.length === 1 && realInputs[0].key === inp.key;
 
@@ -247,7 +245,7 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
       {label && <label className="text-sm font-semibold">{label}</label>}
       {fields.map((field, fi) => {
         const extras = field.inputs.filter(
-          (inp) => !['category', 'method', 'item'].includes(inp.key),
+          (inp) => !baseKeys.includes(inp.key),
         );
 
         // new logic for handling single extra input that's not "value"
@@ -265,21 +263,26 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
               gridTemplateColumns: `1fr 3fr`,
             }}
           >
-            {blueprintKeys.map((key, idx) => {
+            {displayKeys.map((key, idx) => {
               // ① Special-case “item” as a truncated span
               if (key === 'item') {
                 const inp = field.inputs.find((i) => i.key === 'item');
                 if (!inp || typeof inp.value !== 'string') return null;
 
+                const hasRequired = field.inputs.some(
+                  (i) => !baseKeys.includes(i.key) && i.required === true,
+                );
+
                 return (
                   <Row
                     key={`${field.id}-item`}
                     alignItems="center"
-                    className="min-w-0"
+                    className="min-w-0 gap-1"
                   >
                     <TextTooltip
                       text={getLabel(inp.value, inp.options, asOption)}
                     />
+                    {hasRequired && <span className="text-danger">*</span>}
                   </Row>
                 );
               }
