@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Col } from '@/components/Col';
-import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
 import { Select } from '@/components/Select';
-import { IconTrash } from '@tabler/icons-react';
 import { Switch } from '@/components/Switch';
 import { DatePicker } from '@/components/DatePicker';
 import { format } from 'date-fns';
 import { LabelTooltip } from '@/components/LabelTooltip';
 import { Row } from '@/components/Row';
+import { TextTooltip } from '@/components/TextTooltip';
 
 export type ValueType =
   | 'text'
@@ -57,11 +56,11 @@ export type SchemaFieldsProps = {
   viewModeLabels?: { day: string; month: string };
 };
 
+const blueprintKeys = ['item', 'value'];
+
 export const SchemaFields: React.FC<SchemaFieldsProps> = ({
   label,
   fields: initialFields = [],
-  addFieldLabel = 'Add Field',
-  fieldTemplate,
   onChange,
   asLabel,
   asOption,
@@ -88,22 +87,6 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
     onChange(newFields);
   };
 
-  const cloneInput = (inp: SchemaFieldInput): SchemaFieldInput => ({
-    ...inp,
-    options: inp.options ? [...inp.options] : undefined,
-  });
-
-  const makeDefaultField = (): SchemaField =>
-    fieldTemplate
-      ? {
-          id: crypto.randomUUID().slice(0, 8),
-          inputs: fieldTemplate.inputs.map(cloneInput),
-        }
-      : {
-          id: crypto.randomUUID().slice(0, 8),
-          inputs: [{ key: 'value', label: 'Value', value: '', type: 'text' }],
-        };
-
   const handleInputChange = (
     fi: number,
     ii: number,
@@ -122,11 +105,6 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
     updateFields(updated);
   };
 
-  const handleAddField = () => updateFields([...fields, makeDefaultField()]);
-
-  const handleRemoveField = (i: number) =>
-    updateFields(fields.filter((_, idx) => idx !== i));
-
   const renderInput = (
     field: SchemaField,
     fi: number,
@@ -134,6 +112,12 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
     ii: number,
   ) => {
     const displayLabel = asLabel?.(inp.label) ?? inp.label;
+    const labelIgnoreKeys = ['type', 'method', 'item'];
+    const realInputs = field.inputs.filter(
+      (i) => !labelIgnoreKeys.includes(i.key),
+    );
+    const shouldHideLabel =
+      realInputs.length === 1 && realInputs[0].key === inp.key;
 
     const fieldErrs = errors?.[fi] || {};
     let errorMsg = fieldErrs[inp.key];
@@ -230,7 +214,7 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
     return (
       <Col key={`${field.id}-${inp.key}-${ii}`}>
         <Row gap="sm" alignItems="center">
-          <LabelTooltip text={displayLabel} />
+          {!shouldHideLabel && <LabelTooltip text={displayLabel} />}
           {inp.unit && (
             <span className="text-xs text-muted">
               {asUnit?.(inp.unit) ?? inp.unit}
@@ -242,9 +226,9 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
     );
   };
 
-  const blueprintKeys = ['type', 'method', 'item', 'value'];
-
   useEffect(() => setFields(initialFields), [initialFields]);
+
+  if (fields.length === 0) return null;
 
   return (
     <Col>
@@ -263,19 +247,33 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
         return (
           <div
             key={field.id}
-            className="grid-cols-flexfields grid w-full gap-2"
-            // className="grid w-full gap-2"
-            style={
-              {
-                // gridTemplateColumns: `repeat(${blueprintKeys.length}, minmax(0, 1fr)) auto`,
-              }
-            }
+            className="grid w-full gap-4"
+            style={{
+              // item = 1fr, value/extra = 3fr
+              gridTemplateColumns: `1fr 3fr`,
+            }}
           >
             {blueprintKeys.map((key, idx) => {
+              // ① Special-case “item” as a truncated span
+              if (key === 'item') {
+                const inp = field.inputs.find((i) => i.key === 'item');
+                if (!inp) return null;
+                return (
+                  <Row
+                    key={`${field.id}-item`}
+                    alignItems="center"
+                    className="min-w-0" // allow shrink
+                  >
+                    <TextTooltip text={String(inp.value)} />
+                  </Row>
+                );
+              }
+
+              // ② Any other non-“value” keys
               if (key !== 'value') {
                 const inpIndex = field.inputs.findIndex((i) => i.key === key);
                 return (
-                  <div key={`${field.id}-${key}-${idx}`}>
+                  <div key={`${field.id}-${key}-${idx}`} className="min-w-0">
                     {inpIndex >= 0 ? (
                       renderInput(field, fi, field.inputs[inpIndex], inpIndex)
                     ) : (
@@ -285,8 +283,9 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
                 );
               }
 
+              // ③ “value” (or extra fields) go here
               return (
-                <div key={`${field.id}-value-${idx}`}>
+                <div key={`${field.id}-value-${idx}`} className="min-w-0">
                   {extras.length > 1 ? (
                     <div className="flex gap-2">
                       {extras
@@ -315,22 +314,9 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
                 </div>
               );
             })}
-            <div className="mt-7 w-12 self-start">
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => handleRemoveField(fi)}
-                className="md:w-full"
-              >
-                <IconTrash size={20} className="shrink-0" />
-              </Button>
-            </div>
           </div>
         );
       })}
-      <Button type="button" onClick={handleAddField} className="self-start">
-        {addFieldLabel}
-      </Button>
     </Col>
   );
 };
