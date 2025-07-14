@@ -58,6 +58,18 @@ export type SchemaFieldsProps = {
 
 const blueprintKeys = ['item', 'value'];
 
+function getLabel(
+  value: string | number | boolean,
+  options?: Option[],
+  asOption?: (option: Option) => Option,
+): string {
+  const selected = options?.find((o) => o.value === value);
+  if (!selected) return String(value);
+
+  const resolved = asOption?.(selected) ?? selected;
+  return resolved.label;
+}
+
 export const SchemaFields: React.FC<SchemaFieldsProps> = ({
   label,
   fields: initialFields = [],
@@ -259,18 +271,15 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
                 const inp = field.inputs.find((i) => i.key === 'item');
                 if (!inp || typeof inp.value !== 'string') return null;
 
-                const ref = field.inputs.find((i) => i.key === inp.value);
-                const displayText = ref
-                  ? (asLabel?.(ref.label) ?? ref.label)
-                  : String(inp.value);
-
                 return (
                   <Row
                     key={`${field.id}-item`}
                     alignItems="center"
                     className="min-w-0"
                   >
-                    <TextTooltip text={displayText} />
+                    <TextTooltip
+                      text={getLabel(inp.value, inp.options, asOption)}
+                    />
                   </Row>
                 );
               }
