@@ -124,7 +124,7 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
     ii: number,
   ) => {
     const displayLabel = asLabel?.(inp.label) ?? inp.label;
-    const labelIgnoreKeys = ['type', 'method', 'item'];
+    const labelIgnoreKeys = ['category', 'method', 'item'];
     const realInputs = field.inputs.filter(
       (i) => !labelIgnoreKeys.includes(i.key),
     );
@@ -247,7 +247,7 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
       {label && <label className="text-sm font-semibold">{label}</label>}
       {fields.map((field, fi) => {
         const extras = field.inputs.filter(
-          (inp) => !['type', 'method', 'item'].includes(inp.key),
+          (inp) => !['category', 'method', 'item'].includes(inp.key),
         );
 
         // new logic for handling single extra input that's not "value"
