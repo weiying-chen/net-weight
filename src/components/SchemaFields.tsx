@@ -257,14 +257,20 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
               // ① Special-case “item” as a truncated span
               if (key === 'item') {
                 const inp = field.inputs.find((i) => i.key === 'item');
-                if (!inp) return null;
+                if (!inp || typeof inp.value !== 'string') return null;
+
+                const ref = field.inputs.find((i) => i.key === inp.value);
+                const displayText = ref
+                  ? (asLabel?.(ref.label) ?? ref.label)
+                  : String(inp.value);
+
                 return (
                   <Row
                     key={`${field.id}-item`}
                     alignItems="center"
-                    className="min-w-0" // allow shrink
+                    className="min-w-0"
                   >
-                    <TextTooltip text={String(inp.value)} />
+                    <TextTooltip text={displayText} />
                   </Row>
                 );
               }
