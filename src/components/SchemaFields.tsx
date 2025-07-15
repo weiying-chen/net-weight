@@ -8,6 +8,7 @@ import { format } from 'date-fns';
 import { LabelTooltip } from '@/components/LabelTooltip';
 import { Row } from '@/components/Row';
 import { TextTooltip } from '@/components/TextTooltip';
+import { capitalize } from '@/utils';
 
 export type ValueType =
   | 'text'
@@ -243,110 +244,129 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
   if (fields.length === 0) return null;
 
   return (
-    <Col>
+    <Col gap="lg">
       {label && <label className="text-sm font-semibold">{label}</label>}
-      {fields.map((field, fi) => {
-        const extras = field.inputs.filter(
-          (inp) => !baseKeys.includes(inp.key),
-        );
+      {Object.entries(
+        fields.reduce<Record<string, SchemaField[]>>((acc, field) => {
+          const method = String(
+            field.inputs.find((i) => i.key === 'method')?.value ?? 'unknown',
+          );
+          if (!acc[method]) acc[method] = [];
+          acc[method].push(field);
+          return acc;
+        }, {}),
+      ).map(([method, methodFields]) => (
+        <Col key={method}>
+          <span className="w-full border-b border-subtle pb-2 font-medium text-muted">
+            {capitalize(method)}
+          </span>
 
-        // new logic for handling single extra input that's not "value"
-        const onlyExtra = extras.length === 1 ? extras[0] : null;
-        const onlyExtraIdx = onlyExtra
-          ? field.inputs.findIndex((i) => i.key === onlyExtra.key)
-          : -1;
+          {methodFields.map((field, fi) => {
+            const extras = field.inputs.filter(
+              (inp) => !baseKeys.includes(inp.key),
+            );
 
-        return (
-          <div
-            key={field.id}
-            className="grid w-full gap-4"
-            style={{
-              // item = 1fr, value/extra = 3fr
-              gridTemplateColumns: `1fr 3fr`,
-            }}
-          >
-            {displayKeys.map((key, idx) => {
-              // ① Special-case “item” as a truncated span
-              if (key === 'item') {
-                const inp = field.inputs.find((i) => i.key === 'item');
-                if (!inp || typeof inp.value !== 'string') return null;
+            const onlyExtra = extras.length === 1 ? extras[0] : null;
+            const onlyExtraIdx = onlyExtra
+              ? field.inputs.findIndex((i) => i.key === onlyExtra.key)
+              : -1;
 
-                const hasRequired = field.inputs.some(
-                  (i) => !baseKeys.includes(i.key) && i.required === true,
-                );
+            return (
+              <div
+                key={field.id}
+                className="grid w-full gap-4"
+                style={{ gridTemplateColumns: `1fr 3fr` }}
+              >
+                {displayKeys.map((key, idx) => {
+                  if (key === 'item') {
+                    const inp = field.inputs.find((i) => i.key === 'item');
+                    if (!inp || typeof inp.value !== 'string') return null;
 
-                return (
-                  <Row
-                    key={`${field.id}-item`}
-                    alignItems="center"
-                    className="min-w-0 gap-1"
-                  >
-                    <TextTooltip
-                      content={
-                        <>
-                          {getLabel(inp.value, inp.options, asOption)}
-                          {hasRequired && (
-                            <>
-                              {' '}
-                              <span className="text-danger">*</span>
-                            </>
+                    const hasRequired = field.inputs.some(
+                      (i) => !baseKeys.includes(i.key) && i.required === true,
+                    );
+
+                    return (
+                      <Row
+                        key={`${field.id}-item`}
+                        alignItems="center"
+                        className="min-w-0 gap-1"
+                      >
+                        <TextTooltip
+                          content={getLabel(inp.value, inp.options, asOption)}
+                          tooltipText={getLabel(
+                            inp.value,
+                            inp.options,
+                            asOption,
                           )}
-                        </>
-                      }
-                      tooltipText={getLabel(inp.value, inp.options, asOption)}
-                    />
-                  </Row>
-                );
-              }
+                          after={
+                            hasRequired ? (
+                              <span className="text-danger">*</span>
+                            ) : null
+                          }
+                        />
+                      </Row>
+                    );
+                  }
 
-              // ② Any other non-“value” keys
-              if (key !== 'value') {
-                const inpIndex = field.inputs.findIndex((i) => i.key === key);
-                return (
-                  <div key={`${field.id}-${key}-${idx}`} className="min-w-0">
-                    {inpIndex >= 0 ? (
-                      renderInput(field, fi, field.inputs[inpIndex], inpIndex)
-                    ) : (
-                      <div style={{ visibility: 'hidden' }} />
-                    )}
-                  </div>
-                );
-              }
+                  if (key !== 'value') {
+                    const inpIndex = field.inputs.findIndex(
+                      (i) => i.key === key,
+                    );
+                    return (
+                      <div
+                        key={`${field.id}-${key}-${idx}`}
+                        className="min-w-0"
+                      >
+                        {inpIndex >= 0 ? (
+                          renderInput(
+                            field,
+                            fi,
+                            field.inputs[inpIndex],
+                            inpIndex,
+                          )
+                        ) : (
+                          <div style={{ visibility: 'hidden' }} />
+                        )}
+                      </div>
+                    );
+                  }
 
-              // ③ “value” (or extra fields) go here
-              return (
-                <div key={`${field.id}-value-${idx}`} className="min-w-0">
-                  {extras.length > 1 ? (
-                    <div className="flex gap-2">
-                      {extras
-                        .filter((inp) => shouldShow(inp, field.inputs))
-                        .map((inp, ii) => {
-                          const realIdx = field.inputs.findIndex(
-                            (x) => x.key === inp.key,
-                          );
-                          return (
-                            <div
-                              key={`${field.id}-${inp.key}-${ii}`}
-                              className="min-w-0 flex-1"
-                            >
-                              {renderInput(field, fi, inp, realIdx)}
-                            </div>
-                          );
-                        })}
+                  return (
+                    <div key={`${field.id}-value-${idx}`} className="min-w-0">
+                      {extras.length > 1 ? (
+                        <div className="flex gap-2">
+                          {extras
+                            .filter((inp) => shouldShow(inp, field.inputs))
+                            .map((inp, ii) => {
+                              const realIdx = field.inputs.findIndex(
+                                (x) => x.key === inp.key,
+                              );
+                              return (
+                                <div
+                                  key={`${field.id}-${inp.key}-${ii}`}
+                                  className="min-w-0 flex-1"
+                                >
+                                  {renderInput(field, fi, inp, realIdx)}
+                                </div>
+                              );
+                            })}
+                        </div>
+                      ) : onlyExtra &&
+                        onlyExtraIdx >= 0 &&
+                        shouldShow(onlyExtra, field.inputs) ? (
+                        renderInput(field, fi, onlyExtra, onlyExtraIdx)
+                      ) : (
+                        <div style={{ visibility: 'hidden' }} />
+                      )}
                     </div>
-                  ) : onlyExtra &&
-                    onlyExtraIdx >= 0 &&
-                    shouldShow(onlyExtra, field.inputs) ? (
-                    renderInput(field, fi, onlyExtra, onlyExtraIdx)
-                  ) : (
-                    <div style={{ visibility: 'hidden' }} />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        );
-      })}
+                  );
+                })}
+              </div>
+            );
+          })}
+        </Col>
+      ))}
     </Col>
   );
 };
