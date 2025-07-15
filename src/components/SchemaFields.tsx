@@ -261,7 +261,9 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
             {capitalize(method)}
           </span>
 
-          {methodFields.map((field, fi) => {
+          {methodFields.map((field) => {
+            const fi = fields.findIndex((f) => f.id === field.id);
+
             const extras = field.inputs.filter(
               (inp) => !baseKeys.includes(inp.key),
             );
