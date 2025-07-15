@@ -130,10 +130,12 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
       realInputs.length === 1 && realInputs[0].key === inp.key;
 
     const fieldErrs = errors?.[fi] || {};
-    let errorMsg = fieldErrs[inp.key];
-    if (!errorMsg && inp.type === 'select' && inp.key === 'currency') {
-      errorMsg = fieldErrs.value;
-    }
+    // let errorMsg = fieldErrs[inp.key];
+    // if (!errorMsg && inp.type === 'select' && inp.key === 'currency') {
+    //   errorMsg = fieldErrs.value;
+    // }
+
+    const errorMsg = fieldErrs[inp.key];
 
     let element;
     switch (inp.type) {

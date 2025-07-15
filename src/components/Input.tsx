@@ -1,3 +1,4 @@
+// components/Input.tsx
 import { forwardRef, InputHTMLAttributes, ReactNode } from 'react';
 import { Col } from '@/components/Col';
 import { cn } from '@/utils';
@@ -7,14 +8,12 @@ type InputProps = InputHTMLAttributes<HTMLInputElement> & {
   label?: ReactNode;
   error?: string;
   required?: boolean;
-  icon?: ReactNode;
-  isLoading?: boolean;
-  /** Makes the input act as a read-only trigger with hover and shadow styles */
+  icon?: ReactNode; // left icon
+  isLoading?: boolean; // loading indicator
   triggerOnly?: boolean;
-  /** Optional display-only transformation */
   formatValue?: (value: any) => string;
-  /** Additional className applied directly to the <input> */
   inputClassName?: string;
+  rightSection?: ReactNode; // <-- NEW prop
 };
 
 const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
@@ -32,6 +31,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
     value,
     type,
     inputClassName,
+    rightSection, // <-- destructure here
     ...props
   },
   ref,
@@ -80,18 +80,23 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
               'ring-foreground ring-offset-2 ring-offset-background focus-visible:ring-2',
             triggerOnly && 'cursor-pointer shadow hover:shadow-dark',
             icon && 'pl-9',
-            isLoading && 'pr-9',
+            rightSection || isLoading ? 'pr-9' : '',
             {
               'border-danger': error,
               'pointer-events-none opacity-50': disabled,
             },
-            inputClassName, // ← your update applied here
+            inputClassName,
           )}
           {...props}
         />
         {isLoading && (
           <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
             <IconLoader2 size={16} className="animate-spin text-muted" />
+          </span>
+        )}
+        {rightSection && (
+          <span className="absolute inset-y-0 right-3 flex items-center">
+            {rightSection}
           </span>
         )}
       </div>

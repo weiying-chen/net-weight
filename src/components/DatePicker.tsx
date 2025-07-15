@@ -285,29 +285,30 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           disabled={disabled}
           onChange={handleInputChange}
           onBlur={handleInputBlur}
+          error={error}
+          rightSection={
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (!disabled) {
+                  skipNextOutsideClick.current = true;
+                  setIsOpen((o) => !o);
+                }
+              }}
+              className={cn(
+                'flex items-center',
+                disabled && 'cursor-not-allowed opacity-50',
+              )}
+            >
+              <IconCalendarMonth size={16} />
+            </button>
+          }
         />
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={(e) => {
-            e.stopPropagation();
-            if (!disabled) {
-              skipNextOutsideClick.current = true;
-              setIsOpen((o) => !o);
-            }
-          }}
-          className={cn(
-            'absolute inset-y-0 right-3 flex items-center',
-            disabled && 'cursor-not-allowed opacity-50',
-          )}
-        >
-          <IconCalendarMonth size={20} />
-        </button>
 
         {isOpen && renderPicker()}
       </div>
-
-      {error && <span className="text-sm text-danger">{error}</span>}
     </Col>
   );
 };
