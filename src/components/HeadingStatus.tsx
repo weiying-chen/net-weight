@@ -4,7 +4,8 @@ import { Heading } from '@/components/Heading';
 import { cn } from '@/utils';
 
 type HeadingStatusProps<T extends string | number> = SelectProps<T> & {
-  heading?: string;
+  // heading?: string;
+  heading: string;
 };
 
 export const HeadingStatus = <T extends string | number>({
@@ -15,7 +16,7 @@ export const HeadingStatus = <T extends string | number>({
   return (
     <>
       <Row alignItems="center" className={cn('w-auto', className)} locked>
-        {heading && <Heading size="sm">{heading}</Heading>}
+        <Heading size="sm">{heading}</Heading>
         <Select {...props} isIconTrigger small muted />
       </Row>
     </>

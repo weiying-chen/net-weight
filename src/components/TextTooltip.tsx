@@ -34,7 +34,7 @@ export const TextTooltip: React.FC<TextTooltipProps> = ({
   );
 
   return (
-    <span className="inline-flex min-w-0 items-center gap-0.5">
+    <div>
       {truncated ? (
         <Tooltip
           content={tooltipText || content}
@@ -44,8 +44,8 @@ export const TextTooltip: React.FC<TextTooltipProps> = ({
         </Tooltip>
       ) : (
         labelSpan
-      )}
+      )}{' '}
       {after}
-    </span>
+    </div>
   );
 };
