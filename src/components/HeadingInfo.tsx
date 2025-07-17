@@ -1,6 +1,5 @@
 import { Row } from '@/components/Row';
 import { Heading } from '@/components/Heading';
-import { cn } from '@/utils';
 import { IconInfoCircle } from '@tabler/icons-react';
 import { Tooltip } from '@/components/Tooltip';
 
@@ -17,12 +16,7 @@ export const HeadingInfo = ({
 }: HeadingInfoProps) => {
   return (
     <>
-      <Row
-        alignItems="center"
-        gap="sm"
-        className={cn('w-auto', className)}
-        locked
-      >
+      <Row alignItems="center" className={className} locked>
         <Heading size="sm">{text}</Heading>
         {tooltipText && (
           <Tooltip content={tooltipText}>
