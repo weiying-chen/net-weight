@@ -123,7 +123,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
             style={style}
             className={cn(
               'pointer-events-none fixed rounded bg-foreground px-3 py-2 text-sm text-background shadow',
-              'whitespace-pre',
+              'whitespace-pre-wrap',
             )}
             onMouseEnter={transient ? onLeave : undefined}
           >
