@@ -44,7 +44,8 @@ export type SchemaFieldsProps = {
   addFieldLabel?: string;
   fieldTemplate?: SchemaField;
   onChange: (fields: SchemaField[]) => void;
-  asLabel?: (label: string) => string;
+  asMethod?: (method: string) => string;
+  // asLabel?: (label: string) => string;
   asOption?: (option: Option) => Option;
   asUnit?: (unit?: string) => string | undefined;
   headerLabel?: (date: Date, mode: 'day' | 'month') => string;
@@ -57,8 +58,8 @@ export type SchemaFieldsProps = {
   viewModeLabels?: { day: string; month: string };
 };
 
-const baseKeys = ['category', 'method', 'item'];
-const displayKeys = ['item', 'value'];
+export const baseKeys = ['category', 'method', 'item'] as const;
+const displayKeys = ['item', 'value'] as const;
 
 function getLabel(
   value: string | number | boolean,
@@ -76,7 +77,8 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
   label,
   fields: initialFields = [],
   onChange,
-  asLabel,
+  asMethod,
+  // asLabel,
   asOption,
   asUnit,
   headerLabel,
@@ -125,7 +127,8 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
     inp: SchemaFieldInput,
     ii: number,
   ) => {
-    const displayLabel = asLabel?.(inp.label) ?? inp.label;
+    // const displayLabel = asLabel?.(inp.label) ?? inp.label;
+    const displayLabel = inp.label;
     const realInputs = field.inputs.filter((i) => !baseKeys.includes(i.key));
     const shouldHideLabel =
       realInputs.length === 1 && realInputs[0].key === inp.key;
@@ -258,7 +261,7 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
       ).map(([method, methodFields]) => (
         <Col key={method}>
           <span className="w-full border-b border-subtle pb-2 font-medium text-muted">
-            {capitalize(method)}
+            {asMethod ? asMethod(method) : capitalize(method)}
           </span>
 
           {methodFields.map((field) => {
