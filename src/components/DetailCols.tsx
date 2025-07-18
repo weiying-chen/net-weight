@@ -14,21 +14,32 @@ type DetailColsProps = {
    * E.g. ['2fr','1fr', undefined, '3rem'] → col 1=2fr, col 2=1fr, col 4=3rem.
    */
   colWidths?: (string | undefined)[];
+  /**
+   * Columns to hide (by zero-based index). Hidden columns are removed from the grid.
+   */
+  hideCols?: number[];
 };
 
 export const DetailCols: React.FC<DetailColsProps> = ({
   rows,
   minCols = 3,
   colWidths = [],
+  hideCols = [],
 }) => {
-  // determine how many columns we need
+  // determine how many columns we need (including hidden ones for minCols)
   const maxCols = Math.max(minCols, ...rows.map((r) => r.length));
 
-  // build default array of '1fr'
-  const widths: string[] = Array.from(
-    { length: maxCols },
-    (_, i) => colWidths[i] ?? '1fr',
+  // compute the list of visible column indices
+  const visibleCols = Array.from({ length: maxCols }, (_, i) => i).filter(
+    (i) => !hideCols.includes(i),
   );
+
+  // build array of widths for visible columns, ensuring last visible col flexes
+  const widths: string[] = visibleCols.map((colIdx, idx) => {
+    const defaultWidth = colWidths[colIdx] ?? '1fr';
+    // if it's the last visible index, make it flexible
+    return idx === visibleCols.length - 1 ? 'minmax(0, 1fr)' : defaultWidth;
+  });
   const templateColumns = widths.join(' ');
 
   const renderDetail = (field: NonNullable<Field>, key: React.Key) => (
@@ -52,15 +63,18 @@ export const DetailCols: React.FC<DetailColsProps> = ({
   return (
     <Col className="gap-4">
       {rows.map((fields, rowIdx) => {
-        // hide label of sole non-baseKey field (i.e., when only one extra input exists)
+        // pad to full length
         const padded = [...fields];
         while (padded.length < maxCols) padded.push(null);
 
-        // determine which fields are baseColumns by position
+        // hide label of sole non-baseKey field
         const baseCount = 3; // category, method, item
         const extraFields = padded.slice(baseCount).filter((f) => f);
         const hideExtraLabel = extraFields.length === 1;
         const extraLabel = hideExtraLabel ? extraFields[0]?.label : undefined;
+
+        // pick only visible columns
+        const visibleFields = visibleCols.map((ci) => padded[ci] ?? null);
 
         return (
           <div
@@ -68,7 +82,7 @@ export const DetailCols: React.FC<DetailColsProps> = ({
             className="grid w-full gap-4"
             style={{ gridTemplateColumns: templateColumns }}
           >
-            {padded.map((f, idx) => {
+            {visibleFields.map((f, idx) => {
               if (!f) return <div key={idx} />;
 
               const shouldHide = hideExtraLabel && f.label === extraLabel;
