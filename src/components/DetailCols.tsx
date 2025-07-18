@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { Col } from '@/components/Col';
 import { Row } from '@/components/Row';
+import { DetailTooltip } from '@/components/DetailTooltip';
 
 type Field = { label?: ReactNode; value: ReactNode } | null;
 
@@ -23,8 +24,8 @@ export const DetailCols: React.FC<DetailColsProps> = ({ rows }) => {
         locked
         className="w-full min-w-0 border-b border-subtle pb-2 text-sm"
       >
-        {/* wrap value in a block-level truncate container */}
-        <div className="w-full min-w-0 truncate">{field.value}</div>
+        {/* use DetailTooltip for proper truncation + tooltip */}
+        <DetailTooltip content={field.value} />
       </Row>
     </Col>
   );
