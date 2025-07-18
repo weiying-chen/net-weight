@@ -58,8 +58,8 @@ export type SchemaFieldsProps = {
   viewModeLabels?: { day: string; month: string };
 };
 
-export const baseKeys = ['category', 'method', 'item'] as const;
-const displayKeys = ['item', 'value'] as const;
+export const baseKeys = ['category', 'method', 'item'];
+const displayKeys = ['item', 'value'];
 
 function getLabel(
   value: string | number | boolean,
