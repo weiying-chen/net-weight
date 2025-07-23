@@ -15,7 +15,9 @@ import { Tag } from '@/components/Tag';
 import { IconChevronDown, IconSearch, IconLoader2 } from '@tabler/icons-react';
 import { SelectOption } from '@/components/SelectDropdown';
 
-export type SelectTriggerProps<T extends string | number | boolean | null> = {
+export type SelectTriggerProps<
+  T extends string | number | boolean | null | undefined,
+> = {
   multiple: boolean;
   hasSearch: boolean;
   selectedOptions: SelectOption<T>[];
@@ -45,7 +47,9 @@ export type SelectTriggerProps<T extends string | number | boolean | null> = {
   triggerRef: React.RefObject<HTMLDivElement>;
 };
 
-export function SelectTrigger<T extends string | number | boolean | null>({
+export function SelectTrigger<
+  T extends string | number | boolean | null | undefined,
+>({
   multiple,
   hasSearch,
   selectedOptions,
@@ -221,7 +225,7 @@ export function SelectTrigger<T extends string | number | boolean | null>({
         <>
           {selectedOptions.map((opt) => (
             <Tag
-              key={opt.value}
+              key={String(opt.value)}
               onRemove={() => handleOptionClick(opt, null)}
               removeIconSize={12}
               className="h-5 px-2 py-1 text-xs"
@@ -239,7 +243,7 @@ export function SelectTrigger<T extends string | number | boolean | null>({
       <>
         {visible.map((opt) => (
           <Tag
-            key={opt.value}
+            key={String(opt.value)}
             onRemove={() => handleOptionClick(opt, null)}
             removeIconSize={12}
             className="h-5 px-2 py-1 text-xs"
@@ -279,7 +283,7 @@ export function SelectTrigger<T extends string | number | boolean | null>({
         tabIndex={0}
         error={error}
         disabled={isDisabled}
-        className={cn('flex cursor-pointer items-center gap-1 shadow', {
+        className={cn('flex cursor-pointer items-center gap-2 shadow', {
           'focus-visible:ring-0 focus-visible:ring-offset-0': isOpen,
           'hover:shadow-dark': !isDisabled,
           'h-8 px-2 text-sm': small && !isIconTrigger,
@@ -294,7 +298,7 @@ export function SelectTrigger<T extends string | number | boolean | null>({
         <Row
           ref={tagsRef}
           alignItems="center"
-          className="min-w-0 flex-1 flex-nowrap gap-1 overflow-hidden"
+          className="min-w-0 flex-1 flex-nowrap gap-2 overflow-hidden"
         >
           {renderMultiTagsSummary()}
         </Row>
@@ -318,7 +322,7 @@ export function SelectTrigger<T extends string | number | boolean | null>({
     <div
       ref={triggerRef}
       className={cn(
-        'relative flex w-full cursor-text items-center gap-1 rounded border border-border bg-background p-2',
+        'relative flex w-full cursor-text items-center gap-2 rounded border border-border bg-background p-2',
         className,
       )}
       onClickCapture={(e) => {
@@ -331,7 +335,7 @@ export function SelectTrigger<T extends string | number | boolean | null>({
     >
       {/* Tag container (only render if there are selected options) */}
       {selectedOptions.length > 0 && (
-        <div ref={tagsRef} className="flex flex-wrap items-center gap-1">
+        <div ref={tagsRef} className="flex flex-wrap items-center gap-2">
           {renderMultiTagsSummary()}
         </div>
       )}
@@ -473,7 +477,7 @@ export function SelectTrigger<T extends string | number | boolean | null>({
           locked
           className={cn('min-w-0', isIconTrigger && 'gap-0')}
         >
-          <Row alignItems="center" className="min-w-0 gap-1" fluid>
+          <Row alignItems="center" className="min-w-0 gap-2" fluid>
             {selectedOptions[0]?.icon && <span>{selectedOptions[0].icon}</span>}
             {!isIconTrigger && (
               <span

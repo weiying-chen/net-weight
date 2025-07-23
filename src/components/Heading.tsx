@@ -1,7 +1,7 @@
 import { HTMLAttributes } from 'react';
 import { cn } from '@/utils';
 
-type HeadingProps = HTMLAttributes<HTMLHeadingElement> & {
+export type HeadingProps = HTMLAttributes<HTMLHeadingElement> & {
   size?: 'sm' | 'md' | 'lg' | 'xl';
   isFull?: boolean;
   hasBorder?: boolean;

@@ -8,9 +8,21 @@ type Field = { label?: ReactNode; value: ReactNode } | null;
 type DetailColsProps = {
   /** only rows of fields */
   rows: Field[][];
+  /** hide columns by index: 0,1,2 for the first three, 3 for the extras */
+  hideCols?: number[];
+  /**
+   * Column widths for cols [0,1,2,extras].
+   * E.g. ['2fr','1fr','1fr','3fr'].
+   * Defaults to ['1fr','1fr','1fr','3fr'].
+   */
+  colWidths?: [string, string, string, string];
 };
 
-export const DetailCols: React.FC<DetailColsProps> = ({ rows }) => {
+export const DetailCols: React.FC<DetailColsProps> = ({
+  rows,
+  hideCols = [],
+  colWidths = ['1fr', '1fr', '1fr', '3fr'],
+}) => {
   const renderDetail = (field: NonNullable<Field>, key: React.Key) => (
     <Col key={key} className="min-w-0 gap-2">
       {field.label ? (
@@ -24,7 +36,6 @@ export const DetailCols: React.FC<DetailColsProps> = ({ rows }) => {
         locked
         className="w-full min-w-0 border-b border-subtle pb-2 text-sm"
       >
-        {/* use DetailTooltip for proper truncation + tooltip */}
         <DetailTooltip content={field.value} />
       </Row>
     </Col>
@@ -37,38 +48,50 @@ export const DetailCols: React.FC<DetailColsProps> = ({ rows }) => {
         const padded = [...fields];
         while (padded.length < 3) padded.push(null);
 
-        // split first three and extras
-        const firstThree = padded.slice(0, 3) as NonNullable<Field>[];
+        // extras beyond the first three
         const extras = fields
           .slice(3)
           .filter((f): f is NonNullable<Field> => !!f);
         const hideExtraLabel = extras.length === 1;
         const extraLabel = hideExtraLabel ? extras[0].label : undefined;
 
+        // pick only the columns we want to show
+        const visibleCols = colWidths.filter(
+          (_, idx) => !hideCols.includes(idx),
+        );
+        const visibleIndices = colWidths
+          .map((_, idx) => idx)
+          .filter((idx) => !hideCols.includes(idx));
+
         return (
           <div
             key={rowIdx}
             className="grid w-full gap-4"
-            style={{
-              gridTemplateColumns: '1fr 1fr 1fr 3fr',
-            }}
+            style={{ gridTemplateColumns: visibleCols.join(' ') }}
           >
-            {firstThree.map((f, idx) =>
-              f ? renderDetail(f, idx) : <div key={idx} />,
-            )}
-
-            {/* extras container in last grid cell */}
-            <div className="flex min-w-0 gap-2">
-              {extras.map((f, ei) => {
-                const shouldHide = hideExtraLabel && f.label === extraLabel;
-                const field = shouldHide ? { ...f, label: undefined } : f;
+            {visibleIndices.map((colIdx) => {
+              if (colIdx < 3) {
+                // first-three slots
+                const f = padded[colIdx];
+                return f ? renderDetail(f, colIdx) : <div key={colIdx} />;
+              } else {
+                // extras slot
                 return (
-                  <div key={ei} className="min-w-0 flex-1">
-                    {renderDetail(field, `extra-${ei}`)}
+                  <div key="extras" className="flex min-w-0 gap-2">
+                    {extras.map((f, ei) => {
+                      const shouldHide =
+                        hideExtraLabel && f.label === extraLabel;
+                      const field = shouldHide ? { ...f, label: undefined } : f;
+                      return (
+                        <div key={ei} className="min-w-0 flex-1">
+                          {renderDetail(field, `extra-${ei}`)}
+                        </div>
+                      );
+                    })}
                   </div>
                 );
-              })}
-            </div>
+              }
+            })}
           </div>
         );
       })}

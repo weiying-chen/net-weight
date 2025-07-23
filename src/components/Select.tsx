@@ -48,7 +48,7 @@ type CommonProps<T> = {
  */
 export type SingleSelectProps<T> = CommonProps<T> & {
   multiple?: false;
-  value: T;
+  value?: T | null;
   onChange?: (value: T) => void;
 };
 
@@ -72,7 +72,7 @@ export type SelectProps<T> = SingleSelectProps<T> | MultiSelectProps<T>;
  * Select component now accepts T extending string, number, or null.
  * This allows `value` and `onChange` to handle null directly.
  */
-export const Select = <T extends string | number | boolean | null>(
+export const Select = <T extends string | number | boolean | null | undefined>(
   props: SelectProps<T>,
 ) => {
   const {
