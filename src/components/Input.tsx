@@ -1,4 +1,3 @@
-// components/Input.tsx
 import { forwardRef, InputHTMLAttributes, ReactNode } from 'react';
 import { Col } from '@/components/Col';
 import { cn } from '@/utils';
@@ -8,12 +7,12 @@ type InputProps = InputHTMLAttributes<HTMLInputElement> & {
   label?: ReactNode;
   error?: string;
   required?: boolean;
-  icon?: ReactNode; // left icon
-  isLoading?: boolean; // loading indicator
+  icon?: ReactNode;
+  isLoading?: boolean;
   triggerOnly?: boolean;
   formatValue?: (value: any) => string;
   inputClassName?: string;
-  rightSection?: ReactNode; // <-- NEW prop
+  rightSection?: ReactNode;
 };
 
 const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
@@ -31,7 +30,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
     value,
     type,
     inputClassName,
-    rightSection, // <-- destructure here
+    rightSection,
     ...props
   },
   ref,

@@ -9,7 +9,7 @@ import { Modal } from '@/components/Modal';
 type ModalInputProps = {
   label?: React.ReactNode;
   placeholder?: string;
-  value?: string;
+  value?: string | null;
   error?: string;
   disabled?: boolean;
   content: (onClose: () => void) => React.ReactNode;
@@ -42,8 +42,9 @@ export const ModalInput = ({
     }
   }, [isOpen]);
 
-  const displayValue =
+  const rawValue =
     typeof formatValue === 'function' ? formatValue(value) : value;
+  const displayValue = rawValue ?? '';
 
   // Decide where to portal (fallback to document.body)
   const portalTarget = document.getElementById('modal-root') || document.body;
