@@ -4,6 +4,7 @@ import {
   useRef,
   useLayoutEffect,
   CSSProperties,
+  useEffect,
 } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from '@/utils';
@@ -18,6 +19,8 @@ interface TooltipProps {
 }
 
 const TOOLTIP_OFFSET = 10;
+// event name for “hide all other tooltips”
+const TOOLTIP_HIDE_EVENT = 'tooltip:hide-others';
 
 export const Tooltip: React.FC<TooltipProps> = ({
   children,
@@ -33,13 +36,27 @@ export const Tooltip: React.FC<TooltipProps> = ({
     left: 0,
     visibility: 'hidden',
     opacity: 0,
-    transform: 'none', // start unscaled for measurement
+    transform: 'none',
     zIndex: 9999,
     ...(width != null ? { width } : {}),
   });
 
+  // unique ID for this instance
+  const myId = useRef(`${Date.now()}-${Math.random()}`).current;
   const ref = useRef<HTMLDivElement>(null);
   const lastPos = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+
+  // hide this tooltip when another broadcasts
+  useEffect(() => {
+    const onHide = (e: Event) => {
+      const otherId = (e as CustomEvent<string>).detail;
+      if (otherId !== myId) {
+        setVisible(false);
+      }
+    };
+    window.addEventListener(TOOLTIP_HIDE_EVENT, onHide as any);
+    return () => window.removeEventListener(TOOLTIP_HIDE_EVENT, onHide as any);
+  }, [myId]);
 
   const position = (x: number, y: number) => {
     if (!ref.current) return;
@@ -47,13 +64,12 @@ export const Tooltip: React.FC<TooltipProps> = ({
     const vw = window.innerWidth;
     const vh = window.innerHeight;
 
-    // 1) lock in natural width if auto-sizing
+    // lock natural width if needed (measure only, don’t return)
     if (width == null && style.width == null) {
       setStyle((s) => ({ ...s, width: rect.width }));
-      return; // next layoutEffect will do the clamp+reveal
     }
 
-    // 2) clamp into view
+    // clamp into view
     const top = Math.min(
       Math.max(y + TOOLTIP_OFFSET, TOOLTIP_OFFSET),
       vh - rect.height - TOOLTIP_OFFSET,
@@ -63,7 +79,6 @@ export const Tooltip: React.FC<TooltipProps> = ({
       vw - rect.width - TOOLTIP_OFFSET * 2,
     );
 
-    // 3) reveal + animate
     setStyle((s) => ({
       ...s,
       top,
@@ -77,16 +92,20 @@ export const Tooltip: React.FC<TooltipProps> = ({
   };
 
   const onEnter = (e: React.MouseEvent<HTMLDivElement>) => {
+    // tell all others to hide
+    window.dispatchEvent(new CustomEvent(TOOLTIP_HIDE_EVENT, { detail: myId }));
     lastPos.current = { x: e.clientX, y: e.clientY };
     setVisible(true);
   };
+
   const onMove = (e: React.MouseEvent<HTMLDivElement>) => {
     lastPos.current = { x: e.clientX, y: e.clientY };
     position(e.clientX, e.clientY);
   };
+
   const onLeave = () => {
     setVisible(false);
-    // reset for next hover
+    // reset style
     setStyle({
       position: 'fixed',
       top: 0,
@@ -99,7 +118,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
     });
   };
 
-  // measure & position before paint
+  // re‑position before paint when becoming visible
   useLayoutEffect(() => {
     if (visible) {
       position(lastPos.current.x, lastPos.current.y);

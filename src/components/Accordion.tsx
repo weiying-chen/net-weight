@@ -6,12 +6,18 @@ import { IconChevronDown } from '@tabler/icons-react';
 import { cn } from '@/utils';
 
 export type AccordionProps = {
-  title: ReactNode;
+  title?: ReactNode;
   children: ReactNode;
+  asHeading?: ReactNode;
   className?: string;
 };
 
-export const Accordion = ({ title, children, className }: AccordionProps) => {
+export const Accordion = ({
+  title,
+  children,
+  asHeading,
+  className,
+}: AccordionProps) => {
   const [open, setOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState('0px');
@@ -28,7 +34,11 @@ export const Accordion = ({ title, children, className }: AccordionProps) => {
         className="cursor-pointer items-center justify-between border-b border-border py-2"
         onClick={() => setOpen(!open)}
       >
-        <Heading size="sm">{title}</Heading>
+        {asHeading ? (
+          asHeading
+        ) : title ? (
+          <Heading size="sm">{title}</Heading>
+        ) : null}
         <IconChevronDown
           size={20}
           className={cn(
