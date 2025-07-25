@@ -302,7 +302,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                 disabled && 'cursor-not-allowed opacity-50',
               )}
             >
-              <IconCalendarMonth size={16} />
+              <IconCalendarMonth size={20} />
             </button>
           }
         />

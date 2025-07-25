@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Col } from '@/components/Col';
-import { Table } from '@/components/Table'; // Adjust the import path if needed
+import { Table } from '@/components/Table'; // adjust path if needed
 
 type Item = {
   id: string;
@@ -8,18 +8,42 @@ type Item = {
   color: string;
 };
 
-export function PG() {
-  // State to store the items data
-  const [items, setItems] = useState<Item[]>([
-    { id: '1', fruit: 'Apple', color: 'Red' },
-    { id: '2', fruit: 'Banana', color: 'Yellow' },
-    { id: '3', fruit: 'Grape', color: 'Purple' },
-  ]);
+const generateItems = (count: number): Item[] => {
+  const fruits = [
+    'Apple',
+    'Banana',
+    'Grape',
+    'Mango',
+    'Orange',
+    'Peach',
+    'Plum',
+    'Lemon',
+    'Kiwi',
+    'Papaya',
+  ];
+  const colors = [
+    'Red',
+    'Yellow',
+    'Purple',
+    'Green',
+    'Orange',
+    'Pink',
+    'Blue',
+    'Brown',
+    'Black',
+    'White',
+  ];
+  return Array.from({ length: count }, (_, i) => ({
+    id: String(i + 1),
+    fruit: fruits[i % fruits.length] + ` ${i + 1}`,
+    color: colors[i % colors.length],
+  }));
+};
 
-  // State to track selected rows
+export function PG() {
+  const [items, setItems] = useState<Item[]>(() => generateItems(20));
   const [selectedItems, setSelectedItems] = useState<Item[]>([]);
 
-  // Define columns for the table
   const columns = [
     {
       header: 'Fruit',
@@ -28,74 +52,48 @@ export function PG() {
     {
       header: 'Color',
       render: (item: Item) => item.color,
-      editable: false, // disable editing for this column
+      editable: false,
     },
   ];
 
-  // Handle cell changes
   const handleCellChange = (
     rowIndex: number,
     colIndex: number,
     newValue: string,
   ) => {
-    // Log the values
-    console.log('Row Index:', rowIndex);
-    console.log('Column Index:', colIndex);
-    console.log('New Value:', newValue);
-
-    // Get the column header to know which property to update
-    // const columnHeader = columns[colIndex].header;
-
-    // If column is editable, update the corresponding item
-    // if (columnHeader) {
-    //   const updatedItems = [...items];
-    //   updatedItems[rowIndex] = {
-    //     ...updatedItems[rowIndex],
-    //     [columnHeader.toLowerCase()]: newValue, // Dynamically update the property
-    //   };
-    //   setItems(updatedItems); // Update the state with the new items array
-    // }
+    console.log('Row:', rowIndex, 'Col:', colIndex, 'New:', newValue);
+    // …your update logic…
   };
 
-  // Handle row selection
   const handleRowSelect = (item: Item) => {
-    const isSelected = selectedItems.some(
-      (selectedItem) => selectedItem.id === item.id,
+    setSelectedItems((prev) =>
+      prev.some((i) => i.id === item.id)
+        ? prev.filter((i) => i.id !== item.id)
+        : [...prev, item],
     );
-    if (isSelected) {
-      setSelectedItems(
-        selectedItems.filter((selectedItem) => selectedItem.id !== item.id),
-      );
-    } else {
-      setSelectedItems([...selectedItems, item]);
-    }
   };
 
   return (
     <Col className="w-full gap-6 p-6">
-      <Table
+      <Table<Item, Item>
         data={items}
+        selectedData={selectedItems} // <- prop name fixed
+        onRowSelect={(next) => setSelectedItems(next)}
         cols={[
           {
             header: 'Select',
             render: (item: Item) => (
               <input
                 type="checkbox"
-                checked={selectedItems.some(
-                  (selectedItem) => selectedItem.id === item.id,
-                )}
-                onChange={() => handleRowSelect(item)} // Toggle selection on checkbox change
+                checked={selectedItems.some((i) => i.id === item.id)}
+                onChange={() => handleRowSelect(item)}
               />
             ),
           },
-          ...columns, // Spread the original columns here
+          ...columns,
         ]}
-        selectedItems={selectedItems}
-        onRowClick={(e, item) => {
-          console.log('Clicked row:', item);
-        }}
-        onCellChange={handleCellChange} // Pass the handleCellChange function
-        // editable={false}
+        onRowClick={(e, item) => console.log('Clicked row:', item)}
+        onCellChange={handleCellChange}
       />
     </Col>
   );

@@ -1,4 +1,11 @@
-import { useState, useRef, useLayoutEffect, useEffect, useMemo } from 'react';
+import {
+  useState,
+  useRef,
+  useLayoutEffect,
+  useEffect,
+  useMemo,
+  ReactNode,
+} from 'react';
 import { IconArrowUp, IconArrowDown } from '@tabler/icons-react';
 import { Tooltip } from '@/components/Tooltip';
 import { TableCell } from '@/components/TableCell';
@@ -491,7 +498,7 @@ export function Table<T, D extends object>({
   };
 
   // Helper function to render the entire row
-  const renderRowNode = (ri: number, orig: T, rowContent: JSX.Element) => {
+  const renderRowNode = (ri: number, orig: T, rowContent: ReactNode) => {
     return (
       <div
         key={ri}
