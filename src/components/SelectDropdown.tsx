@@ -38,6 +38,10 @@ export type SelectDropdownProps<
   hasRenderedDropdown: MutableRefObject<boolean>;
   isOpen: boolean;
   dropdownRef: MutableRefObject<HTMLDivElement | null>;
+  /**
+   * When true, renders dropdown inline instead of portaling to body
+   */
+  disablePortal?: boolean;
 };
 
 export function SelectDropdown<
@@ -56,6 +60,7 @@ export function SelectDropdown<
   hasRenderedDropdown,
   isOpen,
   dropdownRef,
+  disablePortal = false,
 }: SelectDropdownProps<T>) {
   if (!isOpen) {
     if (hasRenderedDropdown.current) {
@@ -124,13 +129,13 @@ export function SelectDropdown<
                     <span>{opt.label}</span>
                   </Row>
                 ) : (
-                  <div className="flex w-full items-center justify-between gap-2">
-                    <Row alignItems="center" className="gap-2">
+                  <Row align="between" alignItems="center" locked>
+                    <Row alignItems="center" className="gap-2" locked>
                       {opt.icon && <span>{opt.icon}</span>}
                       <span>{opt.label}</span>
                     </Row>
                     {isSelected && <IconCheck size={16} />}
-                  </div>
+                  </Row>
                 )}
               </li>
             );
@@ -139,6 +144,10 @@ export function SelectDropdown<
       )}
     </div>
   );
+
+  if (disablePortal) {
+    return dropdownContent;
+  }
 
   return createPortal(dropdownContent, dropdownContainer);
 }

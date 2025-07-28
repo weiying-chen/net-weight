@@ -39,6 +39,9 @@ type CommonProps<T> = {
   formatValue?: (label: string) => string;
   allowAddOptions?: boolean;
   allowSingleOption?: boolean;
+  isMobile?: boolean; // new
+  emptyIcon?: ReactNode;
+  disablePortal?: boolean;
 };
 
 /**
@@ -98,6 +101,9 @@ export const Select = <T extends string | number | boolean | null | undefined>(
     noResultsLabel,
     formatValue,
     allowAddOptions,
+    isMobile,
+    emptyIcon,
+    disablePortal = false,
   } = props as CommonProps<T>;
 
   const multiple = (props as any).multiple === true;
@@ -426,6 +432,8 @@ export const Select = <T extends string | number | boolean | null | undefined>(
       setLocalSearchQuery={setLocalSearchQuery}
       className={className}
       triggerRef={triggerRef}
+      isMobile={isMobile}
+      emptyIcon={emptyIcon}
     />
   );
 
@@ -451,6 +459,7 @@ export const Select = <T extends string | number | boolean | null | undefined>(
       hasRenderedDropdown={hasRenderedDropdown}
       isOpen={isOpen}
       dropdownRef={dropdownRef}
+      disablePortal={disablePortal}
     />
   );
 

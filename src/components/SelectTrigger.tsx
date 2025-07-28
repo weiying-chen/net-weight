@@ -45,6 +45,8 @@ export type SelectTriggerProps<
   setLocalSearchQuery: (query: string) => void;
   className?: string;
   triggerRef: React.RefObject<HTMLDivElement>;
+  isMobile?: boolean;
+  emptyIcon?: ReactNode;
 };
 
 export function SelectTrigger<
@@ -72,6 +74,8 @@ export function SelectTrigger<
   setLocalSearchQuery,
   className,
   triggerRef,
+  isMobile = false,
+  emptyIcon,
 }: SelectTriggerProps<T>) {
   useEffect(() => {
     if (!isOpen) {
@@ -472,14 +476,14 @@ export function SelectTrigger<
         })}
       >
         <Row
-          align="between"
+          align={isMobile ? 'center' : 'between'}
           alignItems="center"
           locked
-          className={cn('min-w-0', isIconTrigger && 'gap-0')}
+          className={cn('min-w-0', (isIconTrigger || isMobile) && 'gap-0')}
         >
-          <Row alignItems="center" className="min-w-0 gap-2" fluid>
+          <Row alignItems="center" className="min-w-0 gap-2" fluid locked>
             {selectedOptions[0]?.icon && <span>{selectedOptions[0].icon}</span>}
-            {!isIconTrigger && (
+            {!isIconTrigger && !isMobile && (
               <span
                 className={cn(
                   'truncate',
@@ -493,15 +497,24 @@ export function SelectTrigger<
                   : placeholder}
               </span>
             )}
+
+            {!isIconTrigger &&
+              isMobile &&
+              selectedOptions.length === 0 &&
+              emptyIcon && <span className="text-muted">{emptyIcon}</span>}
           </Row>
 
-          <span className={cn('flex items-center', isDisabled && 'opacity-50')}>
-            {isLoading ? (
-              <IconLoader2 size={16} className="animate-spin text-muted" />
-            ) : !isIconTrigger ? (
-              (icon ?? <IconChevronDown size={16} />)
-            ) : null}
-          </span>
+          {!isMobile && (
+            <span
+              className={cn('flex items-center', isDisabled && 'opacity-50')}
+            >
+              {isLoading ? (
+                <IconLoader2 size={16} className="animate-spin text-muted" />
+              ) : !isIconTrigger ? (
+                (icon ?? <IconChevronDown size={16} />)
+              ) : null}
+            </span>
+          )}
         </Row>
       </PseudoInput>
     </div>
