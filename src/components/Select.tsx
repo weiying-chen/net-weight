@@ -324,8 +324,34 @@ export const Select = <T extends string | number | boolean | null | undefined>(
     }
   };
 
+  // const adjustDropdownPosition = () => {
+  //   if (!triggerRef.current) return;
+  //   const rect = triggerRef.current.getBoundingClientRect();
+  //   const rawGap = 4;
+  //   const maxH = 384;
+  //   const vh = window.innerHeight;
+  //   const belowSpace = Math.min(vh - rect.bottom, maxH);
+  //   const aboveSpace = Math.min(rect.top, maxH);
+  //   const flipUp = aboveSpace > belowSpace;
+  //   const computedStyles: React.CSSProperties = {
+  //     position: 'fixed',
+  //     left: `${rect.left}px`,
+  //     minWidth: `${rect.width}px`,
+  //     maxHeight: `${flipUp ? aboveSpace : belowSpace}px`,
+  //     overflowY: 'auto',
+  //     zIndex: 200,
+  //   };
+  //   if (flipUp) {
+  //     computedStyles.bottom = `${vh - Math.round(rect.top) + rawGap}px`;
+  //   } else {
+  //     computedStyles.top = `${Math.round(rect.bottom) + rawGap}px`;
+  //   }
+  //   setDropdownStyles(computedStyles);
+  // };
+
   const adjustDropdownPosition = () => {
     if (!triggerRef.current) return;
+
     const rect = triggerRef.current.getBoundingClientRect();
     const rawGap = 4;
     const maxH = 384;
@@ -333,19 +359,40 @@ export const Select = <T extends string | number | boolean | null | undefined>(
     const belowSpace = Math.min(vh - rect.bottom, maxH);
     const aboveSpace = Math.min(rect.top, maxH);
     const flipUp = aboveSpace > belowSpace;
+
+    const disablePortal = props.disablePortal ?? false;
+
     const computedStyles: React.CSSProperties = {
-      position: 'fixed',
-      left: `${rect.left}px`,
+      position: disablePortal ? 'absolute' : 'fixed',
       minWidth: `${rect.width}px`,
       maxHeight: `${flipUp ? aboveSpace : belowSpace}px`,
       overflowY: 'auto',
       zIndex: 200,
     };
-    if (flipUp) {
-      computedStyles.bottom = `${vh - Math.round(rect.top) + rawGap}px`;
+
+    if (disablePortal) {
+      const parentRect =
+        triggerRef.current.parentElement?.getBoundingClientRect();
+      const wrapperTop = parentRect?.top ?? 0;
+      const wrapperLeft = parentRect?.left ?? 0;
+
+      computedStyles.left = `${rect.left - wrapperLeft}px`;
+
+      if (flipUp) {
+        computedStyles.top = `${rect.top - wrapperTop - aboveSpace - rawGap}px`;
+      } else {
+        computedStyles.top = `${rect.bottom - wrapperTop + rawGap}px`;
+      }
     } else {
-      computedStyles.top = `${Math.round(rect.bottom) + rawGap}px`;
+      computedStyles.left = `${rect.left}px`;
+
+      if (flipUp) {
+        computedStyles.bottom = `${vh - Math.round(rect.top) + rawGap}px`;
+      } else {
+        computedStyles.top = `${Math.round(rect.bottom) + rawGap}px`;
+      }
     }
+
     setDropdownStyles(computedStyles);
   };
 
@@ -465,7 +512,11 @@ export const Select = <T extends string | number | boolean | null | undefined>(
 
   return (
     <Col
-      className={cn('min-w-0', { 'w-auto': isIconTrigger }, wrapperClassName)}
+      className={cn(
+        'relative min-w-0',
+        { 'w-auto': isIconTrigger },
+        wrapperClassName,
+      )}
     >
       {label &&
         (typeof label === 'string' ? (

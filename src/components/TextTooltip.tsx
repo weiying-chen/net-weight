@@ -19,22 +19,20 @@ export const TextTooltip: React.FC<TextTooltipProps> = ({
 
   useLayoutEffect(() => {
     const el = ref.current;
-    if (el) {
-      setTruncated(el.scrollWidth > el.clientWidth);
-    }
+    if (el) setTruncated(el.scrollWidth > el.clientWidth);
   }, [content]);
 
   const labelSpan = (
     <span
       ref={ref}
-      className={`truncate text-sm font-medium ${className} min-w-0`}
+      className={`block min-w-0 max-w-full truncate text-sm font-medium ${className}`}
     >
       {content}
     </span>
   );
 
   return (
-    <div>
+    <div className="w-full overflow-hidden">
       {truncated ? (
         <Tooltip
           content={tooltipText || content}

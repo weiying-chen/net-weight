@@ -32,6 +32,7 @@ export type CustomFieldsProps = {
   typeOptions?: { value: ValueType; label: string }[];
   onChange: (fields: CustomField[]) => void;
   onBeforeRemove?: (field: CustomField) => Promise<boolean> | boolean;
+  disablePortal?: boolean;
 };
 
 export const resetType = (type: ValueType): string | number | boolean => {
@@ -66,6 +67,7 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
   ],
   onChange,
   onBeforeRemove,
+  disablePortal = false,
 }) => {
   // Normalize lockedFields once
   const normalizedLocked = useMemo(
@@ -194,6 +196,7 @@ export const CustomFields: React.FC<CustomFieldsProps> = ({
                 handleFieldChange(index, 'type', value as ValueType)
               }
               disabled={isLocked}
+              disablePortal={disablePortal}
             />
             {!keysOnly && renderValueInput(field, index)}
             <Button

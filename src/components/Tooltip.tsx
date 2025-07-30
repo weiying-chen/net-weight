@@ -128,7 +128,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
   return (
     <>
       <div
-        className={cn(className)}
+        className={cn('w-full md:w-auto', className)}
         onMouseEnter={onEnter}
         onMouseMove={onMove}
         onMouseLeave={onLeave}

@@ -186,6 +186,7 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
             className="min-w-0"
             wrapperClassName="min-w-0"
             disabled={inp.options?.length === 1}
+            hasSearch={!!inp.optionsFrom}
           />
         );
         break;
@@ -244,11 +245,131 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
 
   useEffect(() => setFields(initialFields), [initialFields]);
 
+  // --- inside your SchemaFields component, just above the existing `return` ---
+
+  // 1. render one cell of the grid
+  function renderFieldCell(
+    key: string,
+    idx: number,
+    field: SchemaField,
+    fi: number,
+    extras: SchemaFieldInput[],
+    onlyExtra: SchemaFieldInput | null,
+    onlyExtraIdx: number,
+  ) {
+    // "item" column
+    if (key === 'item') {
+      const inp = field.inputs.find((i) => i.key === 'item');
+      if (!inp || typeof inp.value !== 'string') return null;
+      const hasRequired = field.inputs.some(
+        (i) => !baseKeys.includes(i.key) && i.required,
+      );
+      return (
+        <Row
+          key={`${field.id}-item`}
+          gap="sm"
+          alignItems="center"
+          className="min-w-0"
+          locked
+        >
+          <TextTooltip
+            content={getLabel(inp.value, inp.options, asOption)}
+            tooltipText={getLabel(inp.value, inp.options, asOption)}
+            after={hasRequired ? <span className="text-danger">*</span> : null}
+          />
+        </Row>
+      );
+    }
+
+    // any key except "value"
+    if (key !== 'value') {
+      const inpIndex = field.inputs.findIndex((i) => i.key === key);
+      return (
+        <div key={`${field.id}-${key}-${idx}`} className="min-w-0">
+          {inpIndex >= 0 ? (
+            renderInput(field, fi, field.inputs[inpIndex], inpIndex)
+          ) : (
+            <div style={{ visibility: 'hidden' }} />
+          )}
+        </div>
+      );
+    }
+
+    // "value" column (extras logic)
+    return (
+      <div key={`${field.id}-value-${idx}`} className="min-w-0">
+        {extras.length > 1 ? (
+          <div className="flex gap-2">
+            {extras
+              .filter((inp) => shouldShow(inp, field.inputs))
+              .map((inp, ii) => {
+                const realIdx = field.inputs.findIndex(
+                  (x) => x.key === inp.key,
+                );
+                return (
+                  <div
+                    key={`${field.id}-${inp.key}-${ii}`}
+                    className="min-w-0 flex-1"
+                  >
+                    {renderInput(field, fi, inp, realIdx)}
+                  </div>
+                );
+              })}
+          </div>
+        ) : onlyExtra &&
+          onlyExtraIdx >= 0 &&
+          shouldShow(onlyExtra, field.inputs) ? (
+          renderInput(field, fi, onlyExtra, onlyExtraIdx)
+        ) : (
+          <div style={{ visibility: 'hidden' }} />
+        )}
+      </div>
+    );
+  }
+
+  // 2. render one row (one field) of the grid
+  function renderFieldRow(field: SchemaField) {
+    const fi = fields.findIndex((f) => f.id === field.id);
+    const extras = field.inputs.filter((inp) => !baseKeys.includes(inp.key));
+    const onlyExtra = extras.length === 1 ? extras[0] : null;
+    const onlyExtraIdx = onlyExtra
+      ? field.inputs.findIndex((i) => i.key === onlyExtra.key)
+      : -1;
+
+    return (
+      <div
+        key={field.id}
+        className="grid w-full gap-4"
+        // style={{ gridTemplateColumns: '1fr 3fr' }}
+        style={{ gridTemplateColumns: 'minmax(0,1fr) minmax(0,3fr)' }}
+      >
+        {displayKeys.map((key, idx) =>
+          renderFieldCell(key, idx, field, fi, extras, onlyExtra, onlyExtraIdx),
+        )}
+      </div>
+    );
+  }
+
+  // 3. render one method section (header + its rows)
+  function renderMethodSection(method: string, methodFields: SchemaField[]) {
+    return (
+      <Col key={method}>
+        <span className="w-full border-b border-subtle pb-2 font-medium text-muted">
+          {asMethod ? asMethod(method) : capitalize(method)}
+        </span>
+        {methodFields.map(renderFieldRow)}
+      </Col>
+    );
+  }
+
   if (fields.length === 0) return null;
+
+  // 4. now the simplified return:
 
   return (
     <Col gap="lg">
       {label && <label className="text-sm font-semibold">{label}</label>}
+
       {Object.entries(
         fields.reduce<Record<string, SchemaField[]>>((acc, field) => {
           const method = String(
@@ -258,120 +379,9 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
           acc[method].push(field);
           return acc;
         }, {}),
-      ).map(([method, methodFields]) => (
-        <Col key={method}>
-          <span className="w-full border-b border-subtle pb-2 font-medium text-muted">
-            {asMethod ? asMethod(method) : capitalize(method)}
-          </span>
-
-          {methodFields.map((field) => {
-            const fi = fields.findIndex((f) => f.id === field.id);
-
-            const extras = field.inputs.filter(
-              (inp) => !baseKeys.includes(inp.key),
-            );
-
-            const onlyExtra = extras.length === 1 ? extras[0] : null;
-            const onlyExtraIdx = onlyExtra
-              ? field.inputs.findIndex((i) => i.key === onlyExtra.key)
-              : -1;
-
-            return (
-              <div
-                key={field.id}
-                className="grid w-full gap-4"
-                style={{ gridTemplateColumns: `1fr 3fr` }}
-              >
-                {displayKeys.map((key, idx) => {
-                  if (key === 'item') {
-                    const inp = field.inputs.find((i) => i.key === 'item');
-                    if (!inp || typeof inp.value !== 'string') return null;
-
-                    const hasRequired = field.inputs.some(
-                      (i) => !baseKeys.includes(i.key) && i.required === true,
-                    );
-
-                    return (
-                      <Row
-                        key={`${field.id}-item`}
-                        alignItems="center"
-                        className="min-w-0 gap-1"
-                      >
-                        <TextTooltip
-                          content={getLabel(inp.value, inp.options, asOption)}
-                          tooltipText={getLabel(
-                            inp.value,
-                            inp.options,
-                            asOption,
-                          )}
-                          after={
-                            hasRequired ? (
-                              <span className="text-danger">*</span>
-                            ) : null
-                          }
-                        />
-                      </Row>
-                    );
-                  }
-
-                  if (key !== 'value') {
-                    const inpIndex = field.inputs.findIndex(
-                      (i) => i.key === key,
-                    );
-                    return (
-                      <div
-                        key={`${field.id}-${key}-${idx}`}
-                        className="min-w-0"
-                      >
-                        {inpIndex >= 0 ? (
-                          renderInput(
-                            field,
-                            fi,
-                            field.inputs[inpIndex],
-                            inpIndex,
-                          )
-                        ) : (
-                          <div style={{ visibility: 'hidden' }} />
-                        )}
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <div key={`${field.id}-value-${idx}`} className="min-w-0">
-                      {extras.length > 1 ? (
-                        <div className="flex gap-2">
-                          {extras
-                            .filter((inp) => shouldShow(inp, field.inputs))
-                            .map((inp, ii) => {
-                              const realIdx = field.inputs.findIndex(
-                                (x) => x.key === inp.key,
-                              );
-                              return (
-                                <div
-                                  key={`${field.id}-${inp.key}-${ii}`}
-                                  className="min-w-0 flex-1"
-                                >
-                                  {renderInput(field, fi, inp, realIdx)}
-                                </div>
-                              );
-                            })}
-                        </div>
-                      ) : onlyExtra &&
-                        onlyExtraIdx >= 0 &&
-                        shouldShow(onlyExtra, field.inputs) ? (
-                        renderInput(field, fi, onlyExtra, onlyExtraIdx)
-                      ) : (
-                        <div style={{ visibility: 'hidden' }} />
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          })}
-        </Col>
-      ))}
+      ).map(([method, methodFields]) =>
+        renderMethodSection(method, methodFields),
+      )}
     </Col>
   );
 };

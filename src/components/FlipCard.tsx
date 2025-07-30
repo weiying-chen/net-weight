@@ -16,7 +16,7 @@ export const FlipCard = ({
   const angle = direction === 'left' ? '-180deg' : '180deg';
 
   return (
-    <div className={`h-64 w-56 [perspective:1000px] ${className}`}>
+    <div className={`h-64 w-full [perspective:1000px] md:w-56 ${className}`}>
       <div
         className="relative h-full w-full transition-transform duration-500 [transform-style:preserve-3d]"
         style={{
