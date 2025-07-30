@@ -1,49 +1,90 @@
-import { useRef, useLayoutEffect, useState } from 'react';
+import React, { useRef, useLayoutEffect, useState } from 'react';
 import { Tooltip } from '@/components/Tooltip';
+import { Row } from '@/components/Row';
 
+/**
+ * Props for TextTooltip:
+ * - content: the visible text or node to display
+ * - tooltipText: optional override for tooltip content
+ * - after: optional node to render after the label
+ * - className: additional classes for the visible label
+ */
 type TextTooltipProps = {
   content: React.ReactNode;
-  tooltipText?: string;
+  tooltipText?: React.ReactNode;
   after?: React.ReactNode;
   className?: string;
 };
 
+/**
+ * TextTooltip shows a hover tooltip when its content is truncated
+ * by its container width (e.g. in a flex layout).
+ */
 export const TextTooltip: React.FC<TextTooltipProps> = ({
   content,
   tooltipText,
   className = '',
   after = null,
 }) => {
-  const ref = useRef<HTMLSpanElement>(null);
+  // ref for the hidden measurement clone, always in the flex flow
+  const measureRef = useRef<HTMLDivElement>(null);
   const [truncated, setTruncated] = useState(false);
 
   useLayoutEffect(() => {
-    const el = ref.current;
-    if (el) setTruncated(el.scrollWidth > el.clientWidth);
+    const el = measureRef.current;
+    if (!el) return;
+
+    // check if content overflows
+    const checkOverflow = () => {
+      setTruncated(el.scrollWidth > el.clientWidth);
+    };
+
+    // initial check
+    checkOverflow();
+
+    // observe size changes via ResizeObserver
+    const observer = new ResizeObserver(checkOverflow);
+    observer.observe(el);
+
+    // cleanup
+    return () => observer.disconnect();
   }, [content]);
 
-  const labelSpan = (
-    <span
-      ref={ref}
-      className={`block min-w-0 max-w-full truncate text-sm font-medium ${className}`}
+  // the actual visible label
+  const label = (
+    <div
+      className={`min-w-0 truncate text-sm font-medium ${className}`}
+      aria-hidden={truncated ? undefined : true}
     >
       {content}
-    </span>
+    </div>
   );
 
   return (
-    <div className="w-full overflow-hidden">
+    <Row className="relative" alignItems="center" locked>
+      {/* hidden clone for measurement */}
+      <div
+        ref={measureRef}
+        className="pointer-events-none absolute inset-0 whitespace-nowrap text-sm font-medium opacity-0"
+        aria-hidden
+      >
+        {content}
+      </div>
+
+      {/* render with or without tooltip */}
       {truncated ? (
         <Tooltip
-          content={tooltipText || content}
-          className="flex w-full min-w-0 items-center"
+          content={tooltipText ?? content}
+          className="min-w-0 items-center"
         >
-          {labelSpan}
+          {label}
         </Tooltip>
       ) : (
-        labelSpan
-      )}{' '}
+        label
+      )}
+
+      {/* optional after-node */}
       {after}
-    </div>
+    </Row>
   );
 };
