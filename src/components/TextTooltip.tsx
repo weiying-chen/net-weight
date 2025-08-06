@@ -53,7 +53,7 @@ export const TextTooltip: React.FC<TextTooltipProps> = ({
   // the actual visible label
   const label = (
     <div
-      className={`min-w-0 truncate text-sm font-medium ${className}`}
+      className={`min-w-0 truncate text-sm font-semibold ${className}`}
       aria-hidden={truncated ? undefined : true}
     >
       {content}
@@ -65,7 +65,7 @@ export const TextTooltip: React.FC<TextTooltipProps> = ({
       {/* hidden clone for measurement */}
       <div
         ref={measureRef}
-        className="pointer-events-none absolute inset-0 whitespace-nowrap text-sm font-medium opacity-0"
+        className="pointer-events-none absolute inset-0 whitespace-nowrap text-sm font-semibold opacity-0"
         aria-hidden
       >
         {content}

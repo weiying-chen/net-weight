@@ -356,7 +356,7 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
   function renderMethodSection(method: string, methodFields: SchemaField[]) {
     return (
       <Col key={method}>
-        <span className="w-full border-b border-subtle pb-2 font-medium text-muted">
+        <span className="w-full border-b border-subtle pb-2 font-semibold text-muted">
           {asMethod ? asMethod(method) : capitalize(method)}
         </span>
         {methodFields.map(renderFieldRow)}

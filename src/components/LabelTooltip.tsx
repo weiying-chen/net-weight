@@ -20,7 +20,7 @@ export const LabelTooltip: React.FC<Props> = ({ text, className = '' }) => {
   const label = (
     <label
       ref={ref}
-      className={`w-full truncate text-sm font-medium ${className}`}
+      className={`w-full truncate text-sm font-semibold ${className}`}
     >
       {text}
     </label>
