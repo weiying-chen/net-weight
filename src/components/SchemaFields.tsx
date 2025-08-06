@@ -128,6 +128,7 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
     ii: number,
   ) => {
     // const displayLabel = asLabel?.(inp.label) ?? inp.label;
+
     const displayLabel = inp.label;
     const realInputs = field.inputs.filter((i) => !baseKeys.includes(i.key));
     const shouldHideLabel =
@@ -264,6 +265,7 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
       const hasRequired = field.inputs.some(
         (i) => !baseKeys.includes(i.key) && i.required,
       );
+
       return (
         <Row
           key={`${field.id}-item`}

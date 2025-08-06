@@ -22,6 +22,10 @@ export type PopoverProps = {
   small?: boolean;
   open?: boolean;
   onOpenChange?: (isOpen: boolean) => void;
+  /** If true, makes the trigger a fixed square */
+  isSquare?: boolean;
+  /** If true, hides the default Chevron icon */
+  hideChevron?: boolean;
 };
 
 export const Popover = ({
@@ -33,90 +37,74 @@ export const Popover = ({
   small = false,
   open,
   onOpenChange,
+  isSquare = false,
+  hideChevron = false,
 }: PopoverProps) => {
   const [internalOpen, setInternalOpen] = useState(false);
   const isOpen = open !== undefined ? open : internalOpen;
-
-  const setOpen = (value: boolean) => {
-    if (onOpenChange) {
-      onOpenChange(value);
-    } else {
-      setInternalOpen(value);
-    }
-  };
-
-  const [dropdownPosition, setDropdownPosition] = useState<'top' | 'bottom'>(
+  const [dropdownVertical, setDropdownVertical] = useState<'top' | 'bottom'>(
     'bottom',
   );
+  const [dropdownHorizontal, setDropdownHorizontal] = useState<
+    'left' | 'right'
+  >('left');
 
-  const dropdownRef = useRef<HTMLDivElement | null>(null);
-  const triggerRef = useRef<HTMLDivElement | null>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const adjustDropdownPosition = () => {
-    if (triggerRef.current && dropdownRef.current) {
-      const triggerRect = triggerRef.current.getBoundingClientRect();
-      const viewportHeight = window.innerHeight;
-      const spaceBelow = viewportHeight - triggerRect.bottom;
-      const spaceAbove = triggerRect.top;
-      const shouldFlip = spaceAbove > spaceBelow;
-      setDropdownPosition(shouldFlip ? 'top' : 'bottom');
-    }
+  const setOpen = (v: boolean) => {
+    if (onOpenChange) onOpenChange(v);
+    else setInternalOpen(v);
+  };
+
+  const adjustPosition = () => {
+    if (!triggerRef.current || !dropdownRef.current) return;
+    const trig = triggerRef.current.getBoundingClientRect();
+    const drop = dropdownRef.current.getBoundingClientRect();
+
+    // vertical flip
+    const spaceBelow = window.innerHeight - trig.bottom;
+    setDropdownVertical(spaceBelow < drop.height ? 'top' : 'bottom');
+
+    // horizontal flip
+    const spaceRight = window.innerWidth - trig.left;
+    setDropdownHorizontal(spaceRight < drop.width ? 'right' : 'left');
   };
 
   useLayoutEffect(() => {
-    if (isOpen) {
-      adjustDropdownPosition();
-      const handleResize = () => adjustDropdownPosition();
-      window.addEventListener('resize', handleResize);
-      return () => {
-        window.removeEventListener('resize', handleResize);
-      };
-    }
+    if (!isOpen) return;
+    adjustPosition();
+    const onResize = () => adjustPosition();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
   }, [isOpen]);
 
-  const handleTriggerClick = (event: MouseEvent<HTMLDivElement>) => {
+  const handleTriggerClick = (e: MouseEvent<HTMLDivElement>) => {
     if (disabled) return;
-    event.stopPropagation();
+    e.stopPropagation();
     setOpen(!isOpen);
   };
-
-  const closeDropdown = () => {
-    setOpen(false);
-  };
-
-  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (disabled) return;
-    if (event.key === 'Escape') {
-      closeDropdown();
-    }
+    if (e.key === 'Escape') setOpen(false);
   };
 
+  // close when clicking outside
   useLayoutEffect(() => {
-    const handleOutsideClick = (event: globalThis.MouseEvent) => {
-      const target = event.target as HTMLElement;
-
-      if (target.closest('[data-state="open"]')) {
-        return;
-      }
-
+    const onClickOutside = (e: MouseEvent) => {
+      const tgt = e.target as HTMLElement;
       if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(target) &&
-        triggerRef.current &&
-        !triggerRef.current.contains(target)
-      ) {
-        closeDropdown();
-      }
+        triggerRef.current?.contains(tgt) ||
+        dropdownRef.current?.contains(tgt)
+      )
+        return;
+      setOpen(false);
     };
-
-    document.addEventListener('mousedown', handleOutsideClick);
-    return () => {
-      document.removeEventListener('mousedown', handleOutsideClick);
-    };
+    document.addEventListener('mousedown', onClickOutside);
+    return () => document.removeEventListener('mousedown', onClickOutside);
   }, []);
 
-  // Create the pseudo input content to be reused
-  const pseudoInputContent = (
+  const pseudoInput = (
     <PseudoInput
       tabIndex={0}
       disabled={disabled}
@@ -125,32 +113,28 @@ export const Popover = ({
         {
           'focus-visible:ring-0 focus-visible:ring-offset-0': isOpen,
           'hover:shadow-dark': !disabled,
-          'h-5 px-2 py-1 text-xs': small,
+          'h-5 px-2 py-1 text-xs': small && !isSquare,
+          'h-10 w-10 justify-center px-0 py-0': isSquare,
         },
         className,
       )}
+      onClick={handleTriggerClick}
+      onKeyDown={handleKeyDown}
     >
       <Row alignItems="center" className="font-medium" locked fluid>
         {label}
       </Row>
-      <IconChevronDown size={small ? 16 : 20} />
+      {!hideChevron && <IconChevronDown size={small ? 16 : 20} />}
     </PseudoInput>
   );
 
   return (
     <Col fluid>
-      <div
-        ref={triggerRef}
-        className="relative inline-block"
-        onClick={handleTriggerClick}
-        onKeyDown={handleKeyDown}
-        tabIndex={0}
-        role="button"
-      >
+      <div ref={triggerRef} className="relative inline-block">
         {tooltip && !isOpen ? (
-          <Tooltip content={tooltip}>{pseudoInputContent}</Tooltip>
+          <Tooltip content={tooltip}>{pseudoInput}</Tooltip>
         ) : (
-          pseudoInputContent
+          pseudoInput
         )}
 
         {isOpen && (
@@ -158,8 +142,13 @@ export const Popover = ({
             ref={dropdownRef}
             onClick={(e) => e.stopPropagation()}
             className={cn(
-              'absolute left-0 z-50 cursor-default rounded border border-border bg-background p-4 shadow',
-              dropdownPosition === 'top' ? 'bottom-full mb-1' : 'top-full mt-1',
+              'absolute z-50 cursor-default rounded border border-border bg-background p-4 shadow',
+              // horizontal
+              dropdownHorizontal === 'left' ? 'left-0' : 'right-0',
+              // vertical
+              dropdownVertical === 'bottom'
+                ? 'top-full mt-1'
+                : 'bottom-full mb-1',
             )}
           >
             {asContent}

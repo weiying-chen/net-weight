@@ -19,7 +19,7 @@ export const MonthPicker: React.FC<MonthPickerProps> = ({
   );
 
   const handleMonthClick = (monthIndex: number) => {
-    const selected = new Date(viewDate, monthIndex, 1);
+    const selected = new Date(viewDate, monthIndex, 15);
     onChange?.(selected);
   };
 

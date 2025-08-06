@@ -171,17 +171,25 @@ export const DatePicker: React.FC<DatePickerProps> = ({
 
   const goPrev = () => {
     if (viewMode === 'day') {
-      setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1));
+      setViewDate(
+        new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 15),
+      );
     } else {
-      setViewDate(new Date(viewDate.getFullYear() - 1, viewDate.getMonth(), 1));
+      setViewDate(
+        new Date(viewDate.getFullYear() - 1, viewDate.getMonth(), 15),
+      );
     }
   };
 
   const goNext = () => {
     if (viewMode === 'day') {
-      setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1));
+      setViewDate(
+        new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 15),
+      );
     } else {
-      setViewDate(new Date(viewDate.getFullYear() + 1, viewDate.getMonth(), 1));
+      setViewDate(
+        new Date(viewDate.getFullYear() + 1, viewDate.getMonth(), 15),
+      );
     }
   };
 

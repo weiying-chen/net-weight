@@ -8,6 +8,7 @@ type ModalProps = {
   onClose: () => void;
   children: ReactNode;
   className?: string;
+  contentClassName?: string;
   size?: 'sm' | 'md' | 'lg';
   locked?: boolean;
   position?: 'center' | 'top';
@@ -18,6 +19,7 @@ export function Modal({
   onClose,
   children,
   className,
+  contentClassName,
   size = 'md',
   locked = false,
   position = 'center',
@@ -75,6 +77,7 @@ export function Modal({
           'relative w-full transform border border-border bg-background p-6 shadow transition-all duration-200 ease-in-out md:rounded-xl',
           cnFromSize[size],
           isAnimating ? 'scale-100 opacity-100' : 'scale-95 opacity-0',
+          contentClassName,
         )}
       >
         {!locked && (

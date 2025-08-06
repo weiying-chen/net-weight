@@ -27,6 +27,7 @@ type CommonProps<T> = {
   onBlur?: () => void;
   required?: boolean;
   disabled?: boolean;
+  fluid?: boolean;
   isIconTrigger?: boolean;
   small?: boolean;
   hasSearch?: boolean;
@@ -90,6 +91,7 @@ export const Select = <T extends string | number | boolean | null | undefined>(
     onBlur,
     required,
     disabled = false,
+    fluid = false,
     isIconTrigger = false,
     small = false,
     hasSearch = false,
@@ -514,7 +516,7 @@ export const Select = <T extends string | number | boolean | null | undefined>(
     <Col
       className={cn(
         'relative min-w-0',
-        { 'w-auto': isIconTrigger },
+        { 'w-auto': fluid || isIconTrigger },
         wrapperClassName,
       )}
     >
