@@ -22,6 +22,7 @@ export type SelectDropdownProps<
   T extends string | number | boolean | null | undefined,
 > = {
   filteredOptions: SelectOption<T>[];
+  pinnedOptionIds?: T[];
   focusedIndex: number | null;
   selectedValue: T | T[] | null;
   multiple?: boolean;
@@ -48,6 +49,7 @@ export function SelectDropdown<
   T extends string | number | boolean | null | undefined,
 >({
   filteredOptions,
+  pinnedOptionIds,
   focusedIndex,
   selectedValue,
   onOptionClick,
@@ -69,6 +71,14 @@ export function SelectDropdown<
     return null;
   }
 
+  const pinnedOptionIdsSet = new Set(pinnedOptionIds ?? []);
+  const pinnedOptions = filteredOptions.filter((opt) =>
+    pinnedOptionIdsSet.has(opt.value),
+  );
+  const unpinnedOptions = filteredOptions.filter(
+    (opt) => !pinnedOptionIdsSet.has(opt.value),
+  );
+
   const dropdownContent = (
     <div
       ref={dropdownRef}
@@ -81,17 +91,72 @@ export function SelectDropdown<
         <div className="flex items-center justify-center p-4">
           <IconLoader2 size={24} className="animate-spin" />
         </div>
-      ) : filteredOptions.length === 0 ? (
+      ) : pinnedOptions.length + unpinnedOptions.length === 0 ? (
         <div className="p-4 text-sm text-muted">
           {noResultsLabel || 'No results found'}
         </div>
       ) : (
         <ul className="max-h-full overflow-y-auto overflow-x-hidden">
-          {filteredOptions.map((opt, idx) => {
+          {/* --- Render pinned options first --- */}
+          {pinnedOptions.map((opt, idx) => {
+            const globalIdx = idx; // pinned start at 0
             const isFirst = idx === 0;
-            const isLast = idx === filteredOptions.length - 1;
-            const isFocused = focusedIndex === idx;
+            const isLast = idx === pinnedOptions.length - 1;
+            const isFocused = focusedIndex === globalIdx;
+            const isSelected = Array.isArray(selectedValue)
+              ? selectedValue.includes(opt.value)
+              : selectedValue === opt.value;
 
+            return (
+              <li
+                key={`pinned-${String(opt.value)}`}
+                ref={(el) => {
+                  if (
+                    hasRenderedDropdown.current &&
+                    isOpen &&
+                    isFocused &&
+                    el
+                  ) {
+                    el.scrollIntoView({ block: 'nearest' });
+                  }
+                }}
+                className={cn(
+                  'flex cursor-pointer items-center whitespace-nowrap px-3 py-2 text-sm',
+                  {
+                    'rounded-t px-3 pb-2 pt-3': isFirst,
+                    'px-3 pb-3 pt-2': isLast && unpinnedOptions.length === 0,
+                    'rounded-b': isLast && unpinnedOptions.length === 0,
+                    'bg-subtle': isFocused,
+                  },
+                )}
+                onMouseEnter={() => setFocusedIndex(globalIdx)}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={(e) => onOptionClick(opt, e)}
+              >
+                <Row align="between" alignItems="center" locked>
+                  <Row alignItems="center" className="gap-2" locked>
+                    {opt.icon && <span>{opt.icon}</span>}
+                    <span>{opt.label}</span>
+                  </Row>
+                  {isSelected && <IconCheck size={16} />}
+                </Row>
+              </li>
+            );
+          })}
+
+          {/* --- Divider between pinned and unpinned --- */}
+          {pinnedOptions.length > 0 && unpinnedOptions.length > 0 && (
+            <li className="w-full select-none px-3">
+              <div className="h-[0.5px] w-full bg-subtle" />
+            </li>
+          )}
+
+          {/* --- Render unpinned options --- */}
+          {unpinnedOptions.map((opt, idx) => {
+            const globalIdx = pinnedOptions.length + idx; // offset by pinned count
+            const isFirst = idx === 0;
+            const isLast = idx === unpinnedOptions.length - 1;
+            const isFocused = focusedIndex === globalIdx;
             const isSelected = Array.isArray(selectedValue)
               ? selectedValue.includes(opt.value)
               : selectedValue === opt.value;
@@ -112,14 +177,14 @@ export function SelectDropdown<
                 className={cn(
                   'flex cursor-pointer items-center whitespace-nowrap px-3 py-2 text-sm',
                   {
-                    'px-3 pb-2 pt-3': isFirst,
-                    'px-3 pb-3 pt-2': isLast,
+                    'px-3 pb-2 pt-3': isFirst && pinnedOptions.length === 0,
+                    'rounded-t px-3 pb-2 pt-3':
+                      isFirst && pinnedOptions.length > 0,
+                    'rounded-b px-3 pb-3 pt-2': isLast,
                     'bg-subtle': isFocused,
-                    'rounded-t': isFirst,
-                    'rounded-b': isLast,
                   },
                 )}
-                onMouseEnter={() => setFocusedIndex(idx)}
+                onMouseEnter={() => setFocusedIndex(globalIdx)}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={(e) => onOptionClick(opt, e)}
               >

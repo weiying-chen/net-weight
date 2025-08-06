@@ -18,6 +18,7 @@ import { SelectTrigger } from '@/components/SelectTrigger';
 type CommonProps<T> = {
   label?: ReactNode;
   options: SelectOption<T>[];
+  pinnedOptionIds?: T[];
   placeholder?: string;
   error?: string;
   className?: string;
@@ -82,6 +83,7 @@ export const Select = <T extends string | number | boolean | null | undefined>(
   const {
     label,
     options,
+    pinnedOptionIds = [],
     placeholder = 'Select an option',
     error,
     className,
@@ -489,6 +491,7 @@ export const Select = <T extends string | number | boolean | null | undefined>(
   const renderedDropdown = (
     <SelectDropdown
       filteredOptions={filteredOptions}
+      pinnedOptionIds={pinnedOptionIds}
       focusedIndex={focusedIndex}
       selectedValue={
         multiple
