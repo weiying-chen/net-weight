@@ -23,6 +23,7 @@ export const DetailCols: React.FC<DetailColsProps> = ({
   hideCols = [],
   colWidths = ['1fr', '1fr', '1fr', '3fr'],
 }) => {
+  /** Render the label, value, and tooltip for a field */
   const renderDetail = (field: NonNullable<Field>, key: React.Key) => (
     <Col key={key} className="min-w-0 gap-2">
       {field.label ? (
@@ -41,60 +42,61 @@ export const DetailCols: React.FC<DetailColsProps> = ({
     </Col>
   );
 
-  return (
-    <Col className="gap-4">
-      {rows.map((fields, rowIdx) => {
-        // pad to at least 3 fields
-        const padded = [...fields];
-        while (padded.length < 3) padded.push(null);
+  /** Render a single field or placeholder */
+  const renderField = (field: Field, key: React.Key) =>
+    field ? renderDetail(field, key) : <div key={key} />;
 
-        // extras beyond the first three
-        const extras = fields
-          .slice(3)
-          .filter((f): f is NonNullable<Field> => !!f);
-        const hideExtraLabel = extras.length === 1;
-        const extraLabel = hideExtraLabel ? extras[0].label : undefined;
-
-        // pick only the columns we want to show
-        const visibleCols = colWidths.filter(
-          (_, idx) => !hideCols.includes(idx),
-        );
-        const visibleIndices = colWidths
-          .map((_, idx) => idx)
-          .filter((idx) => !hideCols.includes(idx));
-
+  /** Render the extras beyond the first three columns */
+  const renderExtras = (
+    extras: NonNullable<Field>[],
+    hideExtraLabel: boolean,
+    extraLabel?: ReactNode,
+  ) => (
+    <div key="extras" className="flex min-w-0 gap-2">
+      {extras.map((f, ei) => {
+        const shouldHide = hideExtraLabel && f.label === extraLabel;
+        const field = shouldHide ? { ...f, label: undefined } : f;
         return (
-          <div
-            key={rowIdx}
-            className="grid w-full gap-4"
-            style={{ gridTemplateColumns: visibleCols.join(' ') }}
-          >
-            {visibleIndices.map((colIdx) => {
-              if (colIdx < 3) {
-                // first-three slots
-                const f = padded[colIdx];
-                return f ? renderDetail(f, colIdx) : <div key={colIdx} />;
-              } else {
-                // extras slot
-                return (
-                  <div key="extras" className="flex min-w-0 gap-2">
-                    {extras.map((f, ei) => {
-                      const shouldHide =
-                        hideExtraLabel && f.label === extraLabel;
-                      const field = shouldHide ? { ...f, label: undefined } : f;
-                      return (
-                        <div key={ei} className="min-w-0 flex-1">
-                          {renderDetail(field, `extra-${ei}`)}
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-              }
-            })}
+          <div key={ei} className="min-w-0 flex-1">
+            {renderDetail(field, `extra-${ei}`)}
           </div>
         );
       })}
-    </Col>
+    </div>
   );
+
+  /** Render a single row of fields */
+  const renderRow = (fields: Field[], rowIdx: number) => {
+    // pad to at least 3 slots
+    const padded = [...fields];
+    while (padded.length < 3) padded.push(null);
+
+    // extras beyond the first three
+    const extras = fields.slice(3).filter((f): f is NonNullable<Field> => !!f);
+    const hideExtraLabel = extras.length === 1;
+    const extraLabel = hideExtraLabel ? extras[0].label : undefined;
+
+    // determine visible columns
+    const visibleCols = colWidths.filter((_, idx) => !hideCols.includes(idx));
+    const visibleIndices = colWidths
+      .map((_, idx) => idx)
+      .filter((idx) => !hideCols.includes(idx));
+
+    return (
+      <div
+        key={rowIdx}
+        className="grid w-full gap-4"
+        style={{ gridTemplateColumns: visibleCols.join(' ') }}
+      >
+        {visibleIndices.map((colIdx) =>
+          colIdx < 3
+            ? renderField(padded[colIdx], colIdx)
+            : renderExtras(extras, hideExtraLabel, extraLabel),
+        )}
+      </div>
+    );
+  };
+
+  // Main render
+  return <Col className="gap-4">{rows.map(renderRow)}</Col>;
 };
