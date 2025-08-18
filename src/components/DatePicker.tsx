@@ -23,8 +23,8 @@ import { MonthPicker } from '@/components/MonthPicker';
 
 export type DatePickerProps = {
   label?: ReactNode;
-  value?: Date;
-  onChange?: (value: Date) => void;
+  value?: Date | null; // allow cleared external value
+  onChange?: (value: Date | undefined) => void; // can emit undefined on clear
   placeholder?: string;
   error?: string;
   className?: string;
@@ -33,15 +33,16 @@ export type DatePickerProps = {
   headerLabel?: (date: Date, mode: 'day' | 'month') => string;
   monthLabel?: (date: Date) => string;
   weekdayLabel?: (weekday: string, index: number) => string;
-  valueLabel?: (date: Date) => string;
+  valueLabel?: (date: Date | undefined) => string; // allow undefined explicitly
   viewModeLabels?: { day: string; month: string };
+  dateFormat?: string;
 };
 
 export const DatePicker: React.FC<DatePickerProps> = ({
   label,
   value: externalValue,
   onChange,
-  placeholder = 'Select a date',
+  placeholder = 'MM/DD/YYYY',
   error,
   className,
   required,
@@ -51,7 +52,9 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   weekdayLabel,
   valueLabel,
   viewModeLabels,
+  dateFormat,
 }) => {
+  const displayFormat = dateFormat ?? 'MM/dd/yyyy';
   const [isOpen, setIsOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'day' | 'month'>('day');
   const [dropdownPosition, setDropdownPosition] = useState<'top' | 'bottom'>(
@@ -61,34 +64,43 @@ export const DatePicker: React.FC<DatePickerProps> = ({
     'left' | 'right'
   >('left');
 
+  // Normalize external value
+  const normalizedExternal: Date | undefined = externalValue
+    ? new Date(externalValue)
+    : undefined;
+
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-    externalValue,
+    normalizedExternal,
   );
+
+  // Always call valueLabel, even if date is undefined
+  const formatInputValue = (date: Date | undefined) => {
+    if (valueLabel) return valueLabel(date);
+    return date ? format(date, displayFormat) : '';
+  };
 
   const [inputValue, setInputValue] = useState<string>(
-    externalValue
-      ? valueLabel
-        ? valueLabel(externalValue)
-        : format(externalValue, 'yyyy-MM-dd')
-      : '',
+    formatInputValue(normalizedExternal),
   );
 
-  const [viewDate, setViewDate] = useState<Date>(externalValue || new Date());
+  const [viewDate, setViewDate] = useState<Date>(
+    normalizedExternal || new Date(),
+  );
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLInputElement>(null);
   const skipNextOutsideClick = useRef(false);
 
+  // Sync from outside
   useEffect(() => {
-    setSelectedDate(externalValue);
-    if (externalValue) {
-      const formatted = valueLabel
-        ? valueLabel(externalValue)
-        : format(externalValue, 'yyyy-MM-dd');
-      setInputValue(formatted);
-      setViewDate(externalValue);
+    setSelectedDate(normalizedExternal);
+    setInputValue(formatInputValue(normalizedExternal));
+    if (normalizedExternal) {
+      setViewDate(normalizedExternal);
+    } else {
+      setViewDate((prev) => prev ?? new Date());
     }
-  }, [externalValue, valueLabel]);
+  }, [externalValue, valueLabel, displayFormat]);
 
   const adjustDropdownPosition = () => {
     if (!triggerRef.current || !dropdownRef.current) return;
@@ -136,10 +148,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   const handleSelect = (date: Date) => {
     setSelectedDate(date);
     setViewDate(date);
-    const formatted = valueLabel
-      ? valueLabel(date)
-      : format(date, 'yyyy-MM-dd');
-    setInputValue(formatted);
+    setInputValue(formatInputValue(date));
     onChange?.(date);
     setIsOpen(false);
     setViewMode('day');
@@ -150,21 +159,31 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   };
 
   const handleInputBlur = (_: FocusEvent<HTMLInputElement>) => {
-    if (!inputValue) return;
+    if (!inputValue) {
+      if (selectedDate !== undefined) setSelectedDate(undefined);
+      onChange?.(undefined);
+      setInputValue(formatInputValue(undefined));
+      return;
+    }
 
-    const parsed = parse(inputValue, 'yyyy-MM-dd', new Date());
+    const parsed = parse(inputValue, displayFormat, new Date());
 
-    if (isValid(parsed)) {
-      const iso = format(parsed, 'yyyy-MM-dd');
-      setInputValue(iso);
+    // Strict check: valid AND formatting back matches the original input
+    const isStrictValid =
+      isValid(parsed) && format(parsed, displayFormat) === inputValue;
+
+    if (isStrictValid) {
+      setInputValue(format(parsed, displayFormat));
       setSelectedDate(parsed);
       setViewDate(parsed);
       onChange?.(parsed);
     } else {
+      // Revert to last selected date or clear
       if (selectedDate) {
-        setInputValue(format(selectedDate, 'yyyy-MM-dd'));
+        setInputValue(formatInputValue(selectedDate));
       } else {
-        setInputValue('');
+        setInputValue(formatInputValue(undefined));
+        onChange?.(undefined);
       }
     }
   };

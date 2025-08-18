@@ -3,7 +3,6 @@ import {
   useRef,
   useLayoutEffect,
   ReactNode,
-  KeyboardEvent,
   MouseEvent,
 } from 'react';
 import { Col } from '@/components/Col';
@@ -42,6 +41,7 @@ export const Popover = ({
 }: PopoverProps) => {
   const [internalOpen, setInternalOpen] = useState(false);
   const isOpen = open !== undefined ? open : internalOpen;
+
   const [dropdownVertical, setDropdownVertical] = useState<'top' | 'bottom'>(
     'bottom',
   );
@@ -71,6 +71,7 @@ export const Popover = ({
     setDropdownHorizontal(spaceRight < drop.width ? 'right' : 'left');
   };
 
+  // keep your positioning logic
   useLayoutEffect(() => {
     if (!isOpen) return;
     adjustPosition();
@@ -79,30 +80,52 @@ export const Popover = ({
     return () => window.removeEventListener('resize', onResize);
   }, [isOpen]);
 
+  // stop pointer events in the dropdown from reaching document (capture)
+  useLayoutEffect(() => {
+    if (!isOpen) return;
+    const el = dropdownRef.current;
+    if (!el) return;
+
+    const stop = (e: PointerEvent) => e.stopPropagation();
+    el.addEventListener('pointerdown', stop, true); // capture phase
+    return () => el.removeEventListener('pointerdown', stop, true);
+  }, [isOpen]);
+
   const handleTriggerClick = (e: MouseEvent<HTMLDivElement>) => {
     if (disabled) return;
     e.stopPropagation();
     setOpen(!isOpen);
   };
-  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    if (disabled) return;
-    if (e.key === 'Escape') setOpen(false);
-  };
 
-  // close when clicking outside
+  // close when clicking outside (but allow portals marked data-popover-keepopen)
   useLayoutEffect(() => {
-    const onClickOutside = (e: MouseEvent) => {
-      const tgt = e.target as HTMLElement;
-      if (
-        triggerRef.current?.contains(tgt) ||
-        dropdownRef.current?.contains(tgt)
-      )
-        return;
+    if (!isOpen) return;
+
+    const onPointerDownDoc = (e: PointerEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (!t) return;
+
+      const insideTrigger = !!triggerRef.current?.contains(t);
+      const insideDropdown = !!dropdownRef.current?.contains(t);
+      const keepOpen = !!t.closest('[data-popover-keepopen]');
+
+      if (insideTrigger || insideDropdown || keepOpen) return;
       setOpen(false);
     };
-    document.addEventListener('mousedown', onClickOutside);
-    return () => document.removeEventListener('mousedown', onClickOutside);
-  }, []);
+
+    document.addEventListener('pointerdown', onPointerDownDoc);
+    return () => document.removeEventListener('pointerdown', onPointerDownDoc);
+  }, [isOpen]);
+
+  // close on Escape (global, avoids typing issues on PseudoInput)
+  useLayoutEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [isOpen]);
 
   const pseudoInput = (
     <PseudoInput
@@ -119,7 +142,8 @@ export const Popover = ({
         className,
       )}
       onClick={handleTriggerClick}
-      onKeyDown={handleKeyDown}
+      aria-expanded={isOpen}
+      aria-haspopup="dialog"
     >
       <Row alignItems="center" className="font-medium" locked fluid>
         {label}
@@ -143,12 +167,10 @@ export const Popover = ({
             onClick={(e) => e.stopPropagation()}
             className={cn(
               'absolute z-50 cursor-default rounded border border-border bg-background p-4 shadow',
-              // horizontal
-              dropdownHorizontal === 'left' ? 'left-0' : 'right-0',
-              // vertical
+              dropdownHorizontal === 'left' ? 'left-0' : 'right-0', // horizontal
               dropdownVertical === 'bottom'
                 ? 'top-full mt-1'
-                : 'bottom-full mb-1',
+                : 'bottom-full mb-1', // vertical
             )}
           >
             {asContent}

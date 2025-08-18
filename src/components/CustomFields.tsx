@@ -19,7 +19,7 @@ export type CustomFieldsProps = {
   label?: string;
   fields?: CustomField[];
   keysOnly?: boolean;
-  errors?: Array<{ key?: string; value?: string }>;
+  errors?: Array<{ key?: string; value?: string } | undefined>;
   className?: string;
   lockedFields?: string[];
   fillOnceFields?: string[];

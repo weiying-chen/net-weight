@@ -29,10 +29,8 @@ export type SchemaFieldInput = {
   options?: Option[];
   optionsFrom?: string;
   unit?: string;
-  showIf?: {
-    key: string;
-    equals: string;
-  };
+  showIf?: { key: string; equals: string };
+  disableIf?: { key: string; equals: string };
   required?: boolean;
 };
 
@@ -84,7 +82,7 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
   headerLabel,
   monthLabel,
   weekdayLabel,
-  dateValueLabel,
+  // dateValueLabel,
   selectPlaceholder = 'Select an option',
   datePlaceholder,
   errors,
@@ -92,16 +90,64 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
 }) => {
   const [fields, setFields] = useState<SchemaField[]>(initialFields);
 
-  const shouldShow = (inp: SchemaFieldInput, inputs: SchemaFieldInput[]) => {
+  const shouldShow = (
+    inp: SchemaFieldInput,
+    inputs: SchemaFieldInput[],
+  ): boolean => {
     if (!inp.showIf) return true;
-    const controlling = inputs.find((i) => i.key === inp.showIf!.key);
-    return controlling?.value === inp.showIf.equals;
+
+    const ctrl = inputs.find((i) => i.key === inp.showIf!.key);
+    if (!ctrl) return false;
+
+    // If the controller itself has a showIf, it must be visible first.
+    const controllerVisible = !ctrl.showIf || shouldShow(ctrl, inputs);
+    if (!controllerVisible) return false;
+
+    // Finally, compare values
+    return ctrl.value === inp.showIf!.equals;
+  };
+
+  const shouldDisable = (
+    inp: SchemaFieldInput,
+    inputs: SchemaFieldInput[],
+  ): boolean => {
+    const rule = inp.disableIf;
+    if (!rule) return false;
+
+    const ctrl = inputs.find((i) => i.key === rule.key);
+    if (!ctrl) return false;
+
+    // Keep parity with showIf: controller must be visible to affect others
+    const controllerVisible = !ctrl.showIf || shouldShow(ctrl, inputs);
+    if (!controllerVisible) return false;
+
+    return ctrl.value === rule.equals;
   };
 
   const updateFields = (newFields: SchemaField[]) => {
     setFields(newFields);
     onChange(newFields);
   };
+
+  function sanitizeHiddenInputs(fields: SchemaField[]): SchemaField[] {
+    return fields.map((f) => {
+      const vis = new Map(
+        f.inputs.map((i) => [i.key, shouldShow(i, f.inputs)]),
+      );
+      return {
+        ...f,
+        inputs: f.inputs.map((i) =>
+          vis.get(i.key)
+            ? i
+            : {
+                ...i,
+                value:
+                  i.type === 'switch' ? false : i.type === 'select' ? '' : '',
+              },
+        ),
+      };
+    });
+  }
 
   const handleInputChange = (
     fi: number,
@@ -118,7 +164,9 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
             ),
           },
     );
-    updateFields(updated);
+
+    const cleaned = sanitizeHiddenInputs(updated);
+    updateFields(cleaned);
   };
 
   const renderInput = (
@@ -127,20 +175,16 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
     inp: SchemaFieldInput,
     ii: number,
   ) => {
-    // const displayLabel = asLabel?.(inp.label) ?? inp.label;
-
     const displayLabel = inp.label;
     const realInputs = field.inputs.filter((i) => !baseKeys.includes(i.key));
     const shouldHideLabel =
       realInputs.length === 1 && realInputs[0].key === inp.key;
 
     const fieldErrs = errors?.[fi] || {};
-    // let errorMsg = fieldErrs[inp.key];
-    // if (!errorMsg && inp.type === 'select' && inp.key === 'currency') {
-    //   errorMsg = fieldErrs.value;
-    // }
-
     const errorMsg = fieldErrs[inp.key];
+
+    // NEW: compute disabled state from schema
+    const disabledByRule = shouldDisable(inp, field.inputs);
 
     let element;
     switch (inp.type) {
@@ -152,9 +196,11 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
             value={String(inp.value)}
             onChange={(e) => handleInputChange(fi, ii, Number(e.target.value))}
             error={errorMsg}
+            disabled={disabledByRule}
           />
         );
         break;
+
       case 'number':
         element = (
           <Input
@@ -163,9 +209,11 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
             value={String(inp.value)}
             onChange={(e) => handleInputChange(fi, ii, Number(e.target.value))}
             error={errorMsg}
+            disabled={disabledByRule}
           />
         );
         break;
+
       case 'switch':
         element = (
           <Switch
@@ -173,9 +221,11 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
             onChange={(ch) => handleInputChange(fi, ii, ch)}
             label={displayLabel}
             error={errorMsg}
+            disabled={disabledByRule}
           />
         );
         break;
+
       case 'select':
         element = (
           <Select
@@ -186,11 +236,12 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
             error={errorMsg}
             className="min-w-0"
             wrapperClassName="min-w-0"
-            disabled={inp.options?.length === 1}
+            disabled={disabledByRule || inp.options?.length === 1}
             hasSearch={!!inp.optionsFrom}
           />
         );
         break;
+
       case 'password':
         element = (
           <Input
@@ -198,9 +249,11 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
             value={String(inp.value)}
             onChange={(e) => handleInputChange(fi, ii, e.target.value)}
             error={errorMsg}
+            disabled={disabledByRule}
           />
         );
         break;
+
       case 'date':
         element = (
           <DatePicker
@@ -212,12 +265,14 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
             headerLabel={headerLabel}
             monthLabel={monthLabel}
             weekdayLabel={weekdayLabel}
-            valueLabel={dateValueLabel}
+            // valueLabel={dateValueLabel}
             viewModeLabels={viewModeLabels}
             error={errorMsg}
+            disabled={disabledByRule}
           />
         );
         break;
+
       default:
         element = (
           <Input
@@ -225,20 +280,23 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
             value={String(inp.value)}
             onChange={(e) => handleInputChange(fi, ii, e.target.value)}
             error={errorMsg}
+            disabled={disabledByRule}
           />
         );
     }
 
     return (
       <Col key={`${field.id}-${inp.key}-${ii}`}>
-        <Row gap="sm" alignItems="center">
-          {!shouldHideLabel && <LabelTooltip text={displayLabel} />}
-          {inp.unit && (
-            <span className="text-xs text-muted">
-              {asUnit?.(inp.unit) ?? inp.unit}
-            </span>
-          )}
-        </Row>
+        {(!shouldHideLabel || inp.unit) && (
+          <Row gap="sm" alignItems="center">
+            {!shouldHideLabel && <LabelTooltip text={displayLabel} />}
+            {inp.unit && (
+              <span className="text-xs text-muted">
+                {asUnit?.(inp.unit) ?? inp.unit}
+              </span>
+            )}
+          </Row>
+        )}
         {element}
       </Col>
     );

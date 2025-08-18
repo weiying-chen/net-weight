@@ -5,7 +5,7 @@ import { IconTrash } from '@tabler/icons-react';
 import { ReactNode } from 'react';
 import { cn } from '@/utils';
 
-export type CustomInputsProps<T = any> = {
+export type CustomInputsProps<T extends object = any> = {
   label?: ReactNode;
   value: T[];
   onChange: (val: T[]) => void;
@@ -23,7 +23,7 @@ export type CustomInputsProps<T = any> = {
   className?: string;
 };
 
-export function CustomInputs<T = any>({
+export function CustomInputs<T extends object = any>({
   label,
   value,
   onChange,
@@ -38,15 +38,16 @@ export function CustomInputs<T = any>({
     newValue: T[K],
   ) => {
     const updated = [...value];
-    updated[index] = {
-      ...updated[index],
-      [key]: newValue,
-    };
+    updated[index] = { ...updated[index], [key]: newValue };
     onChange(updated);
   };
 
   const handleAdd = () => {
-    onChange([...value, {} as T]);
+    // Avoids TypeScript complaining by using partial + any
+    const defaultItem: Partial<T> = {};
+    (defaultItem as any).row = '';
+    (defaultItem as any).column = '';
+    onChange([...value, defaultItem as T]);
   };
 
   const handleRemove = (index: number) => {
