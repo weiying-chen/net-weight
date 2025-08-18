@@ -83,15 +83,14 @@ export function Table<T, D extends object>({
     );
   };
 
-  // const [localData, setLocalData] = useState<T[]>(
-  //   JSON.parse(JSON.stringify(originalData)),
-  // );
+  // const [localData, setLocalData] = useState<T[]>([]);
 
-  const [localData, setLocalData] = useState<T[]>([]);
+  // useEffect(() => {
+  //   console.log('originalData changed');
+  //   setLocalData(originalData);
+  // }, [originalData]);
 
-  useEffect(() => {
-    setLocalData(originalData);
-  }, [originalData]);
+  const localData = originalData;
 
   const paired = useMemo(() => {
     const dispArr = formatData
@@ -302,7 +301,7 @@ export function Table<T, D extends object>({
     updateNestedValue(updatedRow, path, newValue);
 
     // Update the local state with the modified data
-    setLocalData(updatedData);
+    // setLocalData(updatedData);
 
     // Notify parent if needed
     if (onCellChange) {
@@ -485,11 +484,13 @@ export function Table<T, D extends object>({
               <div className="pointer-events-none absolute inset-0 z-10 rounded border border-border" />
             )}
             <TableCell
-              value={col.render(disp)} // Pass raw value from render() without forcing string conversion
+              value={col.render(disp)}
               isEditing={isCellEditable(ri, ci, col, disp)}
-              onChange={(newValue) => handleCellChange(ri, ci, newValue)}
-              onCancel={() => setEditingCell(null)}
-              onBlur={() => setEditingCell(null)}
+              onChange={(newValue) => {
+                handleCellChange(ri, ci, newValue); // commit value to localData
+                setEditingCell(null); // exit edit mode
+              }}
+              onCancel={() => setEditingCell(null)} // cancel edit mode
             />
           </div>
         ))}
