@@ -6,7 +6,7 @@ import {
   useMemo,
   ReactNode,
 } from 'react';
-import { IconArrowUp, IconArrowDown } from '@tabler/icons-react';
+import { IconArrowUp, IconArrowDown, IconPencil } from '@tabler/icons-react';
 import { Tooltip } from '@/components/Tooltip';
 import { TableCell } from '@/components/TableCell';
 
@@ -17,7 +17,13 @@ export type TableCol<D> = {
   sortValue?: (item: D) => string | number;
   width?: number;
   editable?: boolean;
-  path?: string; // The path for nested fields (e.g., 'address.street')
+  path?: string;
+  editor?: (
+    value: any,
+    row: D,
+    onChange: (newValue: any) => void,
+    onCancel: () => void,
+  ) => React.ReactNode;
 };
 
 const MIN_COL_WIDTH = 50;
@@ -52,6 +58,7 @@ export function Table<T, D extends object>({
   asActions,
   asTooltip,
   editable = false,
+  editableText = 'Editable column',
   isLoading = false,
 }: {
   data: T[];
@@ -62,10 +69,16 @@ export function Table<T, D extends object>({
   pinData?: (item: T) => boolean;
   onRowClick?: (e: React.MouseEvent, item: T) => void;
   onRowSelect?: (sel: T[]) => void;
-  onCellChange?: (rowIndex: number, colIndex: number, newValue: string) => void; // Define the prop type
+  onCellChange?: (
+    rowIndex: number,
+    colIndex: number,
+    // newValue: string | number,
+    newValue: any,
+  ) => void; // Define the prop type
   asActions?: (item: T) => React.ReactNode;
   asTooltip?: (item: T) => React.ReactNode;
   editable?: boolean; // Editable prop for the entire table
+  editableText?: string;
   isLoading?: boolean;
 }) {
   const isCellEditable = (
@@ -74,15 +87,15 @@ export function Table<T, D extends object>({
     col: TableCol<D>,
     disp: D,
   ) => {
+    const val = col.render(disp);
     return (
-      editable && // Access directly from component props
+      editable &&
       col.editable !== false &&
       editingCell?.row === ri &&
       editingCell?.col === ci &&
-      typeof col.render(disp) === 'string' // Ensure the value is a string
+      (!!col.editor || typeof val === 'string' || typeof val === 'number')
     );
   };
-
   // const [localData, setLocalData] = useState<T[]>([]);
 
   // useEffect(() => {
@@ -102,7 +115,12 @@ export function Table<T, D extends object>({
   const renderedCols = useMemo(() => {
     return cols.map((col) => ({
       ...col,
-      header: formatHeader ? formatHeader(col.header || '') : col.header,
+      header:
+        col.header === undefined
+          ? undefined
+          : formatHeader
+            ? formatHeader(col.header)
+            : col.header,
     }));
   }, [cols, formatHeader]);
 
@@ -134,12 +152,19 @@ export function Table<T, D extends object>({
       if (!sortConfig) return 0;
       const { index, direction } = sortConfig;
       const col = cols[index];
-      const sa = col.sortValue
-        ? col.sortValue(a.disp)
-        : String(col.render(a.disp) ?? '');
-      const sb = col.sortValue
-        ? col.sortValue(b.disp)
-        : String(col.render(b.disp) ?? '');
+      const rawA = col.sortValue ? col.sortValue(a.disp) : col.render(a.disp);
+      const rawB = col.sortValue ? col.sortValue(b.disp) : col.render(b.disp);
+
+      const sa =
+        typeof rawA === 'number' || typeof rawA === 'string'
+          ? rawA
+          : String(rawA ?? '');
+
+      const sb =
+        typeof rawB === 'number' || typeof rawB === 'string'
+          ? rawB
+          : String(rawB ?? '');
+
       if (typeof sa !== 'string' && typeof sa !== 'number') return 0;
       if (typeof sb !== 'string' && typeof sb !== 'number') return 0;
       return direction === 'asc'
@@ -278,35 +303,36 @@ export function Table<T, D extends object>({
     }
   };
 
-  const handleCellChange = (ri: number, ci: number, newValue: string) => {
+  const handleCellChange = (ri: number, ci: number, newValue: any) => {
     const col = cols[ci];
 
-    // Check if the column header and path are defined
-    if (col.header === undefined || col.path === undefined) {
+    // If custom editor → just bubble value up, no assumptions
+    if (col.editor) {
+      onCellChange?.(ri, ci, newValue);
+      return;
+    }
+
+    // Otherwise, use normal flat/path update logic
+    if (!col.header || !col.path) {
       console.error(`Column header or path is undefined for column ${ci}`);
       return;
     }
 
-    const flatField = col.header; // Flattened field (e.g., 'address_street')
-    const path = col.path; // Path to the nested field (e.g., 'address.street')
-
-    // Copy the data to avoid mutating the original state
     const updatedData = [...localData];
+    // make the row indexable
+    const updatedRow = { ...(updatedData[ri] as Record<string, any>) };
 
-    // Update the flattened data first
-    updatedData[ri] = { ...updatedData[ri], [flatField]: newValue };
+    // update flattened field
+    updatedRow[col.header] = newValue;
 
-    // Now update the nested data using the path
-    const updatedRow = updatedData[ri];
-    updateNestedValue(updatedRow, path, newValue);
+    // update nested path if present
+    updateNestedValue(updatedRow, col.path, newValue);
 
-    // Update the local state with the modified data
-    // setLocalData(updatedData);
+    // ✅ cast back to T when putting it into updatedData
+    updatedData[ri] = updatedRow as T;
 
-    // Notify parent if needed
-    if (onCellChange) {
-      onCellChange(ri, ci, newValue);
-    }
+    // bubble up the change
+    onCellChange?.(ri, ci, newValue);
   };
 
   useEffect(() => {
@@ -338,16 +364,20 @@ export function Table<T, D extends object>({
   }, []);
 
   const prevCols = useRef<TableCol<D>[]>([]); // Ref to track previous cols
+  const EDIT_ICON_OFFSET = 16 /* icon */ + 8; /* gap-2 */
 
   useLayoutEffect(() => {
-    // Only recalculate if cols have changed
     const colsChanged = !cols.every((col, i) => {
-      return col.header === prevCols.current[i]?.header; // Compare headers
+      const prev = prevCols.current[i];
+      return (
+        col.header === prev?.header &&
+        col.width === prev?.width &&
+        col.editable === prev?.editable
+      );
     });
 
-    if (!colsChanged) return; // Skip recalculation if no change
+    if (!colsChanged) return;
 
-    // Recalculate column widths when cols have changed
     const newW: { [i: number]: number } = {};
 
     cols.forEach((col, i) => {
@@ -356,8 +386,11 @@ export function Table<T, D extends object>({
         return;
       }
 
+      // header text width
       const hdrSpan = headerRefs.current[i]?.querySelector('span');
       const hW = hdrSpan?.scrollWidth ?? MIN_COL_WIDTH;
+
+      // body cell text width (longest span in this column)
       const bW = Math.max(
         ...bodyRefs.current.map((row) => {
           const span = row[i]?.querySelector('span');
@@ -365,8 +398,14 @@ export function Table<T, D extends object>({
         }),
         MIN_COL_WIDTH,
       );
-      const base = Math.max(hW, bW, MIN_COL_WIDTH);
 
+      let base = Math.max(hW, bW, MIN_COL_WIDTH);
+
+      if (col.editable) {
+        base += EDIT_ICON_OFFSET;
+      }
+
+      // padding
       let pl = 0,
         pr = 0;
       const el = headerRefs.current[i];
@@ -388,7 +427,7 @@ export function Table<T, D extends object>({
       {onRowSelect && (
         <div className="flex items-center justify-center">
           <label
-            className="flex h-full w-full cursor-pointer items-center justify-center px-4 py-2"
+            className="flex h-full w-full cursor-pointer items-center justify-center px-3 py-2"
             onClick={(e) => e.stopPropagation()}
           >
             <input
@@ -404,13 +443,13 @@ export function Table<T, D extends object>({
           </label>
         </div>
       )}
-      <div className="flex w-12 items-center justify-center px-4 py-2 text-sm font-semibold">
+      <div className="flex w-12 items-center justify-center px-3 py-2 text-sm font-semibold">
         #
       </div>
       {renderedCols.map((col, i) => (
         <div
           key={i}
-          className={`relative flex min-w-0 px-4 py-2 text-left ${
+          className={`relative flex min-w-0 px-3 py-2 text-left ${
             col.sortable === false ? 'cursor-default' : 'cursor-pointer'
           }`}
           style={{ width: widths[i] ?? MIN_COL_WIDTH }}
@@ -419,7 +458,17 @@ export function Table<T, D extends object>({
         >
           <div className="flex min-w-0 items-center gap-2 text-sm font-semibold">
             {col.header !== undefined && (
-              <span className="block w-full truncate">{col.header}</span>
+              <>
+                <span className="block truncate">{col.header}</span>
+                {col.editable !== false && (
+                  <Tooltip content={editableText}>
+                    <IconPencil
+                      size={16}
+                      className="cursor-pointer text-muted"
+                    />
+                  </Tooltip>
+                )}
+              </>
             )}
             {sortConfig?.index === i &&
               (sortConfig.direction === 'asc' ? (
@@ -448,7 +497,7 @@ export function Table<T, D extends object>({
           <div className="flex items-center justify-center">
             <label
               htmlFor={`checkbox-body-${ri}`}
-              className="flex h-full w-full cursor-pointer items-center justify-center px-4 py-2"
+              className="flex h-full w-full cursor-pointer items-center justify-center px-3 py-2"
               onClick={(e) => e.stopPropagation()}
             >
               <input
@@ -461,15 +510,16 @@ export function Table<T, D extends object>({
             </label>
           </div>
         )}
-        <div className="flex w-12 items-center justify-center px-4 py-2 text-sm">
+        <div className="flex w-12 items-center justify-center px-3 py-2 text-sm">
           {ri + 1}
         </div>
         {cols.map((col, ci) => (
           <div
             key={ci}
-            className={`relative box-border flex min-w-0 px-4 py-2 text-sm ${
-              isCellEditable(ri, ci, col, disp) ? 'bg-background' : ''
-            }`}
+            // className={`relative box-border flex min-w-0 px-4 py-2 text-sm ${
+            //   isCellEditable(ri, ci, col, disp) ? 'bg-background' : ''
+            // }`}
+            className={`relative box-border flex min-w-0 items-stretch text-sm`}
             onDoubleClick={() => handleDoubleClick(ri, ci)} // Handle double-click here
             style={{
               width: widths[ci] ?? MIN_COL_WIDTH,
@@ -480,17 +530,19 @@ export function Table<T, D extends object>({
             }}
           >
             {/* Absolutely positioned overlay (border or shadow) */}
-            {isCellEditable(ri, ci, col, disp) && (
+            {/* isCellEditable(ri, ci, col, disp) && (
               <div className="pointer-events-none absolute inset-0 z-10 rounded border border-border" />
-            )}
+            )*/}
             <TableCell
               value={col.render(disp)}
               isEditing={isCellEditable(ri, ci, col, disp)}
+              editor={col.editor}
+              row={disp}
               onChange={(newValue) => {
-                handleCellChange(ri, ci, newValue); // commit value to localData
-                setEditingCell(null); // exit edit mode
+                handleCellChange(ri, ci, newValue);
+                setEditingCell(null);
               }}
-              onCancel={() => setEditingCell(null)} // cancel edit mode
+              onCancel={() => setEditingCell(null)}
             />
           </div>
         ))}
@@ -535,8 +587,8 @@ export function Table<T, D extends object>({
       const rowContent = renderRowContent(ri, orig, disp);
       const rowNode = renderRowNode(ri, orig, rowContent);
 
-      // Only use wrapTooltip here to wrap with Tooltip if necessary
-      if (asTooltip && !isMouseDown.current) {
+      // Only wrap with Tooltip if NOT editing
+      if (asTooltip && !isMouseDown.current && !editingCell) {
         return (
           <Tooltip key={ri} content={asTooltip!(orig)}>
             {rowNode}

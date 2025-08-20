@@ -1,46 +1,83 @@
 import { useEffect, useState } from 'react';
 import { Input } from '@/components/Input';
 
-type TableCellProps = {
-  value: string | React.ReactNode; // Can be a string or any React node
+type TableCellProps<D = any, V = any> = {
+  value: V | React.ReactNode;
   isEditing: boolean;
-  onChange: (newValue: string) => void;
+  row: D;
+  editor?: (
+    inputValue: V,
+    row: D,
+    setValue: (val: V) => void, // update local state
+    commit: () => void, // commit to parent
+    onCancel: () => void,
+  ) => React.ReactNode;
+  onChange: (newValue: V) => void;
   onCancel: () => void;
-  // onBlur: () => void; // Add onBlur here
 };
 
-export function TableCell({
+export function TableCell<D, V = any>({
   value,
   isEditing,
+  row,
+  editor,
   onChange,
   onCancel,
-}: TableCellProps) {
-  const [inputValue, setInputValue] = useState('');
+}: TableCellProps<D, V>) {
+  const [inputValue, setInputValue] = useState<V>(value as V);
 
+  // Keep local input state in sync when value changes
   useEffect(() => {
-    if (typeof value === 'string') {
-      setInputValue(value);
-    }
+    setInputValue(value as V);
   }, [value]);
 
-  if (isEditing && typeof value === 'string') {
+  // 🔹 If a custom editor is provided, use it
+  if (isEditing && editor) {
+    return editor(
+      inputValue,
+      row,
+      (val: V) => setInputValue(val), // keep the actual type
+      () => onChange(inputValue), // commit current value
+      onCancel,
+    );
+  }
+
+  // 🔹 Default string/number editor
+  if (isEditing && (typeof value === 'string' || typeof value === 'number')) {
     return (
       <Input
+        type={typeof value === 'number' ? 'number' : 'text'}
         autoFocus
-        value={inputValue}
-        onChange={(e) => setInputValue(e.target.value)}
-        onBlur={() => onChange(inputValue)} // blur commits
+        value={String(inputValue ?? '')}
+        onChange={(e) => setInputValue(e.target.value as V)}
+        onBlur={() => {
+          const parsed =
+            typeof value === 'number'
+              ? (Number(inputValue) as V)
+              : (inputValue as V);
+          onChange(parsed);
+        }}
         onKeyDown={(e) => {
           if (e.key === 'Enter') {
-            onChange(inputValue); // Enter commits
+            const parsed =
+              typeof value === 'number'
+                ? (Number(inputValue) as V)
+                : (inputValue as V);
+            onChange(parsed);
           } else if (e.key === 'Escape') {
-            onCancel(); // Escape cancels
+            onCancel();
           }
         }}
-        inputClassName="h-auto w-full border-none bg-transparent px-0 py-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+        // inputClassName="h-auto w-full border-none bg-transparent px-0 py-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+        inputClassName="absolute py-2 h-auto focus-visible:ring-0 focus-visible:ring-offset-0"
       />
     );
   }
 
-  return <span className="block w-full select-none truncate">{value}</span>;
+  // 🔹 Default read-only rendering
+  return (
+    <span className="block w-full select-none truncate border border-transparent px-3 py-2">
+      {String(value)}
+    </span>
+  );
 }

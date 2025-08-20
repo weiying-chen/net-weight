@@ -22,6 +22,7 @@ type CommonProps<T> = {
   placeholder?: string;
   error?: string;
   className?: string;
+  inputClassName?: string;
   wrapperClassName?: string;
   onSearchChange?: (query: string) => void;
   onFocus?: () => void;
@@ -87,6 +88,7 @@ export const Select = <T extends string | number | boolean | null | undefined>(
     placeholder = 'Select an option',
     error,
     className,
+    inputClassName,
     wrapperClassName,
     onSearchChange,
     onFocus,
@@ -482,6 +484,7 @@ export const Select = <T extends string | number | boolean | null | undefined>(
       handleKeyDown={handleKeyDown}
       setLocalSearchQuery={setLocalSearchQuery}
       className={className}
+      inputClassName={inputClassName}
       triggerRef={triggerRef}
       isMobile={isMobile}
       emptyIcon={emptyIcon}

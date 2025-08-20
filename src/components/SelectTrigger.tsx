@@ -44,6 +44,7 @@ export type SelectTriggerProps<
   ) => void;
   setLocalSearchQuery: (query: string) => void;
   className?: string;
+  inputClassName?: string;
   triggerRef: React.RefObject<HTMLDivElement>;
   isMobile?: boolean;
   emptyIcon?: ReactNode;
@@ -73,6 +74,7 @@ export function SelectTrigger<
   handleKeyDown,
   setLocalSearchQuery,
   className,
+  inputClassName,
   triggerRef,
   isMobile = false,
   emptyIcon,
@@ -463,17 +465,21 @@ export function SelectTrigger<
         tabIndex={0}
         error={error}
         disabled={isDisabled}
-        className={cn('shadow', {
-          'flex h-5 w-full cursor-pointer items-center justify-between whitespace-nowrap rounded border-0 border-border bg-subtle px-2 py-1 text-xs shadow-none outline-none ring-foreground ring-offset-2 ring-offset-background hover:shadow-dark focus-visible:ring-2':
-            isIconTrigger,
-          'flex cursor-pointer justify-between': !isIconTrigger,
-          'focus-visible:ring-0 focus-visible:ring-offset-0':
-            isOpen && !isIconTrigger,
-          'hover:shadow-dark': !isDisabled && !isIconTrigger,
-          'h-8 px-2 text-sm': small && !isIconTrigger,
-          'h-10 px-3 text-sm': !small && !isIconTrigger,
-          'border-0 bg-subtle shadow-none': muted && !isIconTrigger,
-        })}
+        className={cn(
+          'shadow',
+          {
+            'flex h-5 w-full cursor-pointer items-center justify-between whitespace-nowrap rounded border-0 border-border bg-subtle px-2 py-1 text-xs shadow-none outline-none ring-foreground ring-offset-2 ring-offset-background hover:shadow-dark focus-visible:ring-2':
+              isIconTrigger,
+            'flex cursor-pointer justify-between': !isIconTrigger,
+            'focus-visible:ring-0 focus-visible:ring-offset-0':
+              isOpen && !isIconTrigger,
+            'hover:shadow-dark': !isDisabled && !isIconTrigger,
+            'h-8 px-2 text-sm': small && !isIconTrigger,
+            'h-10 px-3 text-sm': !small && !isIconTrigger,
+            'border-0 bg-subtle shadow-none': muted && !isIconTrigger,
+          },
+          inputClassName,
+        )}
       >
         <Row
           align={isMobile ? 'center' : 'between'}
