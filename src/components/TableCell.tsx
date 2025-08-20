@@ -1,22 +1,23 @@
 import { useEffect, useState } from 'react';
 import { Input } from '@/components/Input';
+import { CellValue } from '@/components/Table';
 
-type TableCellProps<D = any, V = any> = {
+type TableCellProps<D = Record<string, unknown>, V = CellValue> = {
   value: V | React.ReactNode;
   isEditing: boolean;
   row: D;
   editor?: (
     inputValue: V,
     row: D,
-    setValue: (val: V) => void, // update local state
-    commit: () => void, // commit to parent
+    setValue: (val: V) => void,
+    commit: () => void,
     onCancel: () => void,
   ) => React.ReactNode;
   onChange: (newValue: V) => void;
   onCancel: () => void;
 };
 
-export function TableCell<D, V = any>({
+export function TableCell<D = Record<string, unknown>, V = CellValue>({
   value,
   isEditing,
   row,
@@ -26,23 +27,20 @@ export function TableCell<D, V = any>({
 }: TableCellProps<D, V>) {
   const [inputValue, setInputValue] = useState<V>(value as V);
 
-  // Keep local input state in sync when value changes
   useEffect(() => {
     setInputValue(value as V);
   }, [value]);
 
-  // 🔹 If a custom editor is provided, use it
   if (isEditing && editor) {
     return editor(
       inputValue,
       row,
-      (val: V) => setInputValue(val), // keep the actual type
-      () => onChange(inputValue), // commit current value
+      (val: V) => setInputValue(val),
+      () => onChange(inputValue),
       onCancel,
     );
   }
 
-  // 🔹 Default string/number editor
   if (isEditing && (typeof value === 'string' || typeof value === 'number')) {
     return (
       <Input
@@ -68,13 +66,11 @@ export function TableCell<D, V = any>({
             onCancel();
           }
         }}
-        // inputClassName="h-auto w-full border-none bg-transparent px-0 py-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
         inputClassName="absolute py-2 h-auto focus-visible:ring-0 focus-visible:ring-offset-0"
       />
     );
   }
 
-  // 🔹 Default read-only rendering
   return (
     <span className="block w-full select-none truncate border border-transparent px-3 py-2">
       {String(value)}

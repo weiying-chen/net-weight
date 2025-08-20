@@ -10,6 +10,8 @@ import { IconArrowUp, IconArrowDown, IconPencil } from '@tabler/icons-react';
 import { Tooltip } from '@/components/Tooltip';
 import { TableCell } from '@/components/TableCell';
 
+export type CellValue = string | number | Record<string, unknown>;
+
 export type TableCol<D> = {
   header?: string;
   render: (item: D) => React.ReactNode;
@@ -19,9 +21,9 @@ export type TableCol<D> = {
   editable?: boolean;
   path?: string;
   editor?: (
-    value: any,
+    value: CellValue,
     row: D,
-    onChange: (newValue: any) => void,
+    onChange: (newValue: CellValue) => void,
     onCancel: () => void,
   ) => React.ReactNode;
 };
@@ -31,19 +33,23 @@ const MAX_COL_WIDTH = 300;
 
 type SortConfig = { index: number; direction: 'asc' | 'desc' } | null;
 
-const updateNestedValue = (obj: any, path: string, value: any) => {
-  const keys = path.split('.'); // Split the path string (e.g., 'address.street' -> ['address', 'street'])
-  let current = obj;
+function updateNestedValue(
+  obj: Record<string, unknown>,
+  path: string,
+  value: unknown,
+): void {
+  const keys = path.split('.');
+  let current: Record<string, unknown> = obj;
 
-  // Traverse the object using the keys and update the value
   keys.slice(0, -1).forEach((key) => {
-    if (!current[key]) current[key] = {}; // Create missing nested objects if necessary
-    current = current[key];
+    if (typeof current[key] !== 'object' || current[key] === null) {
+      current[key] = {};
+    }
+    current = current[key] as Record<string, unknown>;
   });
 
-  // Set the value at the final key
   current[keys[keys.length - 1]] = value;
-};
+}
 
 export function Table<T, D extends object>({
   data: originalData,
@@ -73,7 +79,7 @@ export function Table<T, D extends object>({
     rowIndex: number,
     colIndex: number,
     // newValue: string | number,
-    newValue: any,
+    newValue: CellValue,
   ) => void; // Define the prop type
   asActions?: (item: T) => React.ReactNode;
   asTooltip?: (item: T) => React.ReactNode;
@@ -303,7 +309,7 @@ export function Table<T, D extends object>({
     }
   };
 
-  const handleCellChange = (ri: number, ci: number, newValue: any) => {
+  const handleCellChange = (ri: number, ci: number, newValue: CellValue) => {
     const col = cols[ci];
 
     // If custom editor → just bubble value up, no assumptions
