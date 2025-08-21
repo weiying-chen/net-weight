@@ -536,7 +536,7 @@ export const Select = <T extends string | number | boolean | null | undefined>(
         ))}
       {renderedTrigger}
       {renderedDropdown}
-      {error && <span className="text-sm text-danger">{error}</span>}
+      {/* error && <span className="text-sm text-danger">{error}</span> */}
     </Col>
   );
 };

@@ -1,6 +1,7 @@
 import { forwardRef, MouseEvent } from 'react';
 import { cn } from '@/utils';
 import { Row } from '@/components/Row';
+import { Col } from '@/components/Col';
 
 type PseudoInputProps = {
   tabIndex?: number;
@@ -17,23 +18,26 @@ export const PseudoInput = forwardRef<HTMLDivElement, PseudoInputProps>(
     ref,
   ) {
     return (
-      <Row
-        ref={ref}
-        alignItems="center"
-        locked
-        tabIndex={tabIndex}
-        onClick={onClick}
-        className={cn(
-          'h-10 w-full whitespace-nowrap rounded border border-border bg-background px-3 py-2 text-sm outline-none ring-foreground ring-offset-2 ring-offset-background focus-visible:ring-2',
-          {
-            'border-danger': error,
-            'pointer-events-none opacity-50': disabled,
-          },
-          className,
-        )}
-      >
-        {children}
-      </Row>
+      <Col className="w-full">
+        <Row
+          ref={ref}
+          alignItems="center"
+          locked
+          tabIndex={tabIndex}
+          onClick={onClick}
+          className={cn(
+            'h-10 w-full whitespace-nowrap rounded border border-border bg-background px-3 py-2 text-sm outline-none ring-foreground ring-offset-2 ring-offset-background focus-visible:ring-2',
+            {
+              'border-danger': error,
+              'pointer-events-none opacity-50': disabled,
+            },
+            className,
+          )}
+        >
+          {children}
+        </Row>
+        {error && <span className="text-sm text-danger">{error}</span>}
+      </Col>
     );
   },
 );

@@ -55,9 +55,10 @@ export type SchemaFieldsProps = {
   errors?: Array<{ [key: string]: string }>;
   viewModeLabels?: { day: string; month: string };
   validateField?: (
-    field: SchemaFieldInput,
     allInputs: SchemaFieldInput[],
-  ) => string | null; // return error message or null
+    field?: SchemaFieldInput,
+  ) => Record<string, string> | null;
+  isSubmitted?: boolean;
 };
 
 export const baseKeys = ['category', 'method', 'item'];
@@ -92,6 +93,7 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
   errors,
   viewModeLabels,
   validateField,
+  isSubmitted,
 }) => {
   const [fields, setFields] = useState<SchemaField[]>(initialFields);
 
@@ -177,18 +179,29 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
     const cleaned = sanitizeHiddenInputs(updated);
     updateFields(cleaned);
 
-    // --- NEW ---
     if (validateField) {
       const field = cleaned[fi].inputs[ii];
-      const msg = validateField(field, cleaned[fi].inputs);
+      const msgs = validateField(cleaned[fi].inputs, field);
+
       setLocalErrors((prev) => {
         const copy = [...prev];
         const next = { ...(copy[fi] || {}) };
-        if (msg) {
-          next[field.key] = msg;
+
+        if (msgs) {
+          // merge returned messages into the error bag for this row
+          Object.entries(msgs).forEach(([key, msg]) => {
+            next[key] = msg;
+          });
+
+          // optional: remove old errors for keys not included this time
+          Object.keys(next).forEach((k) => {
+            if (!(k in msgs)) delete next[k];
+          });
         } else {
-          delete next[field.key];
+          // clear all errors for this row if validator returned null
+          Object.keys(next).forEach((k) => delete next[k]);
         }
+
         copy[fi] = next;
         return copy;
       });
@@ -206,10 +219,9 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
     const shouldHideLabel =
       realInputs.length === 1 && realInputs[0].key === inp.key;
 
-    const fieldErrs = { ...(errors?.[fi] || {}), ...(localErrors[fi] || {}) };
-    const errorMsg = fieldErrs[inp.key];
-
-    // NEW: compute disabled state from schema
+    const zodErr = errors?.[fi]?.[inp.key];
+    const localErr = localErrors[fi]?.[inp.key];
+    const errorMsg = isSubmitted ? (zodErr ?? localErr) : localErr;
     const disabledByRule = shouldDisable(inp, field.inputs);
 
     let element;

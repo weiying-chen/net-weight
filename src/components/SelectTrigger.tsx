@@ -287,7 +287,6 @@ export function SelectTrigger<
     >
       <PseudoInput
         tabIndex={0}
-        error={error}
         disabled={isDisabled}
         className={cn('flex cursor-pointer items-center gap-2 shadow', {
           'focus-visible:ring-0 focus-visible:ring-offset-0': isOpen,
@@ -299,6 +298,7 @@ export function SelectTrigger<
           'flex h-5 cursor-pointer items-center justify-between whitespace-nowrap rounded border-0 bg-subtle px-2 py-1 text-xs shadow-none outline-none ring-foreground ring-offset-2 ring-offset-background hover:shadow-dark focus-visible:ring-2':
             isIconTrigger,
         })}
+        error={error}
       >
         {/* Tag container: now flex-nowrap + overflow-hidden */}
         <Row
@@ -435,6 +435,7 @@ export function SelectTrigger<
         autoComplete="off"
         disabled={isDisabled}
         isLoading={isLoading}
+        error={error}
       />
       <span
         className={cn(
@@ -463,7 +464,6 @@ export function SelectTrigger<
     >
       <PseudoInput
         tabIndex={0}
-        error={error}
         disabled={isDisabled}
         className={cn(
           'shadow',
@@ -480,6 +480,7 @@ export function SelectTrigger<
           },
           inputClassName,
         )}
+        error={error}
       >
         <Row
           align={isMobile ? 'center' : 'between'}
