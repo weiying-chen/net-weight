@@ -23,7 +23,8 @@ export type TableCol<D> = {
   editor?: (
     value: CellValue,
     row: D,
-    onChange: (newValue: CellValue) => void,
+    setValue: (newValue: CellValue) => void,
+    commit: () => void,
     onCancel: () => void,
   ) => React.ReactNode;
 };
