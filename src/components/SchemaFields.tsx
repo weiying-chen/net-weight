@@ -54,6 +54,10 @@ export type SchemaFieldsProps = {
   datePlaceholder?: string;
   errors?: Array<{ [key: string]: string }>;
   viewModeLabels?: { day: string; month: string };
+  validateField?: (
+    field: SchemaFieldInput,
+    allInputs: SchemaFieldInput[],
+  ) => string | null; // return error message or null
 };
 
 export const baseKeys = ['category', 'method', 'item'];
@@ -87,8 +91,13 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
   datePlaceholder,
   errors,
   viewModeLabels,
+  validateField,
 }) => {
   const [fields, setFields] = useState<SchemaField[]>(initialFields);
+
+  const [localErrors, setLocalErrors] = useState<
+    Array<{ [key: string]: string }>
+  >([]);
 
   const shouldShow = (
     inp: SchemaFieldInput,
@@ -167,6 +176,23 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
 
     const cleaned = sanitizeHiddenInputs(updated);
     updateFields(cleaned);
+
+    // --- NEW ---
+    if (validateField) {
+      const field = cleaned[fi].inputs[ii];
+      const msg = validateField(field, cleaned[fi].inputs);
+      setLocalErrors((prev) => {
+        const copy = [...prev];
+        const next = { ...(copy[fi] || {}) };
+        if (msg) {
+          next[field.key] = msg;
+        } else {
+          delete next[field.key];
+        }
+        copy[fi] = next;
+        return copy;
+      });
+    }
   };
 
   const renderInput = (
@@ -180,7 +206,7 @@ export const SchemaFields: React.FC<SchemaFieldsProps> = ({
     const shouldHideLabel =
       realInputs.length === 1 && realInputs[0].key === inp.key;
 
-    const fieldErrs = errors?.[fi] || {};
+    const fieldErrs = { ...(errors?.[fi] || {}), ...(localErrors[fi] || {}) };
     const errorMsg = fieldErrs[inp.key];
 
     // NEW: compute disabled state from schema
