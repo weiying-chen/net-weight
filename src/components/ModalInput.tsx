@@ -69,7 +69,7 @@ export const ModalInput = ({
           <IconWorldSearch size={20} />
         </PseudoInput>
       </div>
-      {error && <span className="text-sm text-danger">{error}</span>}
+      {/* error && <span className="text-sm text-danger">{error}</span> */}
 
       {/*
         Wrap the <Modal> in createPortal so it still mounts under #modal-root,

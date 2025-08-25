@@ -84,12 +84,12 @@ export const ColorPicker = ({
           maxLength={7}
         />
       </PseudoInput>
+      {/* error && <span className="text-sm text-danger">{error}</span> */}
       {isPickerOpen && (
         <div className="absolute top-16 z-10 rounded border border-border bg-white p-2 shadow">
           <HexColorPicker color={color} onChange={updateColor} />
         </div>
       )}
-      {error && <span className="text-sm text-danger">{error}</span>}
     </Col>
   );
 };

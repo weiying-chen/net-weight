@@ -10,7 +10,7 @@ import { IconArrowUp, IconArrowDown, IconPencil } from '@tabler/icons-react';
 import { Tooltip } from '@/components/Tooltip';
 import { TableCell } from '@/components/TableCell';
 
-export type CellValue = string | number | Record<string, unknown>;
+export type CellValue = string | number | Record<string, unknown> | null;
 
 export type TableCol<D> = {
   header?: string;

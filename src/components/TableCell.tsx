@@ -1,67 +1,87 @@
-import { useEffect, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { Input } from '@/components/Input';
 import { CellValue } from '@/components/Table';
 
-type TableCellProps<D = Record<string, unknown>, V = CellValue> = {
-  value: V | React.ReactNode;
+export type CellRenderValue = ReactNode;
+
+type TableCellProps<D = Record<string, unknown>> = {
+  value: CellRenderValue;
   isEditing: boolean;
   row: D;
   editor?: (
-    inputValue: V,
+    inputValue: CellValue,
     row: D,
-    setValue: (val: V) => void,
+    setValue: (val: CellValue) => void,
     commit: () => void,
     onCancel: () => void,
   ) => React.ReactNode;
-  onChange: (newValue: V) => void;
+  onChange: (newValue: CellValue) => void;
   onCancel: () => void;
 };
 
-export function TableCell<D = Record<string, unknown>, V = CellValue>({
+export function TableCell<D = Record<string, unknown>>({
   value,
   isEditing,
   row,
   editor,
   onChange,
   onCancel,
-}: TableCellProps<D, V>) {
-  const [inputValue, setInputValue] = useState<V>(value as V);
+}: TableCellProps<D>) {
+  // local state tracks raw value
+  const [inputValue, setInputValue] = useState<CellValue>(
+    typeof value === 'string' || typeof value === 'number' ? value : null,
+  );
 
   useEffect(() => {
-    setInputValue(value as V);
+    // keep in sync when value changes
+    if (typeof value === 'string' || typeof value === 'number') {
+      setInputValue(value);
+    } else {
+      setInputValue(null);
+    }
   }, [value]);
 
+  // custom editor case
   if (isEditing && editor) {
     return editor(
       inputValue,
       row,
-      (val: V) => setInputValue(val),
+      (val: CellValue) => setInputValue(val),
       () => onChange(inputValue),
       onCancel,
     );
   }
 
-  if (isEditing && (typeof value === 'string' || typeof value === 'number')) {
+  // default string/number inline editor
+  if (
+    isEditing &&
+    (typeof inputValue === 'string' ||
+      typeof inputValue === 'number' ||
+      inputValue === null)
+  ) {
+    const inputType = typeof inputValue === 'number' ? 'number' : 'text';
+
     return (
       <Input
-        type={typeof value === 'number' ? 'number' : 'text'}
+        type={inputType}
         autoFocus
-        value={String(inputValue ?? '')}
-        onChange={(e) => setInputValue(e.target.value as V)}
-        onBlur={() => {
-          const parsed =
-            typeof value === 'number'
-              ? (Number(inputValue) as V)
-              : (inputValue as V);
-          onChange(parsed);
+        value={inputValue === null ? '' : String(inputValue)}
+        onChange={(e) => {
+          const val = e.target.value;
+          setInputValue(
+            inputType === 'number'
+              ? val === ''
+                ? null
+                : Number(val)
+              : val === ''
+                ? null
+                : val,
+          );
         }}
+        onBlur={() => onChange(inputValue)}
         onKeyDown={(e) => {
           if (e.key === 'Enter') {
-            const parsed =
-              typeof value === 'number'
-                ? (Number(inputValue) as V)
-                : (inputValue as V);
-            onChange(parsed);
+            onChange(inputValue);
           } else if (e.key === 'Escape') {
             onCancel();
           }
@@ -71,9 +91,10 @@ export function TableCell<D = Record<string, unknown>, V = CellValue>({
     );
   }
 
+  // default display mode
   return (
     <span className="block w-full select-none truncate border border-transparent px-3 py-2">
-      {String(value)}
+      {value}
     </span>
   );
 }

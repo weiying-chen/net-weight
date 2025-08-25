@@ -225,11 +225,6 @@ export const DatePicker: React.FC<DatePickerProps> = ({
     >
       <div className="mb-2 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-base font-semibold">
-            {headerLabel
-              ? headerLabel(viewDate, viewMode)
-              : format(viewDate, viewMode === 'day' ? 'MMMM yyyy' : 'yyyy')}
-          </span>
           <div className="flex items-center gap-1">
             <button
               type="button"
@@ -246,6 +241,11 @@ export const DatePicker: React.FC<DatePickerProps> = ({
               <IconChevronRight size={20} />
             </button>
           </div>
+          <span className="text-base font-semibold">
+            {headerLabel
+              ? headerLabel(viewDate, viewMode)
+              : format(viewDate, viewMode === 'day' ? 'MMMM yyyy' : 'yyyy')}
+          </span>
         </div>
         <div className="flex items-center gap-1">
           <button
