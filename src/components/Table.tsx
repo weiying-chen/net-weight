@@ -550,7 +550,15 @@ export function Table<T, D extends EditableRow>({
             <TableCell
               value={col.render(disp)}
               isEditing={isCellEditable(ri, ci, col, disp)}
-              editor={col.editor}
+              editor={
+                col.editor
+                  ? (value, row, setValue, commit, onCancel) => (
+                      <div onClick={(e) => e.stopPropagation()}>
+                        {col.editor!(value, row, setValue, commit, onCancel)}
+                      </div>
+                    )
+                  : undefined
+              }
               row={disp}
               onChange={(newValue) => {
                 handleCellChange(ri, ci, newValue);
