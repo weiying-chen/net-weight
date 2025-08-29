@@ -68,6 +68,7 @@ export function Table<T, D extends EditableRow>({
   editable = false,
   editableText = 'Editable column',
   isLoading = false,
+  getHref,
 }: {
   data: T[];
   formatData?: (items: T[]) => D[];
@@ -88,6 +89,7 @@ export function Table<T, D extends EditableRow>({
   editable?: boolean; // Editable prop for the entire table
   editableText?: string;
   isLoading?: boolean;
+  getHref?: (item: T) => string;
 }) {
   const isCellEditable = (
     ri: number,
@@ -565,15 +567,29 @@ export function Table<T, D extends EditableRow>({
   const renderRowNode = (ri: number, orig: T, rowContent: ReactNode) => {
     const { disp } = sortedPaired[ri];
     const disabled = disp.canEdit === false;
+    const isEditingRow = editingCell?.row === ri;
+    const href = !isEditingRow && getHref ? getHref(orig) : undefined;
+
+    const Wrapper: any = href ? 'a' : 'div';
 
     return (
-      <div
+      <Wrapper
         key={ri}
+        href={href}
         className={`flex cursor-pointer border-b border-subtle ${
           hoveredRow === ri ? 'bg-subtle' : ''
         } ${disabled ? 'opacity-70' : ''}`}
-        onClick={(e) => {
-          if (editingCell && editingCell.row === ri) return;
+        onClick={(e: any) => {
+          if (isEditingRow) {
+            // block navigation + row click while editing
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+          }
+          if (href && (e.metaKey || e.ctrlKey || e.button === 1)) return; // native <a> for new tab
+
+          e.preventDefault();
+          e.stopPropagation();
 
           if (clickTimeoutRef.current) {
             clearTimeout(clickTimeoutRef.current);
@@ -586,12 +602,12 @@ export function Table<T, D extends EditableRow>({
             clickTimeoutRef.current = null;
           }, 200);
         }}
-        onMouseEnter={(e) => handleMouseEnterRow(ri, e)}
+        onMouseEnter={(e: any) => handleMouseEnterRow(ri, e)}
         onMouseLeave={handleMouseLeaveRow}
         onMouseMove={() => handleMouseMoveRow(ri)}
       >
         {rowContent}
-      </div>
+      </Wrapper>
     );
   };
 
