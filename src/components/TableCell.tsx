@@ -94,7 +94,7 @@ export function TableCell<D = Record<string, unknown>>({
   // default display mode
   return (
     <span className="block w-full select-none truncate border border-transparent px-3 py-2">
-      {value}
+      {value ?? '-'}
     </span>
   );
 }

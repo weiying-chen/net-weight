@@ -39,6 +39,7 @@ export type CustomLinksProps<T extends string | null = string, U = {}> = {
   onFocus?: (field: string | null) => void;
   onAddLink?: () => CustomLink<T, U>;
   errors?: Array<{ type?: string; value?: string }>;
+  asExtraButton?: React.ReactNode; // new prop
 };
 
 export const CustomLinks = <T extends string | null, U = {}>({
@@ -55,6 +56,7 @@ export const CustomLinks = <T extends string | null, U = {}>({
   onFocus,
   onAddLink,
   errors = [],
+  asExtraButton,
 }: CustomLinksProps<T, U>) => {
   const [links, setLinks] = useState<CustomLink<T, U>[]>([]);
 
@@ -135,9 +137,12 @@ export const CustomLinks = <T extends string | null, U = {}>({
           </Button>
         </Row>
       ))}
-      <Button type="button" onClick={handleAddLink} className="self-start">
-        {addLinkLabel}
-      </Button>
+      <Row>
+        <Button type="button" onClick={handleAddLink}>
+          {addLinkLabel}
+        </Button>
+        {asExtraButton}
+      </Row>
     </Col>
   );
 };

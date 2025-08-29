@@ -11,6 +11,7 @@ import { Tooltip } from '@/components/Tooltip';
 import { TableCell } from '@/components/TableCell';
 
 export type CellValue = string | number | Record<string, unknown> | null;
+export type EditableRow = { canEdit?: boolean };
 
 export type TableCol<D> = {
   header?: string;
@@ -52,7 +53,7 @@ function updateNestedValue(
   current[keys[keys.length - 1]] = value;
 }
 
-export function Table<T, D extends object>({
+export function Table<T, D extends EditableRow>({
   data: originalData,
   formatData,
   formatHeader,
@@ -97,10 +98,13 @@ export function Table<T, D extends object>({
     const val = col.render(disp);
     return (
       editable &&
+      disp.canEdit !== false &&
       col.editable !== false &&
       editingCell?.row === ri &&
       editingCell?.col === ci &&
-      (!!col.editor || typeof val === 'string' || typeof val === 'number')
+      (!!col.editor ||
+        val === null ||
+        ['string', 'number'].includes(typeof val))
     );
   };
   // const [localData, setLocalData] = useState<T[]>([]);
@@ -300,12 +304,13 @@ export function Table<T, D extends object>({
   };
 
   const handleDoubleClick = (ri: number, ci: number) => {
+    const { disp } = sortedPaired[ri];
+    const isRowEditable = disp.canEdit !== false; // 👈 check row-level flag
     const isColumnEditable = cols[ci].editable !== false;
     const isCellNotBeingEdited =
       !editingCell || editingCell.row !== ri || editingCell.col !== ci;
 
-    if (isColumnEditable && isCellNotBeingEdited) {
-      // Update editing cell to the new one
+    if (isRowEditable && isColumnEditable && isCellNotBeingEdited) {
       setEditingCell({ row: ri, col: ci });
     }
   };
@@ -557,14 +562,16 @@ export function Table<T, D extends object>({
     );
   };
 
-  // Helper function to render the entire row
   const renderRowNode = (ri: number, orig: T, rowContent: ReactNode) => {
+    const { disp } = sortedPaired[ri];
+    const disabled = disp.canEdit === false;
+
     return (
       <div
         key={ri}
         className={`flex cursor-pointer border-b border-subtle ${
           hoveredRow === ri ? 'bg-subtle' : ''
-        }`}
+        } ${disabled ? 'opacity-70' : ''}`}
         onClick={(e) => {
           if (editingCell && editingCell.row === ri) return;
 

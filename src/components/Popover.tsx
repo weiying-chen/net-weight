@@ -62,13 +62,22 @@ export const Popover = ({
     const trig = triggerRef.current.getBoundingClientRect();
     const drop = dropdownRef.current.getBoundingClientRect();
 
-    // vertical flip
     const spaceBelow = window.innerHeight - trig.bottom;
-    setDropdownVertical(spaceBelow < drop.height ? 'top' : 'bottom');
+    const spaceAbove = trig.top;
+
+    if (spaceBelow >= drop.height || spaceBelow >= spaceAbove) {
+      setDropdownVertical('bottom');
+    } else {
+      setDropdownVertical('top');
+    }
 
     // horizontal flip
     const spaceRight = window.innerWidth - trig.left;
-    setDropdownHorizontal(spaceRight < drop.width ? 'right' : 'left');
+    if (spaceRight < drop.width && trig.right > drop.width) {
+      setDropdownHorizontal('right');
+    } else {
+      setDropdownHorizontal('left');
+    }
   };
 
   // keep your positioning logic

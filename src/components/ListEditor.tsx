@@ -150,9 +150,9 @@ export function ListEditor({
     onItemClick: (item: string) => void,
   ) => (
     <ul className="h-40 w-full overflow-y-auto rounded border border-border p-2 text-sm">
-      {listItems.map((item) => (
+      {listItems.map((item, idx) => (
         <li
-          key={item}
+          key={`${item}-${idx}`}
           onClick={() => onItemClick(item)}
           className={cn('cursor-pointer px-2 py-1', {
             'bg-muted text-white': pickedItems.includes(item),
